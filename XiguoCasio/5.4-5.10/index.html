@@ -50,18 +50,17 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <div class="chart-half"><h3 style="margin-top:0">📊 店铺核心指标</h3><canvas id="c1"></canvas></div>
 <div class="chart-half"><h3 style="margin-top:0">📈 大盘指数对比</h3><canvas id="c2"></canvas></div>
 </div>
-<script>window.addEventListener('load',function(){
-function m1(){try{return new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+<script>window.addEventListener('load',function(){setTimeout(function(){
+try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
 {label:'支付金额(¥)',data:[14181,7964,6919,5021,7696,9210,5131,11428,14544,15098],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
 {label:'支付单数',data:[19,16,11,9,14,10,9,12,16,22],type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1',order:1},
 {label:'UV',data:[7731,8066,6269,5598,5329,4721,4571,4404,6893,6881],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0}
-]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error(e)}
-function m2(){try{return new Chart(document.getElementById('c2'),{type:'line',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error('c1',e)}
+try{new Chart(document.getElementById('c2'),{type:'line',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
 {label:'日韩表大盘(万元)',data:[340.8,313.2,261.5,249.9,289.9,266.9,267.6,279.1,277.0,388.3],borderColor:'#94a3b8',borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y'},
 {label:'单肩包大盘(万元)',data:[2569,2622,2568,2889,3160,3570,3782,3682,3648,3814],borderColor:'#a78bfa',borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y1'}
-]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'日韩表(万元)',color:'#94a3b8'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单肩包(万元)',color:'#a78bfa'},grid:{display:false},ticks:{color:'#a78bfa'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error(e)}
-m1();m2();
-},100);</script>
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'日韩表(万元)',color:'#94a3b8'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单肩包(万元)',color:'#a78bfa'},grid:{display:false},ticks:{color:'#a78bfa'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error('c2',e)}
+},200)},100);</script>
 
 <h2>二、5月逐日运营明细</h2>
 <div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">退货率</th><th class="num">UV</th><th class="num">社区投放</th><th class="num">日韩表大盘(万元)</th></tr></thead><tbody>
