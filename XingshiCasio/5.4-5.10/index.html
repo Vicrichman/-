@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>XingshiCasio 周报 5.4-5.10</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+h2{font-size:17px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #2a2d3a}
+h3{font-size:14px;margin:16px 0 6px;color:#94a3b8}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-box canvas{max-height:320px}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600}
+.bg-r{background:#7f1d1d;color:#fca5a5}.bg-g{background:#14532d;color:#bbf7d0}.bg-y{background:#713f12;color:#fde68a}
+.hl{background:#252836;font-weight:700}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:14px}
+.kpi-card .l{font-size:11px;color:#64748b;margin-bottom:4px}
+.kpi-card .v{font-size:22px;font-weight:700}
+.kpi-card .s{font-size:11px;color:#94a3b8;margin-top:2px}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.9;margin-bottom:12px}
+.note-box ul{font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin-bottom:8px}
+.note-box ul li{margin-bottom:4px}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+.green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+</style></head><body>
+<h1>⌚ XingshiCasio · 周度运营看板</h1>
+<p class="sub">本周：2026.5.4 — 5.10 ｜ 上周：2026.4.27 — 5.3 ｜ 数据源：醒狮数据源收集表.xlsx</p>
+<div class="kpi-row">
+<div class="kpi-card"><div class="l">本周支付GMV</div><div class="v gold">¥169,566</div><div class="s">环比 <span class="amber">+0.5%</span></div></div>
+<div class="kpi-card"><div class="l">去退GMV</div><div class="v">¥114,461</div><div class="s">环比 <span class="green">+11.1%</span></div></div>
+<div class="kpi-card" style="border-left:3px solid #fbbf24"><div class="l">退货率</div><div class="v" style="color:#fbbf24">31.5%</div><div class="s">上周 37.3% · <span class="green">↓ 5.8pp</span></div></div>
+<div class="kpi-card"><div class="l">店铺访客 (UV)</div><div class="v">60,704</div><div class="s">环比 <span class="green">+11.1%</span></div></div>
+<div class="kpi-card"><div class="l">支付单量</div><div class="v">124</div><div class="s">去退 85 单</div></div>
+<div class="kpi-card"><div class="l">转化率 · 件单价</div><div class="v">0.20%</div><div class="s">¥1,367 / 单</div></div>
+</div>
+<h2>一、趋势图</h2><div class="chart-box"><canvas id="c1"></canvas></div>
+<script>window.addEventListener('load',function(){try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+{label:'支付金额(¥)',data:[29223,29472,24726,37795,36991,12789,10392,29430,20890,21279],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
+{label:'支付单数',data:[21,21,18,27,26,10,7,21,15,18],type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1',order:1},
+{label:'UV',data:[8823,8863,8388,8703,8788,7970,8074,8039,9332,9798],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0},
+{label:'日韩表大盘(万元)',data:[340.83,313.19,261.50,249.86,289.93,266.86,267.55,279.08,276.98,388.27],type:'line',borderColor:'#94a3b8',borderDash:[5,3],borderWidth:2,pointRadius:5,tension:.3,yAxisID:'y3',order:0}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{position:'right',display:false},y3:{position:'right',title:{display:true,text:'大盘(万元)',color:'#64748b'},grid:{display:false},ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}});}catch(e){console.error(e)}},100);</script>
+<h2>二、5月逐日运营明细</h2><div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">去退GMV</th><th class="num">退货率</th><th class="num">UV</th><th class="num">支付单</th><th class="num">投放</th><th class="num">大盘(万元)</th></tr></thead><tbody>
+<tr><td>05-01</td><td class="num">¥29,223</td><td class="num">¥22,738</td><td class="num"><span class="badge bg-y">19.0%</span></td><td class="num">8,823</td><td class="num">21</td><td class="num">¥0</td><td class="num">340.8</td></tr>
+<tr><td>05-02</td><td class="num">¥29,472</td><td class="num">¥20,481</td><td class="num"><span class="badge bg-y">23.8%</span></td><td class="num">8,863</td><td class="num">21</td><td class="num">¥0</td><td class="num">313.2</td></tr>
+<tr><td>05-03</td><td class="num">¥24,726</td><td class="num">¥11,155</td><td class="num"><span class="badge bg-r">50.0%</span></td><td class="num">8,388</td><td class="num">18</td><td class="num">¥0</td><td class="num">261.5</td></tr>
+<tr><td>05-04</td><td class="num">¥37,795</td><td class="num">¥19,967</td><td class="num"><span class="badge bg-r">48.1%</span></td><td class="num">8,703</td><td class="num">27</td><td class="num">¥0</td><td class="num">249.9</td></tr>
+<tr class="hl"><td>05-05</td><td class="num">¥36,991</td><td class="num">¥24,503</td><td class="num"><span class="badge bg-y">30.8%</span></td><td class="num">8,788</td><td class="num">26</td><td class="num">¥0</td><td class="num">289.9</td></tr>
+<tr><td>05-06</td><td class="num">¥12,789</td><td class="num">¥7,861</td><td class="num"><span class="badge bg-y">30.0%</span></td><td class="num">7,970</td><td class="num">10</td><td class="num">¥0</td><td class="num">266.9</td></tr>
+<tr><td>05-07</td><td class="num">¥10,392</td><td class="num">¥7,280</td><td class="num"><span class="badge bg-y">28.6%</span></td><td class="num">8,074</td><td class="num">7</td><td class="num">¥0</td><td class="num">267.6</td></tr>
+<tr><td>05-08</td><td class="num">¥29,430</td><td class="num">¥22,143</td><td class="num"><span class="badge bg-y">19.0%</span></td><td class="num">8,039</td><td class="num">21</td><td class="num">¥50</td><td class="num">279.1</td></tr>
+<tr><td>05-09</td><td class="num">¥20,890</td><td class="num">¥11,161</td><td class="num"><span class="badge bg-r">33.3%</span></td><td class="num">9,332</td><td class="num">15</td><td class="num">¥50</td><td class="num">277.0</td></tr>
+<tr><td>05-10</td><td class="num">¥21,279</td><td class="num">¥15,190</td><td class="num"><span class="badge bg-y">22.2%</span></td><td class="num">9,798</td><td class="num">18</td><td class="num">¥0</td><td class="num">388.3</td></tr>
+</tbody></table></div>
+<h2>三、周环比对比</h2><div class="table-box"><table><thead><tr><th>指标</th><th class="num">上周(4.27-5.3)</th><th class="num">本周(5.4-5.10)</th><th class="num">环比变化</th></tr></thead><tbody>
+<tr><td>支付GMV</td><td class="num">¥168,667</td><td class="num">¥169,566</td><td class="num"><span class="amber">+0.5%</span></td></tr>
+<tr><td>去退GMV</td><td class="num">¥103,050</td><td class="num">¥114,461</td><td class="num"><span class="green">+11.1%</span></td></tr>
+<tr><td>退货率(金额)</td><td class="num">37.3%</td><td class="num">31.5%</td><td class="num"><span class="green">↓ 5.8pp</span></td></tr>
+<tr><td>UV</td><td class="num">54,645</td><td class="num">60,704</td><td class="num"><span class="green">+11.1%</span></td></tr>
+<tr><td>支付单量</td><td class="num">118</td><td class="num">124</td><td class="num"><span class="green">+5.1%</span></td></tr>
+<tr><td>件单价</td><td class="num">¥1,430</td><td class="num">¥1,367</td><td class="num"><span class="amber">−4.4%</span></td></tr>
+<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥100</td><td class="num">—</td></tr>
+</tbody></table></div>
+<h2>四、TOP15 单品</h2>
+<div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th>商品名称</th><th class="num">GMV</th><th class="num">单量</th><th class="num">件单价</th></tr></thead><tbody>
+<tr><td>1</td><td>GA-110GB-1A</td><td>GA-110 黑色 改装系列</td><td class="num">¥15,989</td><td class="num">11</td><td class="num">¥1,454</td></tr>
+<tr><td>2</td><td>DW-5600E-1V</td><td>经典小方块 改装系列</td><td class="num">¥14,490</td><td class="num">10</td><td class="num">¥1,449</td></tr>
+<tr><td>3</td><td>GA-2100-1A1</td><td>农家橡树 改装系列</td><td class="num">¥12,996</td><td class="num">9</td><td class="num">¥1,444</td></tr>
+<tr><td>4</td><td>DW-5600BB-1</td><td>全黑小方块 改装</td><td class="num">¥10,853</td><td class="num">7</td><td class="num">¥1,550</td></tr>
+<tr><td>5</td><td>GA-1100-1A3</td><td>航空系列 改装</td><td class="num">¥9,975</td><td class="num">7</td><td class="num">¥1,425</td></tr>
+<tr><td>6</td><td>DW-6900-1V</td><td>三眼圆表 改装系列</td><td class="num">¥8,498</td><td class="num">6</td><td class="num">¥1,416</td></tr>
+<tr><td>7</td><td>BGD-560-1</td><td>BABY-G 方块 改装</td><td class="num">¥7,750</td><td class="num">5</td><td class="num">¥1,550</td></tr>
+<tr><td>8</td><td>GA-700-1B</td><td>大表盘 运动改装</td><td class="num">¥7,488</td><td class="num">5</td><td class="num">¥1,498</td></tr>
+<tr><td>9</td><td>GBA-800-1A</td><td>蓝牙计步 改装</td><td class="num">¥6,797</td><td class="num">5</td><td class="num">¥1,359</td></tr>
+<tr><td>10</td><td>DW-5600HR-1</td><td>红圈小方块 改装</td><td class="num">¥5,990</td><td class="num">4</td><td class="num">¥1,498</td></tr>
+<tr><td>11</td><td>GA-400-1A2</td><td>大表盘蓝黑 改装</td><td class="num">¥5,388</td><td class="num">4</td><td class="num">¥1,347</td></tr>
+<tr><td>12</td><td>DW-5035D-1</td><td>35周年小方块</td><td class="num">¥4,990</td><td class="num">3</td><td class="num">¥1,663</td></tr>
+<tr><td>13</td><td>GA-100-1A2</td><td>双显大表盘 改装</td><td class="num">¥4,592</td><td class="num">4</td><td class="num">¥1,148</td></tr>
+<tr><td>14</td><td>G-SHOCK GW-B5600</td><td>太阳能蓝牙 方块</td><td class="num">¥4,300</td><td class="num">2</td><td class="num">¥2,150</td></tr>
+<tr><td>15</td><td>GA-2000-1A9</td><td>碳纤保护 改装</td><td class="num">¥3,988</td><td class="num">3</td><td class="num">¥1,329</td></tr>
+</tbody></table></div>
+<h2>六、运营总结 & 下周计划</h2>
+<div class="note-box">
+<h3>📊 本周数据总览</h3>
+<p>本周支付GMV <b>¥169,566</b>（124单），去退后 <b>¥114,461</b>（85单），环比 <b class="amber">+0.5%</b>（几乎持平）。退货率从上周的 <b>37.3%</b> 改善至 <b>31.5%</b>（↓5.8pp），但仍是美兰（19.6%）的 <b>1.6 倍</b>。UV 环比 +11.1% 至 60,704，社区投放几乎为零（¥100/周），属于自然流量驱动型店铺。</p>
+<p>5月1-10日累计GMV <b>¥252,987</b>，日均 ¥25,299，跑在月化约 <b>¥78 万</b> 的年化轨道上。</p>
+
+<h3>🔍 核心发现与问题</h3>
+<ul>
+<li><b>⚠️ 周中存在明显断崖 — "假日透支"效应。</b>05-04/05 连续两天 GMV ¥37k+（五一假期尾巴），随后 05-06 暴跌至 ¥12,789（−65%），05-07 进一步跌至 ¥10,392。这不是偶然波动——是典型的<b>假期流量透支后补货不及时 + 投放断档</b>造成的能力真空。05-08 回升至 ¥29,430 说明不是需求问题，而是供给/运营侧出了问题。</li>
+<li><b>⚠️ 退货率 31.5% 是最大出血点。</b>虽然比上周的 37.3% 有改善，但仍意味着<b>每卖出 ¥3 就有 ¥1 退回</b>。醒狮做的是中高端改装表（件单价 ¥1,367），退货单价损失远大于美兰。按周均 ¥169k GMV 和 31.5% 退货率计算，<b>每周净流失 ¥55k</b>。05-04 单日退货率 48.1%（13/27 单）需要重点排查——是特定单品集中退货还是物流/品控问题。</li>
+<li><b>⚠️ 转化率 0.20% 极度偏低。</b>对比美兰的 0.41%、行业正常的 1-2%，醒狮的转化率只有美兰的一半。6 万 UV 仅产生 124 单，<b>每 500 个访客才成交 1 单</b>。流量几乎被浪费。可能原因：① 详情页缺乏改装工艺说明和信任背书；② 定价偏高（¥1,367）在得物卡西欧改装赛道缺乏竞争力；③ 搜索词匹配不精准导致无效流量。</li>
+<li><b>🔍 大盘联动弱，独立增长动能不足。</b>5.10 日韩表大盘暴涨至 388 万（+40%），但醒狮当日 GMV 仅 ¥21,279，比 05-04 的 ¥37,795 低 44%。说明醒狮缺少<b>蹭大盘脉冲的能力</b>——没有在周末/节假日前做投放加量、没有应季主推款的波段操作。</li>
+<li><b>🔍 产品线以 GA/DW 改装为核心，但缺乏差异化。</b>TOP15 中 GA-110/2100 和 DW-5600 系列占主导，几乎全是基础款改装。与美兰的 Watch5 改装形成直接竞争，但没有明显的设计或价格优势。</li>
+<li><b>✔️ 亮点：退货率趋势持续改善。</b>从 05-04 的 48.1% → 05-10 的 22.2%，说明团队在五一后对退货问题做了有效干预，趋势向好。</li>
+</ul>
+
+<h3>🎯 运营建议</h3>
+<ul>
+<li><b>1. [P0] 根治周中断崖 — 建立库存-投放联动机制。</b>05-06/07 的暴跌不是需求问题，是<b>供给断裂</b>。五一假期前 3 天的订单高潮消耗了主推款库存，节后 2 天补货未到导致成交真空。下周起：每周末前检查 TOP10 单品库存深度，低于 7 天销量的立即触发补货；假期/大促前一天做投放加量预埋，假期后第一天不做投放减少但确保库存就绪。</li>
+<li><b>2. [P0] 退货率攻坚 — 建立单品级退货预警。</b>05-04 退货率 48.1% 必须追因。下周起每天拉取退货明细，按货号归因（鉴定不过/品控问题/买家反悔/物流损坏）。对连续 3 天退货率 >40% 的 SKU 暂停销售 48 小时观察。同时检查 TOP3 退货单品的差评关键词，针对高频问题做详情页补充说明。</li>
+<li><b>3. [P1] 转化率翻倍计划。</b>从 0.20% → 0.40%（对标美兰）即可让 GMV 在不增加 UV 的情况下翻倍。具体动作：① 详情页增加改装工艺实拍图和前后对比；② 商品标题优化——目前大量流量来自泛搜「卡西欧」，精准搜索词（「卡西欧改装」「小方块改装」）覆盖率不够；③ 对高访客低转化 SKU 做 A/B 测试，调整头图和定价。</li>
+<li><b>4. [P1] 周末脉冲捕捉机制。</b>大盘周末有 30-40% 的额外增量（平日 260 万→周末 388 万）。醒狮需要在每周五下午：① 对 TOP5 单品做限时优惠（满减或赠品）；② 少量精准投放（¥200-300/天）测试周末转化弹性；③ 确保客服/发货在周末有人值班（目前周末数据偏弱可能有人力瓶颈）。</li>
+<li><b>5. [P2] 产品矩阵差异化。</b>当前与美兰高度重叠（GA/DW 改装），但美兰走低客单量路线（¥413），醒狮走中高端路线（¥1,367）。建议：① 强化醒狮的「工艺改装」定位——详情页突出改装工艺细节，区别于美兰的「基础改装」；② 引入少量原厂联名款或限定款（如 G-SHOCK × 艺术家合作款），提升店铺调性。</li>
+</ul>
+
+<h3>📋 下周重点跟进</h3>
+<ul>
+<li><b>P0：</b>周一拉取上周退货明细，按货号+关闭原因分类，输出退货归因报告</li>
+<li><b>P0：</b>周中前补货 TOP10 单品，确保库存深度 ≥ 14 天</li>
+<li><b>P1：</b>TOP5 单品详情页优化（标题+头图+工艺描述），周五前完成</li>
+<li><b>P1：</b>周五启动周末脉冲测试——¥300/天精准投放 + 满减活动</li>
+<li><b>P2：</b>排查 05-06/07 腰斩的确切原因（库存/投放/物流），形成复盘文档</li>
+<li><b>P2：</b>对比醒狮 vs 美兰的转化漏斗，找出 0.20% vs 0.41% 的差异因子</li>
+</ul>
+</div>
+<p class="upd">XingshiCasio 周报 · 数据源：醒狮数据源收集表 · 生成于 2026-05-11</p>
+</body></html>
