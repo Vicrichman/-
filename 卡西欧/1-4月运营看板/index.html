@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡西欧得物运营看板 · 2026年1-4月</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e6eb;
+    --muted: #8b8fa3;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --blue: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 24px; min-height: 100vh;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    gap: 16px; margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .kpi-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .kpi-value { font-size: 32px; font-weight: 700; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .kpi-danger { color: var(--red); }
+  .kpi-warn { color: var(--yellow); }
+  .kpi-ok { color: var(--green); }
+
+  .section-title {
+    font-size: 18px; font-weight: 600; margin: 32px 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  .chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px; margin-bottom: 28px;
+  }
+  @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
+  .chart-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .chart-box h3 { font-size: 15px; color: var(--muted); margin-bottom: 16px; font-weight: 500; }
+  .chart-box canvas { max-height: 320px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 14px; text-align: left; font-size: 14px; }
+  th { color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--border); }
+  td { border-bottom: 1px solid #1f2230; }
+  tr:hover td { background: #1e2230; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .tag-green { background: #064e3b; color: #22c55e; }
+  .tag-yellow { background: #422006; color: #eab308; }
+  .tag-red { background: #450a0a; color: #ef4444; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; }
+
+  .alert-box {
+    background: #450a0a; border: 1px solid #7f1d1d;
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 20px;
+  }
+  .alert-box h4 { color: var(--red); margin-bottom: 8px; }
+  .alert-box p { font-size: 14px; line-height: 1.6; }
+
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px; margin-bottom: 28px;
+  }
+  @media (max-width: 900px) { .action-grid { grid-template-columns: 1fr; } }
+  .action-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px;
+  }
+  .action-card .prio {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; display: inline-block; margin-bottom: 8px;
+  }
+  .prio-p0 { background: #450a0a; color: #ef4444; }
+  .prio-p1 { background: #422006; color: #eab308; }
+  .prio-p2 { background: #064e3b; color: #22c55e; }
+  .action-card h4 { font-size: 15px; margin-bottom: 10px; }
+  .action-card ul { font-size: 13px; color: #c0c4d0; padding-left: 18px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>📊 卡西欧得物运营看板</h1>
+<p class="subtitle">2026年1月–4月 · 醒狮 / 美兰 / 喜过 / 蓄势 · 数据更新：2026-05-09</p>
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-label">📦 总订单量</div>
+    <div class="kpi-value">13,210</div>
+    <div class="kpi-sub">月均 3,302 单</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">✅ 交易成功率</div>
+    <div class="kpi-value kpi-danger">38.1%</div>
+    <div class="kpi-sub">成功 5,039 / 失败 4,917 / 关闭 3,214</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">💰 总营销费</div>
+    <div class="kpi-value">¥505,000</div>
+    <div class="kpi-sub">月均 ¥126,250</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">🎯 单均成功成本</div>
+    <div class="kpi-value kpi-warn">¥100.22</div>
+    <div class="kpi-sub">有效产出率 50.6%</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">🔴 最大出血点</div>
+    <div class="kpi-value kpi-danger">醒狮</div>
+    <div class="kpi-sub">失败率 51% · 失败 2,385 单</div>
+  </div>
+</div>
+
+<!-- Alert -->
+<div class="alert-box">
+  <h4>🚨 核心预警：醒狮店铺</h4>
+  <p>醒狮 1-4 月投入 <strong>¥135,000</strong> 营销费，仅产出 1,344 单成功（成功率 28.8%）。失败订单 2,385 单是成功订单的 <strong>1.77 倍</strong>。4 月成功数持续下滑（317→296），如不干预将继续恶化。</p>
+</div>
+
+<!-- Store Summary Table -->
+<div class="section-title">店铺总览</div>
+<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+<table>
+<thead>
+<tr><th>店铺</th><th class="num">总订单</th><th class="num">成功</th><th class="num">失败</th><th class="num">成功率</th><th class="num">有效产出</th><th class="num">营销费</th><th class="num">单均成本</th><th>状态</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>美兰</strong></td>
+  <td class="num">4,913</td><td class="num">2,306</td><td class="num">1,219</td>
+  <td class="num" style="color:var(--green)">46.9%</td>
+  <td class="num" style="color:var(--green)">65.4%</td>
+  <td class="num">¥140,000</td>
+  <td class="num" style="color:var(--green)">¥60.71</td>
+  <td><span class="tag tag-green">🟢 标杆</span></td>
+</tr>
+<tr>
+  <td><strong>醒狮</strong></td>
+  <td class="num">4,673</td><td class="num">1,344</td><td class="num">2,385</td>
+  <td class="num" style="color:var(--red)">28.8%</td>
+  <td class="num" style="color:var(--red)">36.0%</td>
+  <td class="num">¥135,000</td>
+  <td class="num" style="color:var(--red)">¥100.45</td>
+  <td><span class="tag tag-red">🔴 危急</span></td>
+</tr>
+<tr>
+  <td><strong>喜过</strong></td>
+  <td class="num">1,869</td><td class="num">781</td><td class="num">617</td>
+  <td class="num">41.8%</td><td class="num">55.9%</td>
+  <td class="num">¥135,000</td>
+  <td class="num" style="color:var(--red)">¥172.86</td>
+  <td><span class="tag tag-yellow">🟡 成本失控</span></td>
+</tr>
+<tr>
+  <td><strong>蓄势</strong></td>
+  <td class="num">1,755</td><td class="num">608</td><td class="num">696</td>
+  <td class="num">34.6%</td><td class="num">46.6%</td>
+  <td class="num">¥95,000</td>
+  <td class="num" style="color:var(--yellow)">¥156.25</td>
+  <td><span class="tag tag-yellow">🟡 扭转中</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<!-- Charts Row -->
+<div class="chart-row">
+  <div class="chart-box">
+    <h3>📈 月度成功订单趋势</h3>
+    <canvas id="chartSuccess"></canvas>
+  </div>
+  <div class="chart-box">
+    <h3>💸 月度单均成本趋势</h3>
+    <canvas id="chartCost"></canvas>
+  </div>
+</div>
+<div class="chart-row">
+  <div class="chart-box" style="grid-column: 1/-1;">
+    <h3>📊 各店铺月度成功 vs 失败对比</h3>
+    <canvas id="chartSF"></canvas>
+  </div>
+</div>
+
+<!-- Actions -->
+<div class="section-title">可执行建议</div>
+<div class="action-grid">
+  <div class="action-card">
+    <span class="prio prio-p0">🔴 P0 最高优先级</span>
+    <h4>醒狮 — 深度排查 + 缩量止损</h4>
+    <ul>
+      <li>拉取失败订单明细，按原因归类（鉴定/取消/超时/物流）</li>
+      <li>审视货品结构：SKU 是否集中在高退货品类？</li>
+      <li>目标：失败率从 51% 降到 35% 以下</li>
+      <li>如无法改善，主动缩减预算转投美兰</li>
+    </ul>
+  </div>
+  <div class="action-card">
+    <span class="prio prio-p1">🟡 P1</span>
+    <h4>喜过 — 成本优化</h4>
+    <ul>
+      <li>参照美兰，月度营销费控制在 ¥25,000 以内</li>
+      <li>单均成本目标：¥173 → ¥80</li>
+      <li>提升订单量到月均 250 单以上</li>
+    </ul>
+  </div>
+  <div class="action-card">
+    <span class="prio prio-p1">🟡 P1</span>
+    <h4>蓄势 — 稳定化</h4>
+    <ul>
+      <li>排查 4 月失败飙升（216 单）的突发事件</li>
+      <li>维持 ¥15,000 月费，不急于加投</li>
+      <li>目标成功率提升到 40%+</li>
+    </ul>
+  </div>
+  <div class="action-card">
+    <span class="prio prio-p2">🟢 P2</span>
+    <h4>美兰 — 继续做标杆</h4>
+    <ul>
+      <li>维持当前运营节奏</li>
+      <li>可适度加投（¥30K → ¥40K），测试增量弹性</li>
+      <li>总结美兰方法论，复制到其他店铺</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<script>
+Chart.defaults.color = '#8b8fa3';
+Chart.defaults.borderColor = '#2a2d3a';
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+
+const months = ['01月','02月','03月','04月'];
+const colors = { 美兰: '#22c55e', 醒狮: '#ef4444', 喜过: '#eab308', 蓄势: '#3b82f6' };
+const success = {
+  美兰: [514,656,577,559],
+  醒狮: [317,404,327,296],
+  喜过: [203,220,212,146],
+  蓄势: [142,150,145,171]
+};
+const costs = {
+  美兰: [40000,35000,35000,30000],
+  醒狮: [40000,30000,35000,30000],
+  喜过: [45000,45000,25000,20000],
+  蓄势: [30000,35000,15000,15000]
+};
+const unitCost = {
+  美兰: [77.82,53.35,60.66,49.59],
+  醒狮: [126.18,74.26,107.03,98.04],
+  喜过: [221.67,204.55,117.92,125.79],
+  蓄势: [211.27,233.33,103.45,82.42]
+};
+const fails = {
+  美兰: [259,333,325,302],
+  醒狮: [595,635,613,542],
+  喜过: [162,156,170,129],
+  蓄势: [159,164,157,216]
+};
+
+// Success trend
+new Chart(document.getElementById('chartSuccess'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: Object.keys(colors).map(k => ({
+      label: k, data: success[k], borderColor: colors[k],
+      backgroundColor: colors[k] + '22', fill: true, tension: 0.3,
+      pointRadius: 4, pointHoverRadius: 6
+    }))
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { usePointStyle: true, padding: 20 } } },
+    scales: { y: { beginAtZero: false, min: 100 } }
+  }
+});
+
+// Unit cost trend
+new Chart(document.getElementById('chartCost'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: Object.keys(colors).map(k => ({
+      label: k, data: unitCost[k], borderColor: colors[k],
+      backgroundColor: colors[k] + '22', fill: true, tension: 0.3,
+      pointRadius: 4, pointHoverRadius: 6
+    }))
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { usePointStyle: true, padding: 20 } },
+      tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ¥${ctx.raw}` } }
+    },
+    scales: { y: { beginAtZero: false, ticks: { callback: v => '¥'+v } } }
+  }
+});
+
+// Success vs Fail bar
+const sfDatasets = [];
+Object.keys(colors).forEach(k => {
+  sfDatasets.push({ label: k+' 成功', data: success[k], backgroundColor: colors[k], borderRadius: 4 });
+  sfDatasets.push({
+    label: k+' 失败', data: fails[k], backgroundColor: colors[k]+'44',
+    borderColor: colors[k], borderWidth: 1, borderDash: [4,4], borderRadius: 4
+  });
+});
+new Chart(document.getElementById('chartSF'), {
+  type: 'bar',
+  data: { labels: months, datasets: sfDatasets },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { usePointStyle: true, padding: 12, font: {size:11} } }
+    },
+    scales: {
+      y: { stacked: false, beginAtZero: true },
+      x: { stacked: false }
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日韩表得物 — 四店运营看板 v2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px}
+h1{font-size:24px;margin-bottom:4px}
+.subtitle{font-size:13px;color:#64748b;margin-bottom:20px}
+.tabs{display:flex;gap:4px;margin-bottom:24px;flex-wrap:wrap}
+.tab{padding:10px 24px;border-radius:8px 8px 0 0;border:1px solid #2a2d3a;background:#1a1d27;color:#94a3b8;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s}
+.tab:hover{background:#252836;color:#e2e8f0}
+.tab.active{background:#252836;color:#fff;border-bottom-color:#252836;position:relative;z-index:1}
+.tab.醒狮.active{border-top:3px solid #ef4444}
+.tab.美兰.active{border-top:3px solid #22c55e}
+.tab.喜过.active{border-top:3px solid #f59e0b}
+.tab.蓄势.active{border-top:3px solid #3b82f6}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:18px}
+.kpi-card .label{font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.kpi-card .value{font-size:28px;font-weight:700;margin-bottom:2px}
+.kpi-card .sub{font-size:12px;color:#94a3b8}
+.kpi-card.warn{border-left:3px solid #f59e0b}
+.kpi-card.danger{border-left:3px solid #ef4444}
+.kpi-card.good{border-left:3px solid #22c55e}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px}
+.chart-box h3{font-size:14px;margin-bottom:12px;color:#e2e8f0}
+.chart-box canvas{max-height:300px}
+@media(max-width:900px){.charts-row{grid-template-columns:1fr}}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:24px;overflow-x:auto}
+.table-box h3{font-size:15px;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-red{background:#7f1d1d;color:#fca5a5}
+.badge-yellow{background:#713f12;color:#fde68a}
+.badge-green{background:#14532d;color:#bbf7d0}
+.badge-up{background:#14532d;color:#bbf7d0}
+.badge-down{background:#7f1d1d;color:#fca5a5}
+.insight-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px}
+.insight-box h3{font-size:15px;margin-bottom:8px}
+.insight-box .item{padding:6px 0;font-size:13px;border-bottom:1px solid #1e2030;display:flex;align-items:flex-start;gap:8px}
+.insight-box .item:last-child{border-bottom:none}
+.insight-box .tag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:4px;white-space:nowrap;margin-top:2px}
+.tag-p0{background:#7f1d1d;color:#fca5a5}
+.tag-p1{background:#713f12;color:#fde68a}
+.tag-p2{background:#1e3a5f;color:#93c5fd}
+</style>
+</head>
+<body>
+
+<h1>日韩表得物 · 四店运营看板</h1>
+<p class="subtitle">数据周期：2026年1-4月（剔除喜过蔻驰、蓄势VICKIT）| 大盘：得物日韩表品类GMV指数</p>
+
+<div class="tabs" id="tabs"></div>
+<div id="content"></div>
+
+<script>
+(function(){
+try{
+
+const DAPAN = { '01':6955, '02':9176, '03':8703, '04':7923 };
+
+const STORES = {
+  '醒狮': { color:'#ef4444', months:[
+    {m:'01',gmv:743322,orders:317,close:202,uv:331186,kol:17940,tasks:272,exposure:7306454,read:578763,interact:2740,shop_visit:95604},
+    {m:'02',gmv:984922,orders:404,close:283,uv:331068,kol:17140,tasks:214,exposure:2641148,read:201192,interact:2520,shop_visit:24787},
+    {m:'03',gmv:821847,orders:327,close:252,uv:351707,kol:23090,tasks:274,exposure:4725722,read:363574,interact:3565,shop_visit:47532},
+    {m:'04',gmv:736788,orders:306,close:199,uv:253668,kol:21250,tasks:194,exposure:757113,read:53296,interact:2299,shop_visit:6437}
+  ]},
+  '美兰': { color:'#22c55e', months:[
+    {m:'01',gmv:281239,orders:514,close:287,uv:204302,kol:24320,tasks:408,exposure:3883708,read:300840,interact:2633,shop_visit:48696},
+    {m:'02',gmv:379773,orders:656,close:414,uv:213557,kol:16510,tasks:271,exposure:2992426,read:251838,interact:3893,shop_visit:35864},
+    {m:'03',gmv:324964,orders:577,close:344,uv:212941,kol:25940,tasks:338,exposure:3499000,read:285381,interact:4088,shop_visit:26348},
+    {m:'04',gmv:310075,orders:605,close:325,uv:199232,kol:22670,tasks:213,exposure:1109804,read:96097,interact:2429,shop_visit:8477}
+  ]},
+  '喜过卡西欧': { color:'#f59e0b', months:[
+    {m:'01',gmv:143761,orders:197,close:102,uv:269527,kol:33920,tasks:270,exposure:3216823,read:238741,interact:3645,shop_visit:46650},
+    {m:'02',gmv:152993,orders:194,close:88,uv:117612,kol:19990,tasks:149,exposure:1227231,read:81099,interact:3842,shop_visit:15517},
+    {m:'03',gmv:182392,orders:200,close:104,uv:115080,kol:20288,tasks:216,exposure:2148916,read:169683,interact:3227,shop_visit:34266},
+    {m:'04',gmv:123517,orders:143,close:83,uv:91789,kol:12370,tasks:77,exposure:221984,read:19311,interact:1459,shop_visit:3956}
+  ]},
+  '蓄势卡西欧': { color:'#3b82f6', months:[
+    {m:'01',gmv:157971,orders:0,close:0,uv:79438,kol:20300,tasks:271,exposure:2350010,read:149192,interact:2692,shop_visit:20495},
+    {m:'02',gmv:109385,orders:68,close:40,uv:67362,kol:19100,tasks:221,exposure:2060679,read:176051,interact:3914,shop_visit:11351},
+    {m:'03',gmv:140072,orders:84,close:55,uv:87129,kol:11580,tasks:214,exposure:1041684,read:85953,interact:2042,shop_visit:7741},
+    {m:'04',gmv:148667,orders:87,close:59,uv:103647,kol:14160,tasks:121,exposure:481223,read:38048,interact:1843,shop_visit:3644}
+  ]}
+};
+
+function rate(s,c){ return (s+c)>0?(s/(s+c)*100):0; }
+function fmtY(n){ return '¥'+(n/1e4).toFixed(1)+'万'; }
+function fmtPct(n){ return n.toFixed(1)+'%'; }
+function fmtX(n){ return (n/1e4).toFixed(1)+'万'; }
+function mom(arr,i){ if(i===0)return null; const p=arr[i-1]; return p>0?((arr[i]/p-1)*100):null; }
+
+const tabRow = document.getElementById('tabs');
+const content = document.getElementById('content');
+const storeNames = Object.keys(STORES);
+let activeStore = '醒狮';
+
+storeNames.forEach(name=>{
+  const btn=document.createElement('div');
+  btn.className='tab '+name+(name===activeStore?' active':'');
+  btn.textContent=name;
+  btn.onclick=()=>switchStore(name);
+  tabRow.appendChild(btn);
+});
+
+function switchStore(name){
+  activeStore=name;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.tab.'+name).classList.add('active');
+  renderStore(name);
+}
+
+function renderStore(name){
+  const s=STORES[name], c=s.color, ms=s.months;
+
+  // ---- Aggregates ----
+  const total=ms.reduce((a,d)=>({
+    gmv:a.gmv+d.gmv,orders:a.orders+d.orders,close:a.close+d.close,
+    uv:a.uv+d.uv,kol:a.kol+d.kol,tasks:a.tasks+d.tasks,
+    exposure:a.exposure+d.exposure,read:a.read+d.read,interact:a.interact+d.interact,shop:a.shop+d.shop_visit
+  }),{gmv:0,orders:0,close:0,uv:0,kol:0,tasks:0,exposure:0,read:0,interact:0,shop:0});
+
+  const totalRate=rate(total.orders,total.close);
+  const uvEff=total.uv>0?total.gmv/total.uv:0;
+  const kolROI=total.kol>0?total.gmv/total.kol:0;
+  const avgPrice=total.orders>0?total.gmv/total.orders:0;
+  const gmvs=ms.map(d=>d.gmv);
+  const momGmv=gmvs.map((v,i)=>mom(gmvs,i));
+  const dpVals=ms.map(d=>DAPAN[d.m]);
+  const momDp=dpVals.map((v,i)=>mom(dpVals,i));
+
+  // ---- KPI cards ----
+  const kpiClass=totalRate<55?'danger':totalRate<62?'warn':'good';
+  const roiClass=kolROI<10?'danger':kolROI<20?'warn':'good';
+  const latestMom=momGmv[3];
+  const latestDpMom=momDp[3];
+  const momDiff=latestMom!==null&&latestDpMom!==null?latestMom-latestDpMom:null;
+
+  let html=`
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="label">总GMV</div><div class="value">${fmtY(total.gmv)}</div><div class="sub">月均 ${fmtY(total.gmv/4)}</div></div>
+    <div class="kpi-card ${kpiClass}"><div class="label">成功率</div><div class="value">${fmtPct(totalRate)}</div><div class="sub">成交${total.orders} / 关闭${total.close}</div></div>
+    <div class="kpi-card"><div class="label">UV效率</div><div class="value">¥${uvEff.toFixed(2)}</div><div class="sub">UV ${fmtX(total.uv)} · GMV/UV</div></div>
+    <div class="kpi-card ${roiClass}"><div class="label">KOL ROI</div><div class="value">${kolROI.toFixed(1)}x</div><div class="sub">投入 ${fmtY(total.kol)} · ${total.tasks}个任务</div></div>
+    <div class="kpi-card"><div class="label">客单价</div><div class="value">¥${Math.round(avgPrice).toLocaleString()}</div><div class="sub">GMV / 成交单</div></div>
+    <div class="kpi-card"><div class="label">最新月环比 vs 大盘</div><div class="value" style="color:${momDiff!==null&&momDiff>=0?'#22c55e':'#ef4444'}">${momDiff!==null?(momDiff>=0?'+':'')+momDiff.toFixed(1)+'pp':'—'}</div><div class="sub">店铺${latestMom!==null?(latestMom>=0?'+':'')+fmtPct(latestMom):'—'} / 大盘${latestDpMom!==null?(latestDpMom>=0?'+':'')+fmtPct(latestDpMom):'—'}</div></div>
+  </div>`;
+
+  // ---- Chart Row 1: GMV + 成功率 + 大盘 ----
+  html+=`<div class="charts-row">
+    <div class="chart-box"><h3>📈 GMV & 成功率 月度趋势（含大盘指数）</h3><canvas id="chart1"></canvas></div>
+    <div class="chart-box"><h3>🔄 GMV环比增长 vs 大盘环比增长</h3><canvas id="chart2"></canvas></div>
+  </div>`;
+
+  // ---- Chart Row 2: KOL & 任务数 ----
+  html+=`<div class="charts-row">
+    <div class="chart-box"><h3>💰 KOL投放：投入金额 & 任务数量 vs GMV</h3><canvas id="chart3"></canvas></div>
+    <div class="chart-box"><h3>🎯 投放效率：曝光/元 & 商详访问/元 月度变化</h3><canvas id="chart4"></canvas></div>
+  </div>`;
+
+  // ---- Table ----
+  html+=`<div class="table-box"><h3>月度明细表</h3>
+  <table><thead><tr>
+    <th>月份</th><th class="num">GMV</th><th class="num">环比</th><th class="num">成交</th><th class="num">成功率</th>
+    <th class="num">UV</th><th class="num">KOL投入</th><th class="num">任务数</th><th class="num">曝光</th>
+    <th class="num">曝光/元</th><th class="num">大盘环比</th><th class="num">超额</th>
+  </tr></thead><tbody>`;
+
+  ms.forEach((d,i)=>{
+    const r=rate(d.orders,d.close);
+    const momV=momGmv[i];
+    const dpM=momDp[i];
+    const diff= momV!==null&&dpM!==null ? momV-dpM : null;
+    const momStr= momV===null ? '—' : `<span class="badge ${momV>=0?'badge-up':'badge-down'}">${momV>=0?'+':''}${fmtPct(momV)}</span>`;
+    const dpStr= dpM===null ? '—' : `<span class="badge ${dpM>=0?'badge-up':'badge-down'}">${dpM>=0?'+':''}${fmtPct(dpM)}</span>`;
+    const diffStr= diff===null ? '—' : `<span style="color:${diff>=0?'#22c55e':'#ef4444'};font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}pp</span>`;
+    const rateBadge=r<55?'badge-red':r<62?'badge-yellow':'badge-green';
+    const expPerYuan=d.kol>0?(d.exposure/d.kol).toFixed(0):'—';
+    html+=`<tr>
+      <td>${d.m}月</td><td class="num">${fmtY(d.gmv)}</td><td class="num">${momStr}</td>
+      <td class="num">${d.orders}</td><td class="num"><span class="badge ${rateBadge}">${fmtPct(r)}</span></td>
+      <td class="num">${fmtX(d.uv)}</td><td class="num">${fmtY(d.kol)}</td><td class="num">${d.tasks}</td>
+      <td class="num">${fmtX(d.exposure)}</td><td class="num">${expPerYuan}</td>
+      <td class="num">${dpStr}</td><td class="num">${diffStr}</td>
+    </tr>`;
+  });
+
+  html+=`<tr style="font-weight:700;border-top:2px solid #2a2d3a">
+    <td>合计</td><td class="num">${fmtY(total.gmv)}</td><td class="num">—</td><td class="num">${total.orders}</td>
+    <td class="num"><span class="badge ${totalRate<55?'badge-red':totalRate<62?'badge-yellow':'badge-green'}">${fmtPct(totalRate)}</span></td>
+    <td class="num">${fmtX(total.uv)}</td><td class="num">${fmtY(total.kol)}</td><td class="num">${total.tasks}</td>
+    <td class="num">${fmtX(total.exposure)}</td><td class="num">${total.kol>0?(total.exposure/total.kol).toFixed(0):'—'}</td><td class="num">—</td><td class="num">—</td>
+  </tr></tbody></table></div>`;
+
+  // ---- Insights ----
+  const insights=getInsights(name,ms,total,momGmv,momDp);
+  html+=`<div class="insight-box"><h3>诊断 & 建议</h3>`;
+  insights.forEach(i=>{ html+=`<div class="item"><span class="tag ${i.tag}">${i.level}</span><span>${i.text}</span></div>`; });
+  html+=`</div>`;
+
+  content.innerHTML=html;
+  setTimeout(()=>drawCharts(name,s,c,ms,momGmv,momDp),120);
+}
+
+function getInsights(name,ms,total,momGmv,momDp){
+  const r=rate(total.orders,total.close);
+  const kolR=total.kol>0?total.gmv/total.kol:0;
+  const m3=ms[2],m4=ms[3];
+  const gmvChg=momGmv[3]||0;
+  const kolChg=m3.kol>0?((m4.kol/m3.kol-1)*100):0;
+  const uvChg=m3.uv>0?((m4.uv/m3.uv-1)*100):0;
+  const dpChg=momDp[3]||0;
+  const diff=gmvChg-dpChg;
+
+  const out=[];
+  if(name==='醒狮'){
+    out.push({tag:'tag-p1',level:'P1',text:`4月 GMV环比 ${fmtPct(gmvChg)} vs 大盘 ${fmtPct(dpChg)}，跑输大盘 ${diff.toFixed(1)}pp。UV -28% 是主因，排查搜索排名。`});
+    if(r<60) out.push({tag:'tag-p0',level:'P0',text:`成功率 ${fmtPct(r)} 四店最低。排查失败订单原因，目标拉升至 62%+。`});
+    out.push({tag:'tag-p1',level:'P1',text:`KOL 投放 ${total.tasks} 个任务、ROI ${kolR.toFixed(0)}x，效率领先。保持 ¥2万/月 + 240任务节奏。`});
+    out.push({tag:'tag-p2',level:'P2',text:`GMV 占四店 57%，月推 3-5 款新品分散集中度风险。`});
+  }else if(name==='美兰'){
+    out.push({tag:'tag-p0',level:'P0',text:`客单价 ¥${Math.round(total.gmv/total.orders).toLocaleString()}，成交 ${total.orders} 单但 GMV 仅 ¥${(total.gmv/1e4).toFixed(0)}万。必须拉升客单价。`});
+    out.push({tag:'tag-p1',level:'P1',text:`4月 GMV环比 ${fmtPct(gmvChg)} vs 大盘 ${fmtPct(dpChg)}，跑赢 ${diff.toFixed(1)}pp。抗跌能力强但效率偏低。`});
+    out.push({tag:'tag-p1',level:'P1',text:`${total.tasks} 个任务四店最多，但曝光/元 ${total.kol>0?(total.exposure/total.kol).toFixed(0):'—'} 低于醒狮。淘汰低效达人。`});
+    out.push({tag:'tag-p2',level:'P2',text:'每周上 2-3 款 ¥800-1500 价位新品，形成价格带。'});
+  }else if(name==='喜过卡西欧'){
+    out.push({tag:'tag-p0',level:'P0',text:`🚨 4月 GMV环比 ${fmtPct(gmvChg)} vs 大盘 ${fmtPct(dpChg)}，跑输 ${diff.toFixed(1)}pp。KOL任务从 ${m3.tasks}→${m4.tasks} 个（-${Math.round((1-m4.tasks/m3.tasks)*100)}%），投入砍半直接传导。`});
+    out.push({tag:'tag-p0',level:'P0',text:`投放数量与GMV强关联：任务数越多→GMV越高。4月任务骤减至${m4.tasks}个，立即恢复至200+。`});
+    out.push({tag:'tag-p1',level:'P1',text:'成功率 66% 最高但 UV 效率 ¥1.01 最低。流量质量差，需优化达人筛选标准。'});
+    out.push({tag:'tag-p1',level:'P1',text:'恢复 2-3 月高效达人合作，淘汰曝光/元 <80 的达人。'});
+  }else if(name==='蓄势卡西欧'){
+    if(ms[0].orders===0) out.push({tag:'tag-p1',level:'P1',text:'1月缺成交数据，分析时注意。'});
+    out.push({tag:'tag-p1',level:'P1',text:`4月 GMV环比 ${fmtPct(gmvChg)} vs 大盘 ${fmtPct(dpChg)}，跑赢 ${diff.toFixed(1)}pp。逆势增长是亮点。`});
+    out.push({tag:'tag-p1',level:'P1',text:`UV 效率从 ¥${(ms[0].gmv/ms[0].uv).toFixed(2)}→¥${(m4.gmv/m4.uv).toFixed(2)} 持续下滑。排查出价策略。`});
+    out.push({tag:'tag-p2',level:'P2',text:`投放 ${total.tasks} 任务、ROI ${kolR.toFixed(1)}x。优化达人筛选，对标醒狮标准。`});
+  }
+  return out;
+}
+
+function drawCharts(name,s,c,ms,momGmv,momDp){
+  const labels=ms.map(d=>d.m+'月');
+
+  // ---- Chart1: GMV bar + success rate line + 大盘 line ----
+  const ctx1=document.getElementById('chart1');
+  if(ctx1) new Chart(ctx1,{type:'bar',data:{labels,datasets:[
+    {label:'GMV (万元)',data:ms.map(d=>d.gmv/1e4),backgroundColor:c+'88',borderColor:c,borderWidth:1,yAxisID:'y',order:2},
+    {label:'成功率 %',data:ms.map(d=>rate(d.orders,d.close)),type:'line',borderColor:'#a78bfa',backgroundColor:'#a78bfa33',borderWidth:2,pointRadius:5,pointBackgroundColor:'#a78bfa',tension:.3,yAxisID:'y1',order:1},
+    {label:'大盘指数',data:ms.map(d=>DAPAN[d.m]),type:'line',borderColor:'#64748b',borderDash:[5,3],borderWidth:1.5,pointRadius:3,pointBackgroundColor:'#64748b',tension:.3,yAxisID:'y2',order:0}
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{
+    y:{type:'linear',position:'left',title:{display:true,text:'GMV (万元)',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},
+    y1:{type:'linear',position:'right',min:0,max:100,title:{display:true,text:'成功率 %',color:'#a78bfa'},grid:{display:false},ticks:{color:'#a78bfa'}},
+    y2:{type:'linear',position:'right',display:false,min:6000,max:10000},
+    x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+  }}});
+
+  // ---- Chart2: GMV环比 vs 大盘环比 (dual bar) ----
+  const ctx2=document.getElementById('chart2');
+  if(ctx2) new Chart(ctx2,{type:'bar',data:{labels:labels.slice(1),datasets:[
+    {label:'店铺GMV环比 %',data:momGmv.slice(1),backgroundColor:c+'99',borderColor:c,borderWidth:1},
+    {label:'大盘环比 %',data:momDp.slice(1),backgroundColor:'#64748b99',borderColor:'#64748b',borderWidth:1}
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+'%'}}},scales:{
+    y:{title:{display:true,text:'环比增长 %',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8',callback:v=>v.toFixed(0)+'%'}},
+    x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+  }}});
+
+  // ---- Chart3: KOL投入 + 任务数 vs GMV (3-axis chart) ----
+  const ctx3=document.getElementById('chart3');
+  if(ctx3) new Chart(ctx3,{type:'bar',data:{labels,datasets:[
+    {label:'KOL投入 (千元)',data:ms.map(d=>d.kol/1000),backgroundColor:c+'66',borderColor:c,borderWidth:1,yAxisID:'y',order:2},
+    {label:'任务数量',data:ms.map(d=>d.tasks),type:'line',borderColor:'#f59e0b',backgroundColor:'#f59e0b33',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,yAxisID:'y1',order:1},
+    {label:'GMV (万元)',data:ms.map(d=>d.gmv/1e4),type:'line',borderColor:'#22c55e',backgroundColor:'#22c55e33',borderWidth:2,pointRadius:4,pointBackgroundColor:'#22c55e',tension:.3,yAxisID:'y2',order:0,borderDash:[3,3]}
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{
+    y:{type:'linear',position:'left',title:{display:true,text:'KOL投入 (千元)',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},
+    y1:{type:'linear',position:'right',title:{display:true,text:'任务数',color:'#f59e0b'},grid:{display:false},ticks:{color:'#f59e0b'}},
+    y2:{type:'linear',position:'right',display:false},
+    x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+  }}});
+
+  // ---- Chart4: 曝光/元 & 商详访/元 ----
+  const ctx4=document.getElementById('chart4');
+  if(ctx4) new Chart(ctx4,{type:'line',data:{labels,datasets:[
+    {label:'曝光/元',data:ms.map(d=>d.kol>0?d.exposure/d.kol:0),borderColor:'#f59e0b',backgroundColor:'#f59e0b33',borderWidth:2,pointRadius:5,pointBackgroundColor:'#f59e0b',tension:.3,yAxisID:'y'},
+    {label:'商详访问/元',data:ms.map(d=>d.kol>0?d.shop_visit/d.kol:0),borderColor:'#22c55e',backgroundColor:'#22c55e33',borderWidth:2,pointRadius:5,pointBackgroundColor:'#22c55e',tension:.3,yAxisID:'y1'}
+  ]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{
+    y:{type:'linear',position:'left',title:{display:true,text:'曝光/元',color:'#f59e0b'},grid:{color:'#1e2030'},ticks:{color:'#f59e0b'}},
+    y1:{type:'linear',position:'right',title:{display:true,text:'商详访问/元',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},
+    x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+  }}});
+}
+
+renderStore('醒狮');
+
+}catch(e){console.error(e);document.getElementById('content').innerHTML='<p style="color:#ef4444">看板加载失败: '+e.message+'</p>';}
+})();
+</script>
+</body>
+</html>
