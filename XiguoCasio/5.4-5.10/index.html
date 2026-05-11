@@ -10,7 +10,9 @@ h1{font-size:22px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bot
 h2{font-size:17px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #2a2d3a}
 h3{font-size:14px;margin:16px 0 6px;color:#94a3b8}
 .chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
-.chart-box canvas{max-height:320px}
+.chart-row{display:flex;gap:20px;flex-wrap:wrap}
+.chart-row .chart-half{flex:1;min-width:400px;background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:16px}
+.chart-half canvas{max-height:300px}
 .table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
@@ -29,6 +31,7 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 .note-box ul li{margin-bottom:4px}
 .upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
 .green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+.c3{color:#a78bfa}.c4{color:#f472b6}
 </style></head><body>
 <h1>🛍 喜过 · 周度运营看板</h1>
 <p class="sub">本周：2026.5.4 — 5.10 ｜ 上周：2026.4.27 — 5.3 ｜ 数据源：喜过数据源收集表.xlsx</p>
@@ -39,30 +42,39 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <div class="kpi-card"><div class="l">📉 退货率</div><div class="v">33.7%</div><div class="s">上周 34.1% <span class="amber">→</span></div></div>
 <div class="kpi-card"><div class="l">👁 店铺访客(UV)</div><div class="v">38,397</div><div class="s">环比 <span class="red">−3.8%</span></div></div>
 <div class="kpi-card"><div class="l">🛒 支付单量</div><div class="v">92</div><div class="s">去退 61 单 · 件均 ¥741</div></div>
-<div class="kpi-card"><div class="l">📂 跨品类结构</div><div class="v">⌚+👜</div><div class="s">卡西欧72% · 蔻驰22%</div></div>
+<div class="kpi-card"><div class="l">📂 跨品类结构</div><div class="v">⌚+👜</div><div class="s">卡西欧72% · 蔻驰24%</div></div>
 </div>
 
 <h2>一、趋势图</h2>
-<div class="chart-box"><canvas id="c1"></canvas></div>
-<script>window.addEventListener('load',function(){try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+<div class="chart-row">
+<div class="chart-half"><h3 style="margin-top:0">📊 店铺核心指标</h3><canvas id="c1"></canvas></div>
+<div class="chart-half"><h3 style="margin-top:0">📈 大盘指数对比</h3><canvas id="c2"></canvas></div>
+</div>
+<script>window.addEventListener('load',function(){
+function m1(){try{return new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
 {label:'支付金额(¥)',data:[14181,7964,6919,5021,7696,9210,5131,11428,14544,15098],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
 {label:'支付单数',data:[19,16,11,9,14,10,9,12,16,22],type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1',order:1},
-{label:'UV',data:[7731,8066,6269,5598,5329,4721,4571,4404,6893,6881],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0},
-{label:'日韩表大盘(万元)',data:[340.8,313.2,261.5,249.9,289.9,266.9,267.6,279.1,277.0,388.3],type:'line',borderColor:'#94a3b8',borderDash:[5,3],borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y3',order:0}
-]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},y3:{position:'right',title:{display:true,text:'大盘(万)',color:'#64748b'},grid:{display:false},ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}});}catch(e){console.error(e)}},100);</script>
+{label:'UV',data:[7731,8066,6269,5598,5329,4721,4571,4404,6893,6881],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error(e)}
+function m2(){try{return new Chart(document.getElementById('c2'),{type:'line',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+{label:'日韩表大盘(万元)',data:[340.8,313.2,261.5,249.9,289.9,266.9,267.6,279.1,277.0,388.3],borderColor:'#94a3b8',borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y'},
+{label:'单肩包大盘(万元)',data:[2569,2622,2568,2889,3160,3570,3782,3682,3648,3814],borderColor:'#a78bfa',borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y1'}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'日韩表(万元)',color:'#94a3b8'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单肩包(万元)',color:'#a78bfa'},grid:{display:false},ticks:{color:'#a78bfa'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error(e)}
+m1();m2();
+},100);</script>
 
 <h2>二、5月逐日运营明细</h2>
-<div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">退货率</th><th class="num">UV</th><th class="num">日韩表大盘(万元)</th></tr></thead><tbody>
-<tr><td>05-01</td><td class="num">¥14,181</td><td class="num">19</td><td class="num"><span class="badge bg-r">37%</span></td><td class="num">7,731</td><td class="num">340.8</td></tr>
-<tr><td>05-02</td><td class="num">¥7,964</td><td class="num">16</td><td class="num"><span class="badge bg-y">31%</span></td><td class="num">8,066</td><td class="num">313.2</td></tr>
-<tr><td>05-03</td><td class="num">¥6,919</td><td class="num">11</td><td class="num"><span class="badge bg-y">18%</span></td><td class="num">6,269</td><td class="num">261.5</td></tr>
-<tr><td>05-04</td><td class="num">¥5,021</td><td class="num">9</td><td class="num"><span class="badge bg-y">22%</span></td><td class="num">5,598</td><td class="num">249.9</td></tr>
-<tr><td>05-05</td><td class="num">¥7,696</td><td class="num">14</td><td class="num"><span class="badge bg-r">36%</span></td><td class="num">5,329</td><td class="num">289.9</td></tr>
-<tr><td>05-06</td><td class="num">¥9,210</td><td class="num">10</td><td class="num"><span class="badge bg-y">30%</span></td><td class="num">4,721</td><td class="num">266.9</td></tr>
-<tr><td>05-07</td><td class="num">¥5,131</td><td class="num">9</td><td class="num"><span class="badge bg-r">56%</span></td><td class="num">4,571</td><td class="num">267.6</td></tr>
-<tr><td>05-08</td><td class="num">¥11,428</td><td class="num">12</td><td class="num"><span class="badge bg-r">33%</span></td><td class="num">4,404</td><td class="num">279.1</td></tr>
-<tr><td>05-09</td><td class="num">¥14,544</td><td class="num">16</td><td class="num"><span class="badge bg-r">56%</span></td><td class="num">6,893</td><td class="num">277.0</td></tr>
-<tr><td>05-10</td><td class="num">¥15,098</td><td class="num">22</td><td class="num"><span class="badge bg-y">14%</span></td><td class="num">6,881</td><td class="num">388.3</td></tr>
+<div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">退货率</th><th class="num">UV</th><th class="num">社区投放</th><th class="num">日韩表大盘(万元)</th></tr></thead><tbody>
+<tr><td>05-01</td><td class="num">¥14,181</td><td class="num">19</td><td class="num"><span class="badge bg-r">37%</span></td><td class="num">7,731</td><td class="num">-</td><td class="num">340.8</td></tr>
+<tr><td>05-02</td><td class="num">¥7,964</td><td class="num">16</td><td class="num"><span class="badge bg-y">31%</span></td><td class="num">8,066</td><td class="num">-</td><td class="num">313.2</td></tr>
+<tr><td>05-03</td><td class="num">¥6,919</td><td class="num">11</td><td class="num"><span class="badge bg-y">18%</span></td><td class="num">6,269</td><td class="num">-</td><td class="num">261.5</td></tr>
+<tr><td>05-04</td><td class="num">¥5,021</td><td class="num">9</td><td class="num"><span class="badge bg-y">22%</span></td><td class="num">5,598</td><td class="num">¥0</td><td class="num">249.9</td></tr>
+<tr><td>05-05</td><td class="num">¥7,696</td><td class="num">14</td><td class="num"><span class="badge bg-r">36%</span></td><td class="num">5,329</td><td class="num">¥0</td><td class="num">289.9</td></tr>
+<tr><td>05-06</td><td class="num">¥9,210</td><td class="num">10</td><td class="num"><span class="badge bg-y">30%</span></td><td class="num">4,721</td><td class="num">¥0</td><td class="num">266.9</td></tr>
+<tr><td>05-07</td><td class="num">¥5,131</td><td class="num">9</td><td class="num"><span class="badge bg-r">56%</span></td><td class="num">4,571</td><td class="num">¥0</td><td class="num">267.6</td></tr>
+<tr><td>05-08</td><td class="num">¥11,428</td><td class="num">12</td><td class="num"><span class="badge bg-r">33%</span></td><td class="num">4,404</td><td class="num">¥0</td><td class="num">279.1</td></tr>
+<tr><td>05-09</td><td class="num">¥14,544</td><td class="num">16</td><td class="num"><span class="badge bg-r">56%</span></td><td class="num">6,893</td><td class="num">¥0</td><td class="num">277.0</td></tr>
+<tr><td>05-10</td><td class="num">¥15,098</td><td class="num">22</td><td class="num"><span class="badge bg-y">14%</span></td><td class="num">6,881</td><td class="num">¥0</td><td class="num">388.3</td></tr>
 </tbody></table></div>
 
 <h2>三、周环比对比</h2>
@@ -74,13 +86,19 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <tr><td>支付单量</td><td class="num">82</td><td class="num">92</td><td class="num"><span class="green">+12.2%</span></td></tr>
 <tr><td>件单价</td><td class="num">¥665</td><td class="num">¥741</td><td class="num"><span class="green">+11.4%</span></td></tr>
 <tr><td>转化率</td><td class="num">0.21%</td><td class="num">0.24%</td><td class="num"><span class="green">+0.03pp</span></td></tr>
+<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">—</td></tr>
 </tbody></table></div>
 
-<h2>四、品类对比</h2>
-<div class="table-box"><table><thead><tr><th>品牌</th><th class="num">本周GMV</th><th class="num">占比</th><th class="num">支付单量</th><th class="num">件单价</th><th class="num">上周GMV</th><th class="num">环比</th></tr></thead><tbody>
-<tr><td>⌚ CASIO/卡西欧</td><td class="num">¥49,086</td><td class="num">72.1%</td><td class="num">74</td><td class="num">¥663</td><td class="num">¥42,700</td><td class="num"><span class="green">+15.0%</span></td></tr>
-<tr><td>👜 COACH/蔻驰</td><td class="num">¥16,648</td><td class="num">24.5%</td><td class="num">10</td><td class="num">¥1,665</td><td class="num">¥8,365</td><td class="num"><span class="green">+99.1%</span></td></tr>
-<tr><td>👟 Nike / Jordan / MLB</td><td class="num">¥2,394</td><td class="num">3.5%</td><td class="num">8</td><td class="num">¥299</td><td class="num">¥3,493</td><td class="num"><span class="red">−31.4%</span></td></tr>
+<h2>四、品类对比（本周 vs 上周）</h2>
+<div class="table-box"><table><thead><tr><th>品牌</th><th class="num">本周GMV</th><th class="num">占比</th><th class="num">支付单量</th><th class="num">动销SKU</th><th class="num">件单价</th><th class="num">UV</th><th class="num">上周GMV</th><th class="num">上周单量</th><th class="num">环比</th></tr></thead><tbody>
+<tr><td>⌚ CASIO/卡西欧</td><td class="num">¥49,086</td><td class="num">72.1%</td><td class="num">74</td><td class="num">15</td><td class="num">¥663</td><td class="num">7,147</td><td class="num">¥42,700</td><td class="num">70</td><td class="num"><span class="green">+15.0%</span></td></tr>
+<tr><td>👜 COACH/蔻驰</td><td class="num">¥14,920</td><td class="num">21.9%</td><td class="num">10</td><td class="num">7</td><td class="num">¥1,492</td><td class="num">2,524</td><td class="num">¥8,365</td><td class="num">5</td><td class="num"><span class="green">+78.4%</span></td></tr>
+<tr><td>👟 MLB</td><td class="num">¥1,728</td><td class="num">2.5%</td><td class="num">2</td><td class="num">2</td><td class="num">¥864</td><td class="num">807</td><td class="num">¥1,129</td><td class="num">1</td><td class="num"><span class="green">+53.1%</span></td></tr>
+<tr><td>👟 Jordan</td><td class="num">¥1,197</td><td class="num">1.8%</td><td class="num">3</td><td class="num">1</td><td class="num">¥399</td><td class="num">547</td><td class="num">¥399</td><td class="num">1</td><td class="num"><span class="green">+200%</span></td></tr>
+<tr><td>👟 Nike</td><td class="num">¥1,197</td><td class="num">1.8%</td><td class="num">3</td><td class="num">1</td><td class="num">¥399</td><td class="num">1,060</td><td class="num">¥1,596</td><td class="num">4</td><td class="num"><span class="red">−25.0%</span></td></tr>
+<tr style="color:#64748b"><td>Converse</td><td class="num">¥0</td><td class="num">0%</td><td class="num">0</td><td class="num">0</td><td class="num">-</td><td class="num">458</td><td class="num">¥369</td><td class="num">1</td><td class="num">—</td></tr>
+<tr style="color:#64748b"><td>PRADA</td><td class="num">¥0</td><td class="num">0%</td><td class="num">0</td><td class="num">0</td><td class="num">-</td><td class="num">52</td><td class="num">¥0</td><td class="num">0</td><td class="num">—</td></tr>
+<tr style="color:#64748b"><td>CHANEL</td><td class="num">¥0</td><td class="num">0%</td><td class="num">0</td><td class="num">0</td><td class="num">-</td><td class="num">233</td><td class="num">¥0</td><td class="num">0</td><td class="num">—</td></tr>
 </tbody></table></div>
 
 <h2>五、TOP15 单品</h2>
@@ -102,37 +120,41 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <tr><td>15</td><td>DZ3755-100（Team1100-改造-印花）</td><td class="num">¥1,197</td><td class="num">3</td><td class="num">1.1%</td></tr>
 </tbody></table></div>
 
-<h2>六、运营总结 & 下周计划</h2>
+<h2>六、退货分析</h2>
+<div class="table-box"><table><thead><tr><th>关闭原因</th><th class="num">本周单数</th><th class="num">占比</th><th>分类</th></tr></thead><tbody>
+<tr><td>不想要了</td><td class="num">19</td><td class="num">61.3%</td><td><span class="badge bg-r">期望管理</span></td></tr>
+<tr><td>商品买错了</td><td class="num">4</td><td class="num">12.9%</td><td><span class="badge bg-y">详情页</span></td></tr>
+<tr><td>颜色/款式选错了</td><td class="num">2</td><td class="num">6.5%</td><td><span class="badge bg-y">详情页</span></td></tr>
+<tr><td>地址/电话填写错误</td><td class="num">2</td><td class="num">6.5%</td><td>买家操作</td></tr>
+<tr><td>尺码选错了</td><td class="num">1</td><td class="num">3.2%</td><td>买家操作</td></tr>
+<tr><td>没用/少用/错用优惠券</td><td class="num">1</td><td class="num">3.2%</td><td>买家操作</td></tr>
+<tr><td>质检未通过</td><td class="num">1</td><td class="num">3.2%</td><td><span class="badge bg-r">鉴定</span></td></tr>
+<tr><td>质量瑕疵-翻新/补色痕迹</td><td class="num">1</td><td class="num">3.2%</td><td><span class="badge bg-r">品控</span></td></tr>
+</tbody></table></div>
+
+<h2>七、运营总结 & 下周计划</h2>
 <div class="note-box">
 <h3>🏪 店铺总体表现</h3>
-<p>本周支付GMV <b>¥68,128</b>（92单），环比 <b class="green">+24.9%</b>。UV 下降 3.8% 但 GMV 逆势增长，说明客单价和转化效率在提升（件单价 ¥665→¥741，+11.4%；转化率 0.21%→0.24%）。退货率 33.7% 与上周持平，仍处于偏高区间。社区投放为零，全部为自然流量。喜过是醒狮/美兰中<b>唯一一个跨品类运营的店铺</b>（手表+箱包），这个差异化定位值得关注。</p>
+<p>本周支付GMV <b>¥68,128</b>（92单），环比 <b class="green">+24.9%</b>。UV 下降 3.8% 但 GMV 逆势增长，件单价 ¥665→¥741（+11.4%），转化率 0.21%→0.24%。退货率 33.7% 持平，社区投放为零。喜过是三个卡西欧店铺中<b>唯一的跨品类店铺</b>（手表+箱包），COACH 蔻驰线环比 <b class="green">+78%</b> 是本周GMV增长的绝对引擎。</p>
 
 <h3>📦 类目情况</h3>
-<p>卡西欧手表贡献 <b>72.1% GMV</b>（¥49,086，74单），是基本盘。COACH 蔻驰单肩包环比 <b class="green">暴增 99%</b>（¥8,365→¥16,648），几乎翻倍——这是本周 GMV 增长的核心驱动力。Nike/Jordan/MLB 鞋服线环比下降 31%，体量小且波动大，暂不构成稳定第二曲线。整体品类结构健康：手表稳盘 + 轻奢包增量，形成互补。</p>
-
-<h3>⭐ 单品情况</h3>
-<p>TOP1 GA-2100-1A1（禅迹璨筠）¥13,941/9单，是客单价最高的卡西欧单品（¥1,549/单）。TOP2 A158WA-1（ChromaG）¥12,472/28单——单量第一但客单价仅 ¥445，是典型的走量款。值得注意的是<b>TOP15 中有 6 款 COACH 包袋</b>（星蝶幻镜/春日野餐包/奶杏萌犬/山茶玫瑰/蓝蝶星钻/银缎蝶影），虽说单品 GMV 不高（¥1,399-4,317），但构成了包袋产品矩阵的雏形。TOP15 合计 GMV ¥59,655，占总 GMV 的 87.6%。</p>
+<p>卡西欧手表稳盘（¥49,086，+15%），COACH 蔻驰单肩包爆发（¥14,920，+78%），鞋服线（Nike/MLB/Jordan）合计 ¥4,122 体量小且波动大。品类结构健康：手表保基本盘，轻奢包拉增量。</p>
 
 <h3>🔍 核心发现</h3>
 <ul>
-<li><b>1. COACH 线是本周最大的增长引擎。</b>蔻驰 GMV 从 ¥8,365 翻倍至 ¥16,648（+99%），在 UV 下降的背景下实现逆势增长，说明这个品类的需求弹性很大。但退货率高的问题（整体 34%）也需要关注——建议单独拉取 COACH 线的退货率看是否拖累整体。</li>
-<li><b>2. UV 持续下滑是隐患。</b>UV 从五一高峰的 8,066 一路下滑至周中 4,404（−45%），周末才回升至 6,881。这不是"断崖"而是持续性的流量衰减。喜过没有任何付费投放，完全靠自然搜索——UV 趋势说明店铺在得物的搜索权重可能在下滑，或者主推款的搜索热度在降温。</li>
-<li><b>3. 05-07/09 退货率异常高（56%/56%）——需紧急排查。</b>两天退货率超过 50%，意味着每卖出 1 单就退 0.5 单。对比 05-10（14%）的退货率，差距巨大。建议拉取这两天的退货明细，按货号归因，确认是单品问题还是运营问题。</li>
-<li><b>4. A158WA-1（ChromaG）是隐藏的流量金矿。</b>28 单、¥445 客单价，贡献了 11.4% GMV——这是典型的"低价引流款"。如果能为这款单品配置少量精准投放（¥50-100/天），有望以极低成本拉升全店 UV。喜过是三个店铺中<b>唯一零投放的店铺</b>，意味着纯自然流量的天花板还没被测试过。</li>
-<li><b>5. 跨品类运营是双刃剑。</b>手表+箱包的组合在得物很少见，这是一个差异化优势。但 COACH 包袋的单品 GMV 普遍偏低（¥1,399-4,317），说明选品可能偏向入门款而非爆款。建议优化 COACH 的选品策略——增加 1-2 款 ¥2,000-3,000 价格带的热门款，测试是否有更高的转化弹性。</li>
+<li><b>1. COACH 线翻倍增长的逻辑值得深挖。</b>动销 SKU 从 3 增至 7（+133%），UV 从 2,451→2,524 增长有限，但转化效率大幅提升。选品升级是关键——增加了 Team1100 改造款（星蝶幻镜/春日野餐包等），设计驱动的轻奢改造包正在成为差异化卖点。</li>
+<li><b>2. 退货率 33.7% 持平，「不想要了」占 61.3% 是最大出血点。</b>对比醒狮的 43.6% 和美兰的 43.6%，喜过的「不想要了」占比更高。跨品类的详情页挑战更大——手表和包袋的期望管理逻辑不同，需要分开优化。</li>
+<li><b>3. UV 持续下行（8,066→4,404，−45%）但 GMV 还能增长。</b>说明喜过的流量质量在提升——不是泛流量，而是更精准的购买意向流量。零投放下的自然搜索如果能稳住 UV 5,000+，月化 GMV 有望达 ¥30 万。</li>
+<li><b>4. A158WA-1（ChromaG）是隐藏流量金矿。</b>28 单、¥445 客单价，是三个店铺中唯一不以 GA-2100 改装为核心的走量款。建议做投放测试。</li>
 </ul>
 
 <h3>🎯 运营建议</h3>
 <ul>
-<li><b>1. [P0] 排查 05-07/09 异常退货率。</b>两天退货率 56% 不可接受。立即拉取退货明细按货号归因——如果是特定单品集中退货（如禅迹璨筠或 ChromaG），暂停该 SKU 24 小时并检查差评；如果是分散退货，排查是否有外部因素（竞品降价、平台活动分流）。</li>
-<li><b>2. [P0] COACH 线趁势做投放测试。</b>环比 +99% 说明需求真实存在。建议下周对 TOP COACH 单品（星蝶幻镜/春日野餐包）做小额投放测试——¥200-300/天，验证转化弹性和 ROI。喜过是目前唯一零投放的店铺，也是最有投放增量空间的店铺。</li>
-<li><b>3. [P1] A158WA-1（ChromaG）做流量杠杆。</b>28 单/周、¥445 客单、低退货风险（走量款退货率通常低于高客单改装款）。给这款单品配 ¥50-100/天精准投放，预计可额外带来 500-1,000 UV/天，拉动全店流量。</li>
-<li><b>4. [P1] UV 下滑需诊断原因。</b>连续 5 天 UV 下行（8,066→4,404），建议检查：① 主推款在得物搜索排名是否下降，② 是否有竞品上架同款分流，③ 商品标题/关键词是否需要迭代。</li>
-<li><b>5. [P2] COACH 选品升级。</b>当前 COACH 单品 GMV 偏低（¥1,399-4,317），建议增加 1-2 款 ¥2,500+ 的轻奢热门款（如 COACH Tabby/Parker 系列），拉高包袋线的客单价和 GMV 贡献。</li>
+<li><b>[P0] 排查 05-07/09 异常退货率（56%/56%）。</b>拉取退货明细按货号归因，确认是单品集中退货还是跨品类分散退货。</li>
+<li><b>[P0] COACH 线趁势做小额投放测试。</b>¥200-300/天投星蝶幻镜 + 春日野餐包，验证转化弹性。喜过是唯一零投放店铺，增量空间最大。</li>
+<li><b>[P1] 手表和包袋分开做详情页优化。</b>「不想要了」占 61%，分品类制定详情页策略：卡西欧增加改装对比图，COACH 增加实拍搭配图。</li>
+<li><b>[P1] A158WA-1（ChromaG）配置 ¥50-100/天精准投放，测试引流效果。</b></li>
 </ul>
-
-<h3>📋 下周重点跟进</h3>
-<p>1. 周一拉取 05-07/09 退货明细，按货号归因输出报告；2. COACH 线启动 ¥200-300/天投放测试（星蝶幻镜/春日野餐包）；3. A158WA-1（ChromaG）配置 ¥50-100/天精准投放；4. 检查主推款搜索排名 + 标题关键词迭代；5. 上架 1-2 款 COACH ¥2,500+ 单品。</p>
 </div>
 <p class="upd">喜过周报 · 数据源：喜过数据源收集表 · 生成于 2026-05-12</p>
 </body></html>
