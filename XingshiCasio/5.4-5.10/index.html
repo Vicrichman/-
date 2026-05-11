@@ -34,13 +34,14 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <h1>⌚ XingshiCasio · 周度运营看板</h1>
 <p class="sub">本周：2026.5.4 — 5.10 ｜ 上周：4.27-5.3 ｜ 上上周：4.20-4.26 ｜ 数据源：醒狮数据源收集表.xlsx</p>
 <div class="kpi-row">
-<div class="kpi-card"><div class="l">本周支付GMV</div><div class="v gold">¥169,566</div><div class="s">环比 <span class="amber">+0.5%</span> · vs上上周 <span class="red">−0.6%</span></div></div>
+<div class="kpi-card"><div class="l">本周支付GMV</div><div class="v">¥169,566</div><div class="s">环比 <span class="amber">+0.5%</span> · 三周横盘</div></div>
 <div class="kpi-card"><div class="l">去退GMV</div><div class="v">¥114,461</div><div class="s">环比 <span class="green">+11.1%</span></div></div>
-<div class="kpi-card" style="border-left:3px solid #fbbf24"><div class="l">退货率(三周趋势)</div><div class="v" style="color:#fbbf24">31.5%</div><div class="s">41.9%→37.3%→<b>31.5%</b> <span class="green">↓</span></div></div>
-<div class="kpi-card"><div class="l">UV · 转化率</div><div class="v">60,704</div><div class="s">转化 0.20% · 环比 <span class="green">+11.1%</span></div></div>
+<div class="kpi-card" style="border-left:3px solid #22c55e"><div class="l">退货率(三周↓)</div><div class="v">31.5%</div><div class="s"><span class="red">41.9%</span>→37.3%→<b>31.5%</b> <span class="green">↓10.4pp</span></div></div>
+<div class="kpi-card"><div class="l">UV · 转化率</div><div class="v">60,704</div><div class="s">环比 <span class="green">+11.1%</span> · 转化 0.20%</div></div>
 <div class="kpi-card"><div class="l">支付单量</div><div class="v">124</div><div class="s">去退 85 单 · 件均 ¥1,367</div></div>
-<div class="kpi-card" style="border-left:3px solid #f87171"><div class="l">投放 · ROI</div><div class="v" style="color:#f87171">¥5,290</div><div class="s">环比 <span class="red">+∞%</span> · 增量ROI <span class="red">0.17</span></div></div>
+<div class="kpi-card" style="border-left:3px solid #f87171"><div class="l">投放 · 增量ROI</div><div class="v">¥5,290</div><div class="s">增量GMV ¥899 · ROI <span class="red">0.17</span></div></div>
 </div>
+
 <h2>一、趋势图</h2><div class="chart-box"><canvas id="c1"></canvas></div>
 <script>window.addEventListener('load',function(){try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
 {label:'支付金额(¥)',data:[29223,29472,24726,37795,36991,12789,10392,29430,20890,21279],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
@@ -48,38 +49,41 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 {label:'UV',data:[8823,8863,8388,8703,8788,7970,8074,8039,9332,9798],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0},
 {label:'日韩表大盘(万元)',data:[340.8,313.2,261.5,249.9,289.9,266.9,267.6,279.1,277.0,388.3],type:'line',borderColor:'#94a3b8',borderDash:[5,3],borderWidth:2,pointRadius:5,tension:.3,yAxisID:'y3',order:0}
 ]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{position:'right',display:false},y3:{position:'right',title:{display:true,text:'大盘(万元)',color:'#64748b'},grid:{display:false},ticks:{color:'#94a3b8'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}});}catch(e){console.error(e)}},100);</script>
-<h2>二、5月逐日运营明细</h2><div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">去退GMV</th><th class="num">退货率</th><th class="num">UV</th><th class="num">支付单</th><th class="num">投放</th><th class="num">大盘(万元)</th></tr></thead><tbody>
-<tr><td>05-01</td><td class="num">¥29,223</td><td class="num">¥22,738</td><td class="num"><span class="badge bg-y">19%</span></td><td class="num">8,823</td><td class="num">21</td><td class="num">¥0</td><td class="num">340.8</td></tr>
-<tr><td>05-02</td><td class="num">¥29,472</td><td class="num">¥20,481</td><td class="num"><span class="badge bg-y">24%</span></td><td class="num">8,863</td><td class="num">21</td><td class="num">¥0</td><td class="num">313.2</td></tr>
-<tr><td>05-03</td><td class="num">¥24,726</td><td class="num">¥11,155</td><td class="num"><span class="badge bg-r">50%</span></td><td class="num">8,388</td><td class="num">18</td><td class="num">¥0</td><td class="num">261.5</td></tr>
-<tr><td>05-04</td><td class="num">¥37,795</td><td class="num">¥19,967</td><td class="num"><span class="badge bg-r">48%</span></td><td class="num">8,703</td><td class="num">27</td><td class="num">¥0</td><td class="num">249.9</td></tr>
-<tr class="hl"><td>05-05</td><td class="num">¥36,991</td><td class="num">¥24,503</td><td class="num"><span class="badge bg-y">31%</span></td><td class="num">8,788</td><td class="num">26</td><td class="num">¥0</td><td class="num">289.9</td></tr>
-<tr><td>05-06</td><td class="num">¥12,789</td><td class="num">¥7,861</td><td class="num"><span class="badge bg-y">30%</span></td><td class="num">7,970</td><td class="num">10</td><td class="num">¥0</td><td class="num">266.9</td></tr>
-<tr><td>05-07</td><td class="num">¥10,392</td><td class="num">¥7,280</td><td class="num"><span class="badge bg-y">29%</span></td><td class="num">8,074</td><td class="num">7</td><td class="num">¥0</td><td class="num">267.6</td></tr>
-<tr><td>05-08</td><td class="num">¥29,430</td><td class="num">¥22,143</td><td class="num"><span class="badge bg-y">19%</span></td><td class="num">8,039</td><td class="num">21</td><td class="num">¥0</td><td class="num">279.1</td></tr>
-<tr><td>05-09</td><td class="num">¥20,890</td><td class="num">¥11,161</td><td class="num"><span class="badge bg-r">33%</span></td><td class="num">9,332</td><td class="num">15</td><td class="num">¥0</td><td class="num">277.0</td></tr>
-<tr><td>05-10</td><td class="num">¥21,279</td><td class="num">¥15,190</td><td class="num"><span class="badge bg-y">22%</span></td><td class="num">9,798</td><td class="num">18</td><td class="num">¥0</td><td class="num">388.3</td></tr>
+
+<h2>二、5月逐日运营明细</h2><div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">去退GMV</th><th class="num">退货率</th><th class="num">UV</th><th class="num">支付单</th><th class="num">大盘(万元)</th></tr></thead><tbody>
+<tr><td>05-01</td><td class="num">¥29,223</td><td class="num">¥22,738</td><td class="num"><span class="badge bg-y">19%</span></td><td class="num">8,823</td><td class="num">21</td><td class="num">340.8</td></tr>
+<tr><td>05-02</td><td class="num">¥29,472</td><td class="num">¥20,481</td><td class="num"><span class="badge bg-y">24%</span></td><td class="num">8,863</td><td class="num">21</td><td class="num">313.2</td></tr>
+<tr><td>05-03</td><td class="num">¥24,726</td><td class="num">¥11,155</td><td class="num"><span class="badge bg-r">50%</span></td><td class="num">8,388</td><td class="num">18</td><td class="num">261.5</td></tr>
+<tr><td>05-04</td><td class="num">¥37,795</td><td class="num">¥19,967</td><td class="num"><span class="badge bg-r">48%</span></td><td class="num">8,703</td><td class="num">27</td><td class="num">249.9</td></tr>
+<tr class="hl"><td>05-05</td><td class="num">¥36,991</td><td class="num">¥24,503</td><td class="num"><span class="badge bg-y">31%</span></td><td class="num">8,788</td><td class="num">26</td><td class="num">289.9</td></tr>
+<tr><td>05-06</td><td class="num">¥12,789</td><td class="num">¥7,861</td><td class="num"><span class="badge bg-y">30%</span></td><td class="num">7,970</td><td class="num">10</td><td class="num">266.9</td></tr>
+<tr><td>05-07</td><td class="num">¥10,392</td><td class="num">¥7,280</td><td class="num"><span class="badge bg-y">29%</span></td><td class="num">8,074</td><td class="num">7</td><td class="num">267.6</td></tr>
+<tr><td>05-08</td><td class="num">¥29,430</td><td class="num">¥22,143</td><td class="num"><span class="badge bg-y">19%</span></td><td class="num">8,039</td><td class="num">21</td><td class="num">279.1</td></tr>
+<tr><td>05-09</td><td class="num">¥20,890</td><td class="num">¥11,161</td><td class="num"><span class="badge bg-r">33%</span></td><td class="num">9,332</td><td class="num">15</td><td class="num">277.0</td></tr>
+<tr><td>05-10</td><td class="num">¥21,279</td><td class="num">¥15,190</td><td class="num"><span class="badge bg-y">22%</span></td><td class="num">9,798</td><td class="num">18</td><td class="num">388.3</td></tr>
 </tbody></table></div>
-<h2>三、周环比 & 三周趋势</h2><div class="table-box"><table><thead><tr><th>指标</th><th class="num">上上周(4.20-26)</th><th class="num">上周(4.27-5.3)</th><th class="num">本周(5.4-5.10)</th><th class="num">趋势</th></tr></thead><tbody>
-<tr><td>支付GMV</td><td class="num">¥170,587</td><td class="num">¥168,667</td><td class="num">¥169,566</td><td class="num"><span class="amber">→ 持平</span></td></tr>
-<tr><td>退货率(单数)</td><td class="num"><span class="red">41.9%</span></td><td class="num"><span class="red">37.3%</span></td><td class="num"><span class="amber">31.5%</span></td><td class="num"><span class="green">↓ 持续改善</span></td></tr>
+
+<h2>三、周环比 & 三周趋势</h2><div class="table-box"><table><thead><tr><th>指标</th><th class="num">上上周4.20-26</th><th class="num">上周4.27-5.3</th><th class="num">本周5.4-5.10</th><th class="num">趋势判断</th></tr></thead><tbody>
+<tr><td>支付GMV</td><td class="num">¥170,587</td><td class="num">¥168,667</td><td class="num">¥169,566</td><td class="num"><span class="amber">→ 三周横盘 ¥17万</span></td></tr>
+<tr><td>退货率(单数)</td><td class="num"><span class="red">41.9%</span></td><td class="num"><span class="red">37.3%</span></td><td class="num"><span class="amber">31.5%</span></td><td class="num"><span class="green">↓ 持续改善 10.4pp</span></td></tr>
 <tr><td>UV</td><td class="num">59,720</td><td class="num">54,645</td><td class="num">60,704</td><td class="num"><span class="green">↑ 回升</span></td></tr>
 <tr><td>支付单量</td><td class="num">124</td><td class="num">118</td><td class="num">124</td><td class="num"><span class="amber">→</span></td></tr>
 <tr><td>件单价</td><td class="num">¥1,376</td><td class="num">¥1,429</td><td class="num">¥1,367</td><td class="num"><span class="amber">→</span></td></tr>
-<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥0</td><td class="num"><span class="red">¥5,290</span></td><td class="num"><span class="red">↑ 首次投放</span></td></tr>
-<tr><td>投放ROI</td><td class="num">—</td><td class="num">—</td><td class="num">0.17</td><td class="num"><span class="red">增量几近无效</span></td></tr>
+<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥0</td><td class="num"><span class="red">¥5,290</span></td><td class="num"><span class="red">↑ 首次+增量ROI 0.17</span></td></tr>
 </tbody></table></div>
-<h2>四、退货归因分析</h2><div class="table-box"><table><thead><tr><th>关闭原因</th><th class="num">单数</th><th class="num">占比</th><th>分类</th></tr></thead><tbody>
-<tr><td>不想要了</td><td class="num">17</td><td class="num">43.6%</td><td><span class="badge bg-r">买家主观</span></td></tr>
-<tr><td>退货关闭, 需要退卖家</td><td class="num">6</td><td class="num">15.4%</td><td><span class="badge bg-r">品控/鉴定</span></td></tr>
-<tr><td>商品买错了</td><td class="num">5</td><td class="num">12.8%</td><td><span class="badge bg-y">详情页误导</span></td></tr>
-<tr><td>地址/电话填写错误</td><td class="num">4</td><td class="num">10.3%</td><td><span class="badge bg-y">买家操作</span></td></tr>
-<tr><td>颜色/款式选错了</td><td class="num">3</td><td class="num">7.7%</td><td><span class="badge bg-y">详情页误导</span></td></tr>
-<tr><td>尺码选错了</td><td class="num">1</td><td class="num">2.6%</td><td>买家操作</td></tr>
+
+<h2>四、退货归因分析</h2><div class="table-box"><table><thead><tr><th>关闭原因</th><th class="num">单数</th><th class="num">占比</th><th>问题分类</th></tr></thead><tbody>
+<tr class="hl"><td>不想要了</td><td class="num">17</td><td class="num">43.6%</td><td><span class="badge bg-r">详情页期望管理</span></td></tr>
+<tr><td>退货关闭, 需退卖家</td><td class="num">6</td><td class="num">15.4%</td><td><span class="badge bg-r">品控/鉴定</span></td></tr>
+<tr><td>商品买错了</td><td class="num">5</td><td class="num">12.8%</td><td><span class="badge bg-y">详情页信息不足</span></td></tr>
+<tr><td>地址/电话填写错误</td><td class="num">4</td><td class="num">10.3%</td><td>买家操作失误</td></tr>
+<tr><td>颜色/款式选错了</td><td class="num">3</td><td class="num">7.7%</td><td><span class="badge bg-y">详情页信息不足</span></td></tr>
+<tr><td>尺码选错了</td><td class="num">1</td><td class="num">2.6%</td><td>买家操作失误</td></tr>
 <tr><td>质量瑕疵-表镜内</td><td class="num">1</td><td class="num">2.6%</td><td><span class="badge bg-r">品控</span></td></tr>
 <tr><td>买家关闭</td><td class="num">1</td><td class="num">2.6%</td><td>买家操作</td></tr>
 <tr><td>质检未通过</td><td class="num">1</td><td class="num">2.6%</td><td><span class="badge bg-r">鉴定</span></td></tr>
 </tbody></table></div>
+
 <h2>五、TOP15 单品</h2>
 <div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th>商品名称</th><th class="num">GMV</th><th class="num">占比</th><th class="num">单量</th><th class="num">件单价</th></tr></thead><tbody>
 <tr class="hl"><td>1</td><td>GA-2100-1A</td><td>晶樱漫雪 · 农家橡树 200m防水</td><td class="num">¥87,852</td><td class="num">22.7%</td><td class="num">55</td><td class="num">¥1,597</td></tr>
@@ -98,37 +102,36 @@ tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabula
 <tr><td>14</td><td>GA-2100SKE-7A</td><td>银星钻雪花</td><td class="num">¥3,378</td><td class="num">0.9%</td><td class="num">2</td><td class="num">¥1,689</td></tr>
 <tr><td>15</td><td>GA-2100BM-7A8</td><td>时轮之隙 · 星钻满镶壳</td><td class="num">¥3,278</td><td class="num">0.8%</td><td class="num">2</td><td class="num">¥1,639</td></tr>
 </tbody></table></div>
+
 <h2>六、运营总结 & 下周计划</h2>
 <div class="note-box">
-<h3>📊 本周数据总览</h3>
-<p>本周支付GMV <b>¥169,566</b>（124单），去退后 ¥114,461，环比 <b class="amber">+0.5%</b>。三周GMV横盘在 ¥17万（170k→169k→170k），说明进入<b>平台期</b>。最大的变化来自两件事：① 退货率三周连降（41.9%→37.3%→31.5%），改善信号明确；② <b>首次投放 ¥5,290</b> 但增量GMV仅 ¥899，投放ROI <b class="red">0.17</b>（每投入 ¥1 只带来 ¥0.17 增量收入），属于严重的投放浪费。</p>
+<h3>📊 总览</h3>
+<p>本周支付GMV <b>¥169,566</b>（124单），去退 ¥114,461。三周连续横盘在 <b>¥17万</b>（170k→169k→170k），醒狮进入了自然流量的天花板平台期。两个关键变量：① <b>退货率三周连降 10.4pp</b>（41.9%→31.5%）是唯一的结构性改善信号；② <b>首次投放 ¥5,290 增量 ROI 仅 0.17</b>——投放几乎完全无效。</p>
 
-<h3>🔍 核心发现</h3>
+<h3>🔍 五个关键判断</h3>
 <ul>
-<li><b>1. 投放的 ¥5,290 去哪了？— 几乎全部蒸发。</b>投放增加 5,290 元，GMV 仅增加 899 元（环比 +0.5%），增量 ROI 0.17。同期 UV 仅增长 11%（54,645→60,704），意味着投放大概率没有带来有效的精准流量。三种可能：① 投放素材/人群定向不准；② 投放预算集中在周末但周末的成交脉冲被退货抵消了；③ 投放吸引的是比价型流量（只看不买）。<b>在 ROI 解决之前，追加投放预算没有意义。</b></li>
-<li><b>2. 退货率三周连降 — 唯一的正向结构变化。</b>从 41.9%→37.3%→31.5%，三周改善 10.4pp。这是系统的、持续的改善，不是随机波动。退货归因显示<b>"不想要了"占 43.6%</b> 是最大驱动力——这是买家主观决策类退货，与产品质量无关。真因可能来自详情页期望管理不足（买家收货后发现与预期不符）。二次退货原因是"退卖家"（15.4%，鉴定/品控类），质检未通过仅 1 例，说明品控不是主因。</li>
-<li><b>3. 产品线 100% 锁死在 GA-2100 农家橡树 — 结构性风险。</b>TOP15 中 14/15 是 GA-2100 系列，GA-2100-1A 一支货号的四个变体（晶樱漫雪/银星钢夜空/离岸黑银武/银lv黑粉红）合计占 GMV <b>60.9%</b>。一旦得物平台调整 GA-2100 的搜索权重或出现负面口碑，降级是灾难性的。<b>需要刻意培养第二曲线产品线</b>（如 DW-5600 经典方块或 BGD 女表线）。</li>
-<li><b>4. 周中断崖依然存在 — 但原因可能不是补货。</b>05-06/07 的 ¥12k→¥10k 与 05-04/05 的 ¥37k+ 形成对比。但这次三周数据看，<b>这不是"断崖"而是"脉冲"</b>——05-04/05 是五一假期尾巴的高峰，05-06 之后回归正常基线（¥10k-15k 是醒狮的日常水平，¥30k+ 是假期加持的偶然水平）。这意味着醒狮的真实日产出基线约 ¥15k，而非 ¥30k。</li>
-<li><b>5. GA-2100-1A「晶樱漫雪」是绝对爆款但集中度过高。</b>单 SKU 占 GMV 22.7%（55单），是第二名的 1.69 倍。件单价 ¥1,597 高于平均值 ¥1,367，说明这不是靠低价跑量而是真实的需求集中。风险：一旦该 SKU 出现品控问题或退货率飙升，店铺将直接失去 1/4 的 GMV。</li>
+<li><b>1. 投放的 ¥5,290 几乎全部沉没。</b>增量 GMV 仅 ¥899（+0.5%），UV 增长 11%（6k）。投放大概率没有触达精准人群——要么素材/定向偏差，要么吸引的是比价型流量。在 ROI 归因完成之前，<b>不应追加任何投放预算</b>。</li>
+<li><b>2. 退货率改善的主因不是品控，是期望管理。</b>"不想要了"+"买错了"+"颜色款式选错" 合计占 64.1%。这指向同一个根因：<b>详情页信息不对称</b>。买家下单时代入的认知（详情页营造的期待）与收货后的实物体验之间存在差距。改造详情页比改造供应链见效更快、成本更低。</li>
+<li><b>3. 产品线 100% 集中在 GA-2100 农家橡树——极限单点风险。</b>14/15 个 TOP 单品是 GA-2100 系列，GA-2100-1A 单货号四个变体占 60.9%，晶樱漫雪一支 SKU 占 22.7%。这是"把所有鸡蛋放在一个篮子里且篮子挂在同一个钩子上"。平台搜索权重调整、品控事故、竞品跟风，任何一个都能造成系统性打击。</li>
+<li><b>4. "日基线 ¥15k"比"日均 ¥25k"更接近真相。</b>05-04/05 的 ¥37k+ 是五一假期脉冲，05-06/07 的 ¥10k-12k 才是日常水平。用 ¥25k 做月度规划会严重高估，真实可持续日产出约 <b>¥15k</b>，月化约 ¥68-72万。</li>
+<li><b>5. 转化率 0.20% 是 GMV 增长的最大杠杆点。</b>在 UV 不变的前提下，转化率从 0.20%→0.30%（仅 +0.1pp）即可带来 ¥254k 周 GMV（+50%）。详情页优化、搜索词精准化、实拍视频是低成本的转化率杠杆。</li>
 </ul>
 
-<h3>🎯 运营建议</h3>
+<h3>🎯 下周行动</h3>
 <ul>
-<li><b>1. [P0] 立即暂停投放，做 ROI 归因。</b>¥5,290 换来 ¥899 增量，这笔钱花得毫无意义。在下周做三件事后再决策是否恢复：① 拉取投放平台的受众画像和点击数据，确认流量是否精准（搜索「卡西欧改装」vs 泛搜「手表」）；② 对比投放 SKU 与自然成交 SKU 是否重叠——如果投放推的是冷门款而自然成交在晶樱漫雪，说明素材错配；③ 将投放预算拆为 A/B 测试：50% 投爆款（晶樱漫雪）、50% 投新品（非 GA-2100 线），对比转化。</li>
-<li><b>2. [P0] 降退货率的主攻方向从「品控」转向「期望管理」。</b>"不想要了" + "买错了" + "颜色款式选错" = 25/39（64.1%）的退货来自详情页信息不对称。具体动作：① GA-2100 系列详情页增加<b>改装前后对比图</b>（原厂表 vs 改装后效果）；② 增加<b>上手佩戴实拍图</b>（避免买家脑补效果）；③ 标题中明确标注改装信息（目前标题「定制手表」容易被忽略）。</li>
-<li><b>3. [P1] 刻意培养第二曲线 — 必须上非 GA-2100 产品。</b>建议最少上 5 款：① DW-5600 经典方块改装 2 款（覆盖低价位 ¥800-1,200）；② BGD/BABY-G 女表线 2 款（开辟女性客群，目前 100% 男表）；③ 1 款 G-SHOCK 原厂联名款（拉高调性）。目标不是追求 GMV，而是<b>分散风险</b>。</li>
-<li><b>4. [P1] 晶樱漫雪要做「防护型运营」。</b>22.7% 占比的单品必须被重点保护：① 每天拉取该 SKU 的退货率，超过 35% 立即排查差评；② 保持库存深度 ≥ 20 件（55单/周 ÷ 7 × 2 = 约 16 件/天，留 2 天缓冲）；③ 在详情页增加实拍视频（目前潮玩腕表赛道实拍视频是转化利器）。</li>
-<li><b>5. [P2] 接受「日基线 ¥15k」的现实，按此做月度规划。</b>三周 GMV 在 ¥17 万附近横盘，说明这是自然流量的天花板。如果不动产品结构或流量结构，月 GMV 预期约 ¥68-72 万。这个基线可以用来设定合理的 KPI，避免为了「冲 ¥20k/天」而做无效投放。</li>
+<li><b>[P0] 暂停投放，48h 内出 ROI 归因报告：</b>拉取投放后台的曝光/点击/人群画像数据，对比投放 SKU vs 自然成交 SKU 的重叠度。如果投放推的是冷门款而自然量在晶樱漫雪，说明素材错配——下次投放应 100% 聚焦爆款。</li>
+<li><b>[P0] 详情页改造——降退货最便宜的杠杆：</b>GA-2100 系列全 SKU 增加 ① 改装前后对比图（原厂表 → 改装后），② 上手佩戴实拍图（腕围参考），③ 标题中"改装/定制"标注前置。预计可降低"不想要了"类退货 30-40%。</li>
+<li><b>[P1] 必须上非 GA-2100 产品：</b>最少 3-5 款：DW-5600 经典方块改装 2 款（¥800-1,200 价位，覆盖价格敏感人群）、BGD/BABY-G 女表 2 款（开辟女性客群）、1 款 G-SHOCK 原厂联名（拉调性）。目标不是冲 GMV，是分散风险。</li>
+<li><b>[P1] 晶樱漫雪「防护型运营」：</b>日度退货率监控（阈值 35%）、库存深度 ≥20 件、增加实拍视频。爆款需要被保护，不能被忽视到出问题才补救。</li>
 </ul>
 
-<h3>📋 下周重点跟进</h3>
+<h3>📋 跟进清单</h3>
 <ul>
-<li><b>P0：</b>周一拉取投放数据（曝光/点击/转化/人群画像），48h 内出投放 ROI 归因报告</li>
-<li><b>P0：</b>GA-2100 全系列详情页增加改装对比图 + 上手实拍图，周五前完成</li>
-<li><b>P1：</b>上架 3-5 款非 GA-2100 新品（DW-5600 改装 2 + BGD 女表 2 + 联名款 1）</li>
-<li><b>P1：</b>晶樱漫雪建立日度退货率监控，阈值 35% 暂存预警</li>
-<li><b>P2：</b>基于日基线 ¥15k 制定 5 月下半月运营计划，避免投放焦虑驱动</li>
+<li>周一：投放 ROI 归因报告（曝光/点击/转化漏斗 + 人群画像）</li>
+<li>周三前：GA-2100 全系列详情页增加改装对比图 + 上手实拍</li>
+<li>周五前：上架 ≥3 款非 GA-2100 新品</li>
+<li>每日：晶樱漫雪退货率看板（>35% 预警）</li>
 </ul>
 </div>
-<p class="upd">XingshiCasio 周报 · 数据源：醒狮数据源收集表 · 更新于 2026-05-11</p>
+<p class="upd">XingshiCasio 周报 · 数据源：醒狮数据源收集表 · 更新于 2026-05-11 23:40</p>
 </body></html>
