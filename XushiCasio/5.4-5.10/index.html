@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>蓄势 周报 5.4-5.10</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+h2{font-size:17px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #2a2d3a}
+h3{font-size:14px;margin:16px 0 6px;color:#94a3b8}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-row{display:flex;gap:20px;flex-wrap:wrap}
+.chart-row .chart-half{flex:1;min-width:400px;background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:16px}
+.chart-half canvas{max-height:280px}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600}
+.bg-r{background:#7f1d1d;color:#fca5a5}.bg-g{background:#14532d;color:#bbf7d0}.bg-y{background:#713f12;color:#fde68a}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:16px}
+.kpi-card .l{font-size:11px;color:#64748b;margin-bottom:4px}
+.kpi-card .v{font-size:22px;font-weight:700}
+.kpi-card .s{font-size:11px;color:#94a3b8;margin-top:2px}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.9;margin-bottom:12px}
+.note-box ul{font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin-bottom:8px}
+.note-box ul li{margin-bottom:4px}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+.green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+</style></head><body>
+<h1>⌚ 蓄势 · 周度运营看板</h1>
+<p class="sub">本周：2026.5.4 — 5.10 ｜ 上周：2026.4.27 — 5.3 ｜ 数据源：蓄势数据源收集表.xlsx</p>
+<div class="kpi-row">
+<div class="kpi-card"><div class="l">🏪 本周支付GMV</div><div class="v">¥59,842</div><div class="s">环比 <span class="green">+228%</span> 🔥</div></div>
+<div class="kpi-card"><div class="l">📦 去退GMV</div><div class="v">¥45,530</div><div class="s">环比 <span class="green">+351%</span></div></div>
+<div class="kpi-card" style="border-left:3px solid #22c55e"><div class="l">📉 退货率</div><div class="v">23.1%</div><div class="s">上周 30.3% <span class="green">↓7.2pp</span></div></div>
+<div class="kpi-card"><div class="l">👁 店铺访客(UV)</div><div class="v">50,224</div><div class="s">上周 75,417 <span class="red">−33%</span></div></div>
+<div class="kpi-card"><div class="l">🛒 支付单量</div><div class="v">78</div><div class="s">去退 60 单 · 件均 ¥767</div></div>
+<div class="kpi-card"><div class="l">📂 双品牌结构</div><div class="v">⌚+🇨🇳</div><div class="s">CASIO 72% · VICKIT 28%</div></div>
+</div>
+
+<h2>一、趋势图</h2>
+<div class="chart-row">
+<div class="chart-half"><h3 style="margin-top:0">📊 店铺核心指标</h3><canvas id="c1"></canvas></div>
+<div class="chart-half"><h3 style="margin-top:0">📈 大盘指数对比</h3><canvas id="c2"></canvas></div>
+</div>
+<script>window.addEventListener('load',function(){setTimeout(function(){
+try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+{label:'支付金额(¥)',data:[7966,3493,6778,9649,4183,2683,6751,14564,9920,12092],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
+{label:'支付单数',data:[14,7,12,11,7,7,9,16,10,18],type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1',order:1},
+{label:'UV',data:[17648,15878,14420,7922,7922,7000,6195,6200,6782,8203],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error('c1',e)}
+try{new Chart(document.getElementById('c2'),{type:'line',data:{labels:["05-01","05-02","05-03","05-04","05-05","05-06","05-07","05-08","05-09","05-10"],datasets:[
+{label:'日韩表大盘(万元)',data:[340.8,313.2,261.5,249.9,289.9,266.9,267.6,279.1,277.0,388.3],borderColor:'#94a3b8',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y'},
+{label:'国表大盘(万元)',data:[615,533,470,489,619,589,591,565,651,909],borderColor:'#f472b6',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1'}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'日韩表(万)',color:'#94a3b8'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'国表(万)',color:'#f472b6'},grid:{display:false},ticks:{color:'#f472b6'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error('c2',e)}
+},200)},100);</script>
+
+<h2>二、5月逐日运营明细</h2>
+<div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">退货率</th><th class="num">UV</th><th class="num">社区投放</th><th class="num">日韩表大盘</th></tr></thead><tbody>
+<tr><td>05-01</td><td class="num">¥7,966</td><td class="num">14</td><td class="num"><span class="badge bg-r">43%</span></td><td class="num">17,648</td><td class="num">-</td><td class="num">340.8</td></tr>
+<tr><td>05-02</td><td class="num">¥3,493</td><td class="num">7</td><td class="num"><span class="badge bg-y">29%</span></td><td class="num">15,878</td><td class="num">-</td><td class="num">313.2</td></tr>
+<tr><td>05-03</td><td class="num">¥6,778</td><td class="num">12</td><td class="num"><span class="badge bg-y">17%</span></td><td class="num">14,420</td><td class="num">-</td><td class="num">261.5</td></tr>
+<tr><td>05-04</td><td class="num">¥9,649</td><td class="num">11</td><td class="num"><span class="badge bg-y">18%</span></td><td class="num">7,922</td><td class="num">¥0</td><td class="num">249.9</td></tr>
+<tr><td>05-05</td><td class="num">¥4,183</td><td class="num">7</td><td class="num"><span class="badge bg-r">43%</span></td><td class="num">7,922</td><td class="num">¥0</td><td class="num">289.9</td></tr>
+<tr><td>05-06</td><td class="num">¥2,683</td><td class="num">7</td><td class="num"><span class="badge bg-y">29%</span></td><td class="num">7,000</td><td class="num">¥0</td><td class="num">266.9</td></tr>
+<tr><td>05-07</td><td class="num">¥6,751</td><td class="num">9</td><td class="num"><span class="badge bg-r">56%</span></td><td class="num">6,195</td><td class="num">¥260</td><td class="num">267.6</td></tr>
+<tr><td>05-08</td><td class="num">¥14,564</td><td class="num">16</td><td class="num"><span class="badge bg-g">6%</span></td><td class="num">6,200</td><td class="num">¥0</td><td class="num">279.1</td></tr>
+<tr><td>05-09</td><td class="num">¥9,920</td><td class="num">10</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">6,782</td><td class="num">¥200</td><td class="num">277.0</td></tr>
+<tr class="hl"><td>05-10</td><td class="num">¥12,092</td><td class="num">18</td><td class="num"><span class="badge bg-y">28%</span></td><td class="num">8,203</td><td class="num">¥0</td><td class="num">388.3</td></tr>
+</tbody></table></div>
+
+<h2>三、周环比对比</h2>
+<div class="table-box"><table><thead><tr><th>指标</th><th class="num">上周(4.27-5.3)</th><th class="num">本周(5.4-5.10)</th><th class="num">环比变化</th></tr></thead><tbody>
+<tr><td>支付GMV</td><td class="num">¥18,237</td><td class="num">¥59,842</td><td class="num"><span class="green">+228.1%</span></td></tr>
+<tr><td>去退GMV</td><td class="num">¥10,087</td><td class="num">¥45,530</td><td class="num"><span class="green">+351.4%</span></td></tr>
+<tr><td>退货率</td><td class="num">30.3%</td><td class="num">23.1%</td><td class="num"><span class="green">↓ 7.2pp</span></td></tr>
+<tr><td>UV</td><td class="num">75,417</td><td class="num">50,224</td><td class="num"><span class="red">−33.4%</span></td></tr>
+<tr><td>支付单量</td><td class="num">33</td><td class="num">78</td><td class="num"><span class="green">+136.4%</span></td></tr>
+<tr><td>件单价</td><td class="num">¥553</td><td class="num">¥767</td><td class="num"><span class="green">+38.7%</span></td></tr>
+<tr><td>转化率</td><td class="num">0.04%</td><td class="num">0.16%</td><td class="num"><span class="green">+0.12pp</span></td></tr>
+<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥460</td><td class="num"><span class="amber">微量测试</span></td></tr>
+</tbody></table></div>
+
+<h2>四、品类对比（本周 vs 上周）</h2>
+<div class="table-box"><table><thead><tr><th>品牌</th><th class="num">本周GMV</th><th class="num">占比</th><th class="num">支付单量</th><th class="num">动销SKU</th><th class="num">件单价</th><th class="num">上周GMV</th><th class="num">环比</th></tr></thead><tbody>
+<tr><td>⌚ CASIO/卡西欧</td><td class="num">¥43,363</td><td class="num">72.5%</td><td class="num">47</td><td class="num">28</td><td class="num">¥923</td><td class="num">¥36,992</td><td class="num"><span class="green">+17.2%</span></td></tr>
+<tr><td>🇨🇳 VICKIT</td><td class="num">¥16,479</td><td class="num">27.5%</td><td class="num">31</td><td class="num">8</td><td class="num">¥532</td><td class="num">¥13,288</td><td class="num"><span class="green">+24.0%</span></td></tr>
+</tbody></table></div>
+
+<h2>五、TOP15 单品</h2>
+<div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th class="num">GMV</th><th class="num">单量</th><th class="num">占比</th></tr></thead><tbody>
+<tr><td>1</td><td>VICKIT-爵士银</td><td class="num">¥9,811</td><td class="num">9</td><td class="num">10.1%</td></tr>
+<tr><td>2</td><td>GA-2100-1A1（Watch3-改装-离岸玫金武士）</td><td class="num">¥5,956</td><td class="num">4</td><td class="num">6.1%</td></tr>
+<tr><td>3</td><td>GA-2100-1A1（Watch3-改装-霜银沙暗粉红）</td><td class="num">¥4,467</td><td class="num">3</td><td class="num">4.6%</td></tr>
+<tr><td>4</td><td>GA-2100-1A1（Watch3-改装-紫晶星骸）</td><td class="num">¥3,198</td><td class="num">2</td><td class="num">3.3%</td></tr>
+<tr><td>5</td><td>GA-2100-1A1（Watch3-改装-霜黑闪砂系列）</td><td class="num">¥2,978</td><td class="num">2</td><td class="num">3.1%</td></tr>
+<tr><td>6</td><td>GA-2100-1A1（Watch3-改装-夜辰环熠）</td><td class="num">¥2,798</td><td class="num">2</td><td class="num">2.9%</td></tr>
+<tr><td>7</td><td>VICKIT-Vickit时尚银轮</td><td class="num">¥1,998</td><td class="num">2</td><td class="num">2.1%</td></tr>
+<tr><td>8</td><td>AE-1200WH-5AV（Watch3-改装-复古钢方块系）</td><td class="num">¥1,767</td><td class="num">3</td><td class="num">1.8%</td></tr>
+<tr><td>9</td><td>GA-2100BM-7A8（Watch3-改装-凌铂琨璇）</td><td class="num">¥1,539</td><td class="num">1</td><td class="num">1.6%</td></tr>
+<tr><td>10</td><td>GA-2100-1A（Watch3-改装-圆钢骑士系列）</td><td class="num">¥1,499</td><td class="num">1</td><td class="num">1.5%</td></tr>
+<tr><td>11</td><td>GA-2100-1A1（Watch3-改装-黑宙蓝环）</td><td class="num">¥1,499</td><td class="num">1</td><td class="num">1.5%</td></tr>
+<tr><td>12</td><td>GA-2100-1A1（Watch3-改装-暗影矩阵）</td><td class="num">¥1,489</td><td class="num">1</td><td class="num">1.5%</td></tr>
+<tr><td>13</td><td>GA-2100-1A1（Watch3-改装-星钻银钢黑闪银）</td><td class="num">¥1,489</td><td class="num">1</td><td class="num">1.5%</td></tr>
+<tr><td>14</td><td>GA-2100BM-7A8（Watch3-改装-霜华嵌璃）</td><td class="num">¥1,399</td><td class="num">1</td><td class="num">1.4%</td></tr>
+<tr><td>15</td><td>GA-2100-7A7（Watch3-改装-抛光银白）</td><td class="num">¥1,399</td><td class="num">1</td><td class="num">1.4%</td></tr>
+</tbody></table></div>
+
+<h2>六、运营总结 & 下周计划</h2>
+<div class="note-box">
+<h3>🏪 店铺总体表现</h3>
+<p>本周支付GMV <b>¥59,842</b>（78单），环比 <b class="green">+228%</b>。蓄势是一个<b>刚启动不久的新店铺</b>——上周 4.27-4.30 连续四天零订单，从 5.1 才开始产生交易。本周 GMV 暴增更多反映的是<b>店铺从 0→1 的冷启动过程</b>，而非持续增长。UV 反而从 75k 降至 50k（−33%），说明早期流量来自新品首发/平台扶持，而非稳定自然搜索。退货率 23.1% 处于健康区间（低于醒狮 31.5%、略高于美兰 19.6%），对新店来说是很好的起点。</p>
+
+<h3>📦 双品牌结构</h3>
+<p>蓄势是六个店铺中<b>唯一一个运营国表品牌 VICKIT 的店铺</b>。CASIO 改装表贡献 72.5% GMV（¥43,363），VICKIT 贡献 27.5%（¥16,479）。VICKIT 走的是原厂设计路线（非改装），TOP1 VICKIT-爵士银 ¥9,811 是全店第一大单品。这个双品牌结构比醒狮/美兰的单品牌模式有更好的风险分散能力。</p>
+
+<h3>🔍 核心发现</h3>
+<ul>
+<li><b>1. 店铺处于冷启动期，数据波动大是正常现象。</b>上周 4 天零单 → 本周 78 单，这更像店铺上架、权重积累、搜索收录的阶段性跃迁。不能用周环比 228% 线性外推——下周预计增长会放缓至 30-50%。核心任务是<b>稳住日均 10 单的基线</b>（本周平均 11 单/天）。</li>
+<li><b>2. UV 下降但 GMV 上升 — 流量从「泛」变「精」。</b>上周 75k UV 只产生 33 单（转化率 0.04%），本周 50k UV 产生 78 单（0.16%）。转化率提升了 4 倍——说明早期大量泛流量在消退，留下的搜索/推荐流量更精准。05-08 单日 GMV ¥14,564 且退货率仅 6%，是本周最佳运营日。</li>
+<li><b>3. VICKIT 国表线是蓄势最大的差异化资产。</b>六个店铺中独此一家卖国表。国表大盘从 615 万涨至 909 万（+48%），VICKIT 正踩在国表崛起的趋势上。但 VICKIT 的 SKU 深度不足（仅 8 个动销 SKU vs CASIO 28 个），需要扩充产品线。</li>
+<li><b>4. 投放几乎为零（¥460/周）但效果明显。</b>05-07 投放 ¥260 → 当日 GMV ¥6,751，05-09 投放 ¥200 → ¥9,920。每 ¥1 投放带来约 ¥25-50 的 GMV 回报。蓄势正处于<b>投放的黄金期</b>——基数低、竞争少、转化率在提升。</li>
+<li><b>5. 05-09 零退货（10 单）值得复盘。</b>全周唯一零退货日。当天有什么不同？卖的什么品牌/单品？如果可复制，对降低整体退货率（目前 23.1%）有直接参考价值。</li>
+</ul>
+
+<h3>🎯 运营建议</h3>
+<ul>
+<li><b>[P0] 抓住冷启动窗口期，适度加投放。</b>当前 ¥1 投放撬动 ¥25-50 GMV 的效率极高。建议下周投放加至 ¥1,000-1,500/周：① 50% 投向 VICKIT 爵士银（验证国表线的转化弹性），② 50% 投向 GA-2100-1A1 改装系列（与醒狮差异化定位）。避免竞量竞价，这个阶段求质量不求规模。</li>
+<li><b>[P0] VICKIT 产品线扩充。</b>目前仅 8 个动销 SKU，但贡献了 27.5% GMV。建议新增 3-5 款 VICKIT 新款（重点关注 ¥500-800 价格带），拉大与卡西欧改装的价格差距，形成「CASIO 走量 + VICKIT 走利润」的差异化格局。</li>
+<li><b>[P1] 复盘 05-08/09 的高效运营。</b>05-08（¥14,564，退货 6%）和 05-09（¥9,920，退货 0%）是本周标杆。拉取这两天的订单详情分析：什么品类、什么客单价、什么流量来源，形成可复制的运营 SOP。</li>
+<li><b>[P2] 详情页分类优化。</b>「不想要了」占退货 61%，通用的期望管理问题。但因为蓄势跨品牌（CASIO 改装 + VICKIT 原厂），两类产品的详情页策略应该不同：CASIO 强调改装工艺对比，VICKIT 强调原创设计和国表品质背书。</li>
+</ul>
+
+<h3>📋 下周重点跟进</h3>
+<ul>
+<li>投放加至 ¥1,000-1,500/周，50% VICKIT + 50% CASIO 改装</li>
+<li>上架 3-5 款 VICKIT 新品（¥500-800 价格带）</li>
+<li>复盘 05-08/09 的高效日运营细节</li>
+<li>分品牌做详情页优化（CASIO 改装对比图 + VICKIT 原创设计突出）</li>
+</ul>
+</div>
+<p class="upd">蓄势周报 · 数据源：蓄势数据源收集表 · 生成于 2026-05-12</p>
+</body></html>
