@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>多店铺订单分析 2025.10-2026.04</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:1500px;margin:0 auto}
+h1{font-size:20px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+h2{font-size:16px;margin:28px 0 12px;padding-bottom:6px;border-bottom:1px solid #2a2d3a}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:16px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:6px 8px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:6px 8px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabular-nums}
+.green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-box canvas{max-height:350px}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.9;margin-bottom:12px}
+.note-box ul{font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px}
+.note-box ul li{margin-bottom:4px}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+</style></head><body>
+<h1>📊 多店铺订单分析看板</h1>
+<p class="sub">时间范围：2025年10月 — 2026年4月 ｜ 数据源：营销费和订单数据表.xlsx</p>
+
+<h2>一、订单获客成本分析</h2>
+<div class="table-box"><table><thead><tr><th>主体名称</th><th class="num">2025-10</th><th class="num">2025-11</th><th class="num">2025-12</th><th class="num">2026-01</th><th class="num">2026-02</th><th class="num">2026-03</th><th class="num">2026-04</th></tr></thead><tbody>
+<tr><td colspan="8" style="color:#64748b;font-size:10px">📈 营销费（¥）</td></tr>
+<tr><td>醒狮卡西欧</td><td class="num">35,000</td><td class="num">25,000</td><td class="num">32,000</td><td class="num">40,000</td><td class="num">30,000</td><td class="num">35,000</td><td class="num">30,000</td></tr>
+<tr><td>美兰卡西欧</td><td class="num">30,000</td><td class="num">30,000</td><td class="num">32,000</td><td class="num">40,000</td><td class="num">35,000</td><td class="num">35,000</td><td class="num">30,000</td></tr>
+<tr><td>喜过卡西欧</td><td class="num">25,000</td><td class="num">30,000</td><td class="num">33,000</td><td class="num">45,000</td><td class="num">22,500</td><td class="num">12,500</td><td class="num">10,000</td></tr>
+<tr><td>喜过蔻驰</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">11,250</td><td class="num">6,250</td><td class="num">5,000</td></tr>
+<tr><td>蓄势卡西欧</td><td class="num">-</td><td class="num">5,000</td><td class="num">7,500</td><td class="num">7,500</td><td class="num">8,750</td><td class="num">3,750</td><td class="num">3,750</td></tr>
+<tr><td>蓄势VICKIT</td><td class="num">5,000</td><td class="num">10,000</td><td class="num">15,000</td><td class="num">15,000</td><td class="num">17,500</td><td class="num">7,500</td><td class="num">7,500</td></tr>
+<tr><td colspan="8" style="color:#64748b;font-size:10px">📦 有效订单数（交易成功+待买家收货+待卖家发货）</td></tr>
+<tr><td>醒狮卡西欧</td><td class="num">469</td><td class="num">392</td><td class="num">410</td><td class="num">317</td><td class="num">404</td><td class="num">327</td><td class="num">306</td></tr>
+<tr><td>美兰卡西欧</td><td class="num">550</td><td class="num">495</td><td class="num">651</td><td class="num">514</td><td class="num">656</td><td class="num">577</td><td class="num">605</td></tr>
+<tr><td>喜过卡西欧</td><td class="num">220</td><td class="num">210</td><td class="num">312</td><td class="num">200</td><td class="num">205</td><td class="num">204</td><td class="num">147</td></tr>
+<tr><td>喜过蔻驰</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">3</td><td class="num">15</td><td class="num">8</td><td class="num">12</td></tr>
+<tr><td>蓄势卡西欧</td><td class="num">-</td><td class="num">24</td><td class="num">73</td><td class="num">80</td><td class="num">68</td><td class="num">84</td><td class="num">87</td></tr>
+<tr><td>蓄势VICKIT</td><td class="num">-</td><td class="num">9</td><td class="num">78</td><td class="num">62</td><td class="num">82</td><td class="num">61</td><td class="num">95</td></tr>
+<tr><td colspan="8" style="color:#64748b;font-size:10px">💰 订单获客成本（¥/单）</td></tr>
+<tr><td>醒狮卡西欧</td><td class="num">74.6</td><td class="num"><span class="green">63.8</span></td><td class="num"><span class="red">78.0</span></td><td class="num"><span class="red">126.2</span></td><td class="num"><span class="green">74.3</span></td><td class="num"><span class="red">107.0</span></td><td class="num"><span class="green">98.0</span></td></tr>
+<tr><td>美兰卡西欧</td><td class="num">54.5</td><td class="num"><span class="red">60.6</span></td><td class="num"><span class="green">49.2</span></td><td class="num"><span class="red">77.8</span></td><td class="num"><span class="green">53.4</span></td><td class="num"><span class="red">60.7</span></td><td class="num"><span class="green">49.6</span></td></tr>
+<tr><td>喜过卡西欧</td><td class="num">113.6</td><td class="num"><span class="red">142.9</span></td><td class="num"><span class="green">105.8</span></td><td class="num"><span class="red">225.0</span></td><td class="num"><span class="green">109.8</span></td><td class="num"><span class="green">61.3</span></td><td class="num"><span class="red">68.0</span></td></tr>
+<tr><td>喜过蔻驰</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">750.0</td><td class="num"><span class="red">781.2</span></td><td class="num"><span class="green">416.7</span></td></tr>
+<tr><td>蓄势卡西欧</td><td class="num">-</td><td class="num">208.3</td><td class="num"><span class="green">102.7</span></td><td class="num"><span class="green">93.8</span></td><td class="num"><span class="red">128.7</span></td><td class="num"><span class="green">44.6</span></td><td class="num"><span class="green">43.1</span></td></tr>
+<tr><td>蓄势VICKIT</td><td class="num">-</td><td class="num">1111.1</td><td class="num"><span class="green">192.3</span></td><td class="num"><span class="red">241.9</span></td><td class="num"><span class="green">213.4</span></td><td class="num"><span class="green">123.0</span></td><td class="num"><span class="green">78.9</span></td></tr>
+</tbody></table></div>
+
+<h2>二、卡西欧品牌成功交易额 vs 大盘指数趋势</h2>
+<div class="chart-box"><canvas id="c2"></canvas></div>
+<script>window.addEventListener('load',function(){setTimeout(function(){
+try{new Chart(document.getElementById('c2'),{type:'bar',data:{labels:["10月","11月","12月","1月","2月","3月","4月"],datasets:[
+{label:'醒狮卡西欧',data:[591919,518108,591420,455724,571247,467318,430606],backgroundColor:'#3b82f6',yAxisID:'y',order:3},
+{label:'美兰卡西欧',data:[205000,192495,260005,202615,267614,227936,244941],backgroundColor:'#22c55e',yAxisID:'y',order:2},
+{label:'喜过卡西欧',data:[87088,87466,137439,91100,108085,112166,85173],backgroundColor:'#f59e0b',yAxisID:'y',order:1},
+{label:'蓄势卡西欧',data:[0,22786,67637,96220,69518,76670,84974],backgroundColor:'#a78bfa',yAxisID:'y',order:0},
+{label:'大盘成交指数',data:[9082,7607,7927,6955,9176,8703,7923],type:'line',borderColor:'#f87171',borderWidth:3,pointRadius:5,tension:.3,yAxisID:'y1'}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'交易额 ¥',color:'#64748b'},stacked:false,grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'大盘指数',color:'#f87171'},grid:{display:false},ticks:{color:'#f87171'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}})}catch(e){console.error(e)}},200)},100);</script>
+
+<h2>三、退货率分析</h2>
+<div class="table-box"><table><thead><tr><th>主体名称</th><th class="num">2025-10</th><th class="num">2025-11</th><th class="num">2025-12</th><th class="num">2026-01</th><th class="num">2026-02</th><th class="num">2026-03</th><th class="num">2026-04</th></tr></thead><tbody>
+<tr><td>醒狮卡西欧</td><td class="num"><span class="red">43.8%</span></td><td class="num"><span class="red">45.3%</span></td><td class="num"><span class="amber">41.3%</span></td><td class="num"><span class="amber">39.0%</span></td><td class="num"><span class="amber">41.2%</span></td><td class="num"><span class="red">43.7%</span></td><td class="num"><span class="amber">40.0%</span></td></tr>
+<tr><td>美兰卡西欧</td><td class="num"><span class="red">44.6%</span></td><td class="num"><span class="red">48.4%</span></td><td class="num"><span class="amber">39.3%</span></td><td class="num"><span class="green">35.8%</span></td><td class="num"><span class="amber">38.9%</span></td><td class="num"><span class="amber">37.6%</span></td><td class="num"><span class="green">35.7%</span></td></tr>
+<tr><td>喜过卡西欧</td><td class="num"><span class="amber">36.4%</span></td><td class="num"><span class="amber">39.7%</span></td><td class="num"><span class="green">34.9%</span></td><td class="num"><span class="green">35.1%</span></td><td class="num"><span class="green">33.9%</span></td><td class="num"><span class="green">35.2%</span></td><td class="num"><span class="amber">38.5%</span></td></tr>
+<tr><td>喜过蔻驰</td><td class="num">-</td><td class="num">-</td><td class="num">-</td><td class="num">50.0%</td><td class="num"><span class="amber">40.0%</span></td><td class="num"><span class="red">72.4%</span></td><td class="num"><span class="red">63.6%</span></td></tr>
+<tr><td>蓄势卡西欧</td><td class="num">-</td><td class="num"><span class="green">33.3%</span></td><td class="num"><span class="amber">41.1%</span></td><td class="num"><span class="amber">39.4%</span></td><td class="num"><span class="green">37.0%</span></td><td class="num"><span class="amber">40.0%</span></td><td class="num"><span class="amber">40.8%</span></td></tr>
+<tr><td>蓄势VICKIT</td><td class="num">-</td><td class="num"><span class="red">52.6%</span></td><td class="num"><span class="red">46.2%</span></td><td class="num"><span class="amber">40.4%</span></td><td class="num"><span class="red">52.9%</span></td><td class="num"><span class="red">45.5%</span></td><td class="num"><span class="amber">37.9%</span></td></tr>
+</tbody></table></div>
+
+<h2>四、高退货率单品 TOP30（≥20单成功交易）</h2>
+<div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th>所属</th><th class="num">成功订单</th><th class="num">退货率</th></tr></thead><tbody>
+<tr><td>1</td><td>LTP-1241D-2A（Watch5-改装-Azure）</td><td>美兰</td><td class="num">25</td><td class="num"><span class="red">60.9%</span></td></tr>
+<tr><td>2</td><td>MTP-1183A-7A（Watch5-改装-曜银墨流）</td><td>美兰</td><td class="num">53</td><td class="num"><span class="red">60.4%</span></td></tr>
+<tr><td>3</td><td>MDV106-1A（Watch5-改装-缎穹星渡系列）</td><td>美兰</td><td class="num">76</td><td class="num"><span class="red">58.7%</span></td></tr>
+<tr><td>4</td><td>VICKIT-甜心多巴胺彩壳坠</td><td>蓄势</td><td class="num">21</td><td class="num"><span class="red">57.1%</span></td></tr>
+<tr><td>5</td><td>GA-2100-1A1（Watch1100-改装-蜜熊绮境）</td><td>喜过</td><td class="num">23</td><td class="num"><span class="red">55.8%</span></td></tr>
+<tr><td>6</td><td>MDV106-1A（Watch1100-改装-泠泉铢韵）</td><td>喜过</td><td class="num">59</td><td class="num"><span class="red">55.3%</span></td></tr>
+<tr><td>7</td><td>FT500WC-5BV（Watch5-改装-壤燧漠昀）</td><td>美兰</td><td class="num">22</td><td class="num"><span class="red">55.1%</span></td></tr>
+<tr><td>8</td><td>VICKIT-爵士银</td><td>蓄势</td><td class="num">59</td><td class="num"><span class="red">52.8%</span></td></tr>
+<tr><td>9</td><td>VICKIT-Vickit时尚银轮</td><td>蓄势</td><td class="num">28</td><td class="num"><span class="red">50.9%</span></td></tr>
+<tr><td>10</td><td>GA-2100-1A1（Watch3-改装-霜银沙暗粉红）</td><td>醒狮</td><td class="num">40</td><td class="num"><span class="red">50.0%</span></td></tr>
+<tr><td>11</td><td>F-91W-1（Watch3-改装-焰红小黑方块）</td><td>醒狮</td><td class="num">21</td><td class="num"><span class="red">48.8%</span></td></tr>
+<tr><td>12</td><td>GA-2100SKE-7A（Watch3-改装-银星钻梦幻紫</td><td>醒狮</td><td class="num">33</td><td class="num"><span class="red">47.6%</span></td></tr>
+<tr><td>13</td><td>VICKIT-蔷薇铠</td><td>蓄势</td><td class="num">176</td><td class="num"><span class="red">47.5%</span></td></tr>
+<tr><td>14</td><td>LTP-1183E-7A（Watch5-改装-竹影银）</td><td>美兰</td><td class="num">252</td><td class="num"><span class="red">46.9%</span></td></tr>
+<tr><td>15</td><td>LTP-V009D-4E（Watch5-改装-月魄银霜系列）</td><td>美兰</td><td class="num">67</td><td class="num"><span class="red">46.8%</span></td></tr>
+<tr><td>16</td><td>LTP-V007D-4E（Watch5-改装-蔷薇旧笺）</td><td>美兰</td><td class="num">127</td><td class="num"><span class="red">46.4%</span></td></tr>
+<tr><td>17</td><td>F-91WM-7A（Watch1100-改装-LBLI）</td><td>喜过</td><td class="num">25</td><td class="num"><span class="red">45.7%</span></td></tr>
+<tr><td>18</td><td>GA-2100SKE-7A（Watch3-改装-离岸黑银武）</td><td>醒狮</td><td class="num">52</td><td class="num"><span class="red">45.3%</span></td></tr>
+<tr><td>19</td><td>F-91W-3（Watch1100-改装-Ink Pact）</td><td>喜过</td><td class="num">47</td><td class="num"><span class="red">45.3%</span></td></tr>
+<tr><td>20</td><td>MQ-24-1E(Watch5-改装-墨金曜影）</td><td>美兰</td><td class="num">123</td><td class="num"><span class="red">45.1%</span></td></tr>
+<tr><td>21</td><td>VICKIT-无字天书系列1</td><td>蓄势</td><td class="num">30</td><td class="num"><span class="red">44.4%</span></td></tr>
+<tr><td>22</td><td>A158WA-1（Watch3-改装-银小方块皮革咖）</td><td>醒狮</td><td class="num">55</td><td class="num"><span class="red">43.9%</span></td></tr>
+<tr><td>23</td><td>GA-2100-1A（Watch3-改装-晶樱漫雪）</td><td>醒狮</td><td class="num">406</td><td class="num"><span class="red">43.5%</span></td></tr>
+<tr><td>24</td><td>GA-2100SKE-7A（Watch3-改装-晶樱漫雪）</td><td>醒狮</td><td class="num">127</td><td class="num"><span class="red">43.3%</span></td></tr>
+<tr><td>25</td><td>GA-2100-1A1（Watch1100-改装-禅迹璨筠）</td><td>喜过</td><td class="num">34</td><td class="num"><span class="red">43.3%</span></td></tr>
+<tr><td>26</td><td>F-91WS-7（Watch3-改装-彩虹方白）</td><td>醒狮</td><td class="num">25</td><td class="num"><span class="red">43.2%</span></td></tr>
+<tr><td>27</td><td>GA-2100SKE-7A（Watch3-改装-银星钢夜空）</td><td>醒狮</td><td class="num">166</td><td class="num"><span class="red">42.0%</span></td></tr>
+<tr><td>28</td><td>MTP-1384D-1A（Watch5-改装-墨冕锻银缰）</td><td>美兰</td><td class="num">51</td><td class="num"><span class="red">42.0%</span></td></tr>
+<tr><td>29</td><td>GA-2100-1A（Watch3-改装-银星钻梦幻紫</td><td>醒狮</td><td class="num">78</td><td class="num"><span class="red">41.8%</span></td></tr>
+<tr><td>30</td><td>F-91WM-7A（Watch5-改装-银墨星辉）</td><td>美兰</td><td class="num">28</td><td class="num"><span class="red">41.7%</span></td></tr>
+</tbody></table></div>
+
+<h2>五、运营分析 & 建议</h2>
+<div class="note-box">
+<h3>📊 总览</h3>
+<p>7个月跨度（2025.10-2026.04），四个店铺六个主体的完整订单和营销费数据。醒狮卡西欧以 <b>¥1,374万</b> 累计 GMV 遥遥领先，美兰卡西欧 ¥363万居次，喜过卡西欧 ¥185万第三，蓄势两个品牌合计 ¥137万（卡西欧 ¥132万 + VICKIT ¥50万）。喜过蔻驰仍在早期（仅 142 单）。</p>
+
+<h3>🔍 五个核心判断</h3>
+<ul>
+<li><b>1. 醒狮获客成本最低但效率在下滑。</b>7个月 CAC 均值 ¥83/单，远低于美兰（¥58）和喜过（¥118）。但 2026年 CAC 比 2025年上升了约 30%（从 ¥64→¥98），同时月 GMV 从 ¥256万降至 ¥154万。醒狮正在经历「规模缩水 + 效率下降」的双重压力。</li>
+<li><b>2. 喜过蔻驰的 CAC 高得离谱但情有可原。</b>¥750-781/单的获客成本是卡西欧线的 7-10 倍。但蔻驰客单价 ¥1,500+，如果退货率能控制下来（目前 64%），单位经济模型仍可成立。核心问题不是 CAC 而是退货率。</li>
+<li><b>3. 退货率是跨店铺的系统性痛点。</b>七个主体 42 个月度数据中，只有喜过卡西欧在 33-38% 区间相对可控。醒狮和美兰在 35-48% 之间波动，蓄势 VICKIT 退费率最高冲到 53%。TOP30 高退货单品中退货率 41-61%，VICKIT 有 4 款上榜（爵士银/蔷薇铠/甜心多巴胺/时尚银轮）。</li>
+<li><b>4. 大盘与 GMV 脱钩——店铺增长更多来自内功而非市场红利。</b>大盘指数在 7,000-9,200 之间窄幅震荡（±15%），但醒狮 GMV 从 ¥256万降至 ¥154万（−40%），美兰从 ¥50万升至 ¥52万（+4%）。这说明店铺之间的差距不是大盘驱动的，而是运营能力的差距。</li>
+<li><b>5. 蓄势是唯一保持 GMV 增长趋势的店铺。</b>卡西欧线从 11月 ¥7万 → 4月 ¥29万（+4倍），VICKIT 从 ¥3万 → ¥10万（+3倍）。营销费从 ¥1.5-2万/月降至 ¥0.75万/月，但 GMV 仍在增长——单位经济模型在快速改善。</li>
+</ul>
+
+<h3>🎯 运营建议</h3>
+<ul>
+<li><b>[P0] 醒狮需要止血——CAC 上升 + GMV 下降是危险信号。</b>建议：① 立即审查投放效率，将预算从高退货单品转向低退货单品（如 GA-2100 晶樱漫雪 43.5% vs 银星钻梦幻紫 41.8%）；② 停投 LTP 和 MTP 系列（TOP30 中退货率 46-61%）；③ 月度投放预算建议从 ¥30k-40k 降至 ¥20k-25k，把省下来的钱做详情页优化。</li>
+<li><b>[P0] 美兰的高退货集中在 Watch5 改装系列。</b>TOP30 中 10/30 是美兰 Watch5 单品。建议：① 对退货率 >45% 的单品暂停投放 2 周观察；② 详情页统一增加改装前后对比图；③ 降低 MTP/MDV 系列的 SKU 数量，聚焦 LTP/A158 等低退货系列。</li>
+<li><b>[P1] 喜过蔻驰需要「选品升级」而非「降低 CAC」。</b>CAC 高是因为单量太少（月均 10 单）。与其降投放，不如：① 增加 3-5 款 ¥1,500-2,500 的热门 COACH 款；② 详情页强调正品鉴定+实物实拍；③ 投放从 ¥5k/月加至 ¥10k/月做规模测试。</li>
+<li><b>[P1] 蓄势 VICKIT 退货率波动大——需建立新品测试机制。</b>VICKIT 退货率在 38-53% 之间剧烈波动，蔷薇铠 176 单却 47.5% 退货率。建议：新品上架前 2 周做少量投放测试（¥500-1,000），退货率 >40% 则暂停推广，<30% 则加量。</li>
+<li><b>[P2] 建立跨店铺的退货率对标体系。</b>同款改装表（如 GA-2100-1A 晶樱漫雪）在醒狮退货率 43.5%，在蓄势可能不同。建议每个月拉一份跨店铺同款退货率对比表，找出「在哪家店卖得更好」的规律。</li>
+</ul>
+</div>
+<p class="upd">多店铺分析看板 · 数据源：营销费和订单数据表 · 生成于 2026-05-12</p>
+</body></html>
