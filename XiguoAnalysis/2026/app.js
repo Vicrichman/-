@@ -477,10 +477,17 @@ el.innerHTML=html;
 document.addEventListener("click",function(e){var el=e.target.closest(".slnk");if(!el)return;var b=el.dataset.brand,s=el.dataset.spu;if(b&&s)openMd(b,s);});
 
 var curB="",curS="";
-function openMd(brand,spu){curB=brand;curS=spu;document.getElementById("md-t").textContent=spu;document.getElementById("md-ds").value=DR.start;document.getElementById("md-de").value=DR.end;document.getElementById("md").style.display="flex";renderSpu();}
+function openMd(brand,spu){curB=brand;curS=spu;
+// Fuzzy match: if exact lookup fails, try prefix match
+if(!(D.uv_by_spu[brand]&&D.uv_by_spu[brand][spu])){
+  var pool=D.uv_by_spu[brand]||{},keys=Object.keys(pool);
+  for(var i=0;i<keys.length;i++){if(keys[i].indexOf(spu)===0||spu.indexOf(keys[i])===0){curS=keys[i];break;}}
+  if(!pool[curS]){for(var i=0;i<keys.length;i++){if(keys[i].indexOf(spu.replace(/&quot;/g,'"'))>=0){curS=keys[i];break;}}}
+}
+document.getElementById("md-t").textContent=curS;document.getElementById("md-ds").value=DR.start;document.getElementById("md-de").value=DR.end;document.getElementById("md").style.display="flex";renderSpu();}
 function closeMd(){document.getElementById("md").style.display="none";if(spC){spC.destroy();spC=null;}}
 function renderSpu(){
-var sd2=D.uv_by_spu[curB]?D.uv_by_spu[curB][curS]:null;if(!sd2)return;
+var sd2=D.uv_by_spu[curB]?D.uv_by_spu[curB][curS]:null;if(!sd2){document.getElementById("stb").innerHTML='<tr><td colspan="4" style="color:#94a3b8;text-align:center;padding:20px">该款式暂无商详访客数据</td></tr>';return;}
 var ds=document.getElementById("md-ds").value||DR.start,de=document.getElementById("md-de").value||DR.end;
 var daily=(sd2.daily||[]).filter(function(d){return d.date>=ds&&d.date<=de});
 if(daily.length>60){var wk={};daily.forEach(function(d){var dt=new Date(d.date),ws=new Date(dt);ws.setDate(dt.getDate()-dt.getDay()+1);var k=ws.toISOString().slice(0,10);if(!wk[k])wk[k]={uv:0,gmv:0,orders:0};wk[k].uv+=d.uv;wk[k].gmv+=d.gmv;wk[k].orders+=d.orders;});daily=Object.entries(wk).sort().map(function(e){return{date:e[0],uv:e[1].uv,gmv:e[1].gmv,orders:e[1].orders}});}
