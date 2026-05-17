@@ -115,9 +115,10 @@ function tbl(arr,type,container){
   var el=document.getElementById(container);
   if(arr.length===0){el.innerHTML='<div style="color:#94a3b8;font-size:12px;text-align:center;padding:20px">暂无数据</div>';return;}
   var rows=arr.map(function(item,i){
-    var nm=(item.spu.length>25?item.spu.slice(0,25)+"...":item.spu).replace(/"/g,"&quot;");
+    var full=item.spu.replace(/"/g,"&quot;");
+    var nm=item.spu.length>25?item.spu.slice(0,25)+"...":item.spu;
     var v=type==="uv"?item.uv.toLocaleString():type==="gmv"?"¥"+item.gmv.toLocaleString():item.orders+"单";
-    return'<tr><td style="color:#94a3b8;width:24px">'+(i+1)+'</td><td><span class="slnk" data-brand="'+brand+'" data-spu="'+nm+'">'+nm+'</span></td><td style="text-align:right">'+v+'</td></tr>';
+    return'<tr><td style="color:#94a3b8;width:24px">'+(i+1)+'</td><td><span class="slnk" data-brand="'+brand+'" data-spu="'+full+'">'+nm+'</span></td><td style="text-align:right">'+v+'</td></tr>';
   });
   el.innerHTML='<table style="font-size:12px"><tbody>'+rows.join("")+'</tbody></table>';
 }
@@ -177,10 +178,11 @@ var html='';
 anomalies.forEach(function(a){
   var uvArrow=a.uvCh>=0?"↑":"↓",uvCls=a.uvCh>=0?"up":"down";
   var ordArrow=a.ordCh>=0?"↑":"↓",ordCls=a.ordCh>=0?"up":"down";
-  var nm=(a.spu.length>35?a.spu.slice(0,35)+"...":a.spu).replace(/"/g,"&quot;");
+  var full=a.spu.replace(/"/g,"&quot;");
+  var nm=a.spu.length>35?a.spu.slice(0,35)+"...":a.spu;
   var bc=a.brand==="卡西欧"?CC:CHC;
   html+='<div class="anomaly-item">';
-  html+='<div class="spu" style="color:'+bc+'"><span class="slnk" data-brand="'+a.brand+'" data-spu="'+nm+'">'+nm+'</span></div>';
+  html+='<div class="spu" style="color:'+bc+'"><span class="slnk" data-brand="'+a.brand+'" data-spu="'+full+'">'+nm+'</span></div>';
   html+='<div style="color:#94a3b8;font-size:11px">货号: '+a.huohao+'</div>';
   html+='<div class="stat">UV: '+a.uvP.toLocaleString()+' → '+a.uvR.toLocaleString()+' <span class="change '+uvCls+'">'+uvArrow+Math.abs(a.uvCh).toFixed(0)+'%</span></div>';
   html+='<div class="stat">订单: '+a.ordP+' → '+a.ordR+' <span class="change '+ordCls+'">'+ordArrow+Math.abs(a.ordCh).toFixed(0)+'%</span></div>';
