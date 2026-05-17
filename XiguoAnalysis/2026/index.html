@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>喜过 · 运营分析看板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:20px 24px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.header h1{font-size:24px;font-weight:700}
+.header .date{color:#94a3b8;font-size:14px}
+.card{background:#1a1d2e;border-radius:12px;padding:20px;margin-bottom:20px}
+.card h2{font-size:16px;font-weight:600;margin-bottom:16px}
+.chart-wrap{position:relative;height:360px}
+.chart-wrap-sm{position:relative;height:300px}
+.kpi-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.kpi{flex:1;min-width:160px;background:#1a1d2e;border-radius:12px;padding:16px;text-align:center}
+.kpi .val{font-size:28px;font-weight:700;margin:4px 0}
+.kpi .label{font-size:12px;color:#94a3b8}
+.kpi.c .val{color:#f59e0b}
+.kpi.h .val{color:#a78bfa}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid #2d3148;color:#94a3b8;font-weight:500}
+td{padding:8px 12px;border-bottom:1px solid #1e2235}
+tr:hover{background:rgba(255,255,255,0.03)}
+.slnk{color:#a78bfa;cursor:pointer;max-width:400px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slnk:hover{text-decoration:underline;color:#c4b5fd}
+.fb{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.fb label{font-size:13px;color:#94a3b8}
+.fb input,.fb select{background:#0f1117;border:1px solid #2d3148;border-radius:6px;color:#e2e8f0;padding:6px 12px;font-size:13px}
+.fb button{background:#a78bfa;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px}
+.fb button:hover{background:#8b5cf6}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.tg{background:rgba(34,197,94,0.15);color:#22c55e}
+.tr{background:rgba(239,68,68,0.15);color:#ef4444}
+.ty{background:rgba(245,158,11,0.15);color:#f59e0b}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
+.mc{background:#1a1d2e;border-radius:12px;padding:24px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto}
+.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mclose{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer}
+.mclose:hover{color:#e2e8f0}
+.three-col{display:flex;gap:16px;flex-wrap:wrap}
+.three-col>div{flex:1;min-width:280px}
+.anomaly-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.anomaly-grid{grid-template-columns:1fr}}
+.anomaly-item{background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3148}
+.anomaly-item .spu{font-weight:600;font-size:13px;color:#a78bfa}
+.anomaly-item .stat{font-size:12px;color:#94a3b8;margin-top:4px}
+.anomaly-item .change{font-weight:600}
+.anomaly-item .up{color:#22c55e}
+.anomaly-item .down{color:#ef4444}
+.analysis h3{font-size:14px;margin:16px 0 8px}
+.analysis p,.analysis li,.analysis div{font-size:13px;line-height:1.7}
+.st{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.st td{padding:6px 10px;vertical-align:top}
+.st td:first-child{width:36px;text-align:center}
+@media(max-width:768px){.header{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>喜过 · 运营分析看板</h1>
+    <div class="date">2026.01.01 — 2026.05.14 | 卡西欧 vs 蔻驰</div>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi c"><div class="label">卡西欧 · 交易GMV</div><div class="val" id="kv-cgmv">—</div></div>
+  <div class="kpi c"><div class="label">卡西欧 · 有效订单</div><div class="val" id="kv-co">—</div></div>
+  <div class="kpi h"><div class="label">蔻驰 · 交易GMV</div><div class="val" id="kv-chgmv">—</div></div>
+  <div class="kpi h"><div class="label">蔻驰 · 有效订单</div><div class="val" id="kv-cho">—</div></div>
+</div>
+
+<!-- 模块一: 品牌月度趋势 -->
+<div class="card">
+  <h2>📈 模块一 · 品牌月度趋势</h2>
+  <div class="chart-wrap"><canvas id="c1"></canvas></div>
+</div>
+
+<!-- 模块二: 商详访客日常趋势 -->
+<div class="card">
+  <h2>📊 模块二 · 商详访客日常趋势</h2>
+  <div class="fb">
+    <label>品牌:</label>
+    <select id="m2-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
+    <label>日期:</label>
+    <input type="date" id="m2-ds"><span style="color:#94a3b8">—</span><input type="date" id="m2-de">
+    <button onclick="renderM2()">筛选</button>
+  </div>
+  <div class="chart-wrap"><canvas id="c2"></canvas></div>
+</div>
+
+<!-- 模块三: 三栏TOP20 -->
+<div class="card">
+  <h2>🏆 模块三 · 款式TOP20排行</h2>
+  <div class="fb">
+    <label>品牌:</label>
+    <select id="m3-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
+    <label>日期:</label>
+    <input type="date" id="m3-ds"><span style="color:#94a3b8">—</span><input type="date" id="m3-de">
+    <button onclick="renderM3()">筛选</button>
+  </div>
+  <div class="three-col">
+    <div><h3 style="color:#60a5fa;font-size:14px;margin-bottom:8px">🔹 商详访客UV TOP20</h3><div id="m3-uv-tbl"></div></div>
+    <div><h3 style="color:#22c55e;font-size:14px;margin-bottom:8px">🟢 支付订单量 TOP20</h3><div id="m3-ord-tbl"></div></div>
+    <div><h3 style="color:#f59e0b;font-size:14px;margin-bottom:8px">🟡 支付GMV TOP20</h3><div id="m3-gmv-tbl"></div></div>
+  </div>
+</div>
+
+<!-- 模块四: 近三日异动款式 -->
+<div class="card">
+  <h2>⚠️ 模块四 · 近三日异动款式</h2>
+  <div class="anomaly-grid" id="m4-grid"></div>
+</div>
+
+<!-- 模块五: 货号销售排行（原模块二） -->
+<div class="card">
+  <h2>🔍 模块五 · 货号销售排行</h2>
+  <div class="fb">
+    <label>品牌:</label>
+    <select id="m5-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
+    <label>日期:</label>
+    <input type="date" id="m5-ds"><span style="color:#94a3b8">—</span><input type="date" id="m5-de">
+    <button onclick="renderM5()">筛选</button>
+  </div>
+  <div id="m5-tbl"></div>
+</div>
+
+<!-- 模块六: 月度品牌销售占比（原模块三） -->
+<div class="card">
+  <h2>🥧 模块六 · 月度品牌销售占比</h2>
+  <div class="chart-wrap"><canvas id="c6"></canvas></div>
+</div>
+
+<!-- 模块七: 营销费用效率（原模块四） -->
+<div class="card">
+  <h2>💰 模块七 · 营销费用效率对比</h2>
+  <div style="display:flex;gap:20px;flex-wrap:wrap">
+    <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7a"></canvas></div>
+    <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7b"></canvas></div>
+  </div>
+  <table style="margin-top:16px"><thead><tr><th>月份</th><th>卡西欧·营销费</th><th>获客成本</th><th>ROI</th><th>蔻驰·营销费</th><th>获客成本</th><th>ROI</th></tr></thead><tbody id="tb-mkt"></tbody></table>
+</div>
+
+<!-- 模块八: 运营诊断（原模块五） -->
+<div class="card">
+  <h2>📋 模块八 · 运营诊断与建议</h2>
+  <div id="mod8"></div>
+</div>
+
+<!-- 单品弹窗 -->
+<div class="modal" id="md">
+  <div class="mc">
+    <div class="mh"><h3 id="md-t" style="font-size:15px"></h3><button class="mclose" onclick="closeMd()">&times;</button></div>
+    <div class="fb">
+      <label>日期:</label><input type="date" id="md-ds"><span style="color:#94a3b8">—</span><input type="date" id="md-de">
+      <button onclick="renderSpu()">筛选</button>
+    </div>
+    <div class="chart-wrap-sm"><canvas id="sc"></canvas></div>
+    <table style="margin-top:12px"><thead><tr><th>月份</th><th style="text-align:right">UV</th><th style="text-align:right">支付订单</th><th style="text-align:right">支付金额</th></tr></thead><tbody id="stb"></tbody></table>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
