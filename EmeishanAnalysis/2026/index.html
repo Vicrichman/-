@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>峨眉山运营分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+<script src="data.js?v=1"></script>
+<style>
+:root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--text:#e0e0e0;--sub:#888;--accent:#6c8cff;--green:#4caf84;--red:#f06070;--orange:#f0a060}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px;line-height:1.6}
+h1{font-size:28px;margin-bottom:4px}
+h2{font-size:20px;margin:24px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--accent);display:inline-block}
+h3{font-size:16px;margin:10px 0;color:var(--accent)}
+.subtitle{color:var(--sub);font-size:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px}
+.row{display:flex;gap:16px;flex-wrap:wrap}
+.col{flex:1;min-width:300px}
+.col3{flex:1;min-width:320px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+canvas{width:100%!important;max-height:400px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#1e2130;color:var(--accent);font-weight:600;position:sticky;top:0}
+tr:hover{background:#1e2130}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.positive{color:var(--green)}
+.negative{color:var(--red)}
+.neutral{color:var(--orange)}
+.tbl-wrap{max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:6px}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;display:inline-block;margin:2px}
+.badge-blue{background:rgba(108,140,255,.2);color:var(--accent)}
+.badge-green{background:rgba(76,175,132,.2);color:var(--green)}
+.filter-row{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.filter-row label{font-size:13px;color:var(--sub)}
+.filter-row select,.filter-row input{padding:6px 10px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px}
+.btn{padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-size:13px;background:var(--accent);color:#fff}
+.btn:hover{opacity:.85}
+.btn-sm{padding:4px 10px;font-size:12px}
+.metric{text-align:center;padding:12px}
+.metric .val{font-size:28px;font-weight:700}
+.metric .lbl{font-size:12px;color:var(--sub);margin-top:4px}
+
+/* Popup */
+.overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:999;justify-content:center;align-items:center}
+.overlay.active{display:flex}
+.popup{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:900px;width:90%;max-height:85vh;overflow-y:auto;position:relative}
+.popup .close{position:absolute;top:12px;right:16px;font-size:24px;cursor:pointer;color:var(--sub)}
+.popup h3{margin-top:0}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:16px;flex-wrap:wrap}
+.tab{padding:8px 16px;background:var(--bg);border:1px solid var(--border);border-radius:6px 6px 0 0;cursor:pointer;font-size:13px;color:var(--sub)}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Responsive */
+@media(max-width:900px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.row{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<h1>🏔️ 峨眉山运营分析看板</h1>
+<p class="subtitle">数据范围：<span id="dr-text"></span> | 总GMV：<span id="total-gmv"></span> | 总订单：<span id="total-orders"></span></p>
+
+<!-- ====== Module 1: Monthly Trend ====== -->
+<h2>📈 一、月度运营趋势</h2>
+<div class="card">
+  <div class="filter-row">
+    <label>对比类目：</label>
+    <select id="m1-cat" multiple style="min-width:200px;height:80px"></select>
+    <label>大盘指数：</label>
+    <select id="m1-market" multiple style="min-width:200px;height:80px"></select>
+    <button class="btn btn-sm" onclick="renderM1()">刷新</button>
+  </div>
+  <canvas id="m1Chart" height="300"></canvas>
+</div>
+
+<!-- ====== Module 2: Daily Trend ====== -->
+<h2>📊 二、商详访客日常趋势</h2>
+<div class="card">
+  <div class="filter-row">
+    <label>日期范围：</label>
+    <input type="text" id="m2-start" style="width:120px" placeholder="开始">
+    <span>-</span>
+    <input type="text" id="m2-end" style="width:120px" placeholder="结束">
+    <label>类目：</label>
+    <select id="m2-cat" style="min-width:150px"><option value="">全部</option></select>
+    <button class="btn btn-sm" onclick="renderM2()">刷新</button>
+  </div>
+  <canvas id="m2Chart" height="280"></canvas>
+</div>
+
+<!-- ====== Module 3: TOP20 Rankings + Popup ====== -->
+<h2>🏆 三、款式TOP20排行</h2>
+<div class="card">
+  <div class="filter-row">
+    <label>日期范围：</label>
+    <input type="text" id="m3-start" style="width:120px">
+    <span>-</span>
+    <input type="text" id="m3-end" style="width:120px">
+    <label>类目：</label>
+    <select id="m3-cat" style="min-width:150px"><option value="">全部</option></select>
+    <button class="btn btn-sm" onclick="renderM3()">刷新</button>
+  </div>
+  <div class="grid3">
+    <div>
+      <h3>🔍 商详访客UV TOP20</h3>
+      <div class="tbl-wrap" style="max-height:420px"><table><thead><tr><th>#</th><th>货号</th><th>SPU</th><th class="num">UV</th></tr></thead><tbody id="m3-uv-body"></tbody></table></div>
+    </div>
+    <div>
+      <h3>📦 支付订单量 TOP20</h3>
+      <div class="tbl-wrap" style="max-height:420px"><table><thead><tr><th>#</th><th>货号</th><th>SPU</th><th class="num">订单</th></tr></thead><tbody id="m3-ord-body"></tbody></table></div>
+    </div>
+    <div>
+      <h3>💰 支付GMV TOP20</h3>
+      <div class="tbl-wrap" style="max-height:420px"><table><thead><tr><th>#</th><th>货号</th><th>SPU</th><th class="num">GMV</th></tr></thead><tbody id="m3-gmv-body"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<!-- Popup for SPU detail -->
+<div class="overlay" id="popup-overlay">
+  <div class="popup" id="popup-box">
+    <span class="close" onclick="closePopup()">&times;</span>
+    <h3 id="popup-title"></h3>
+    <div class="filter-row">
+      <label>日期：</label>
+      <input type="text" id="popup-start" style="width:120px">
+      <span>-</span>
+      <input type="text" id="popup-end" style="width:120px">
+      <button class="btn btn-sm" onclick="renderPopup()">刷新</button>
+    </div>
+    <div class="row">
+      <div class="col"><canvas id="popupChart" height="240"></canvas></div>
+    </div>
+    <div class="tbl-wrap" style="max-height:300px"><table><thead><tr><th>月份</th><th class="num">UV</th><th class="num">GMV</th><th class="num">订单数</th></tr></thead><tbody id="popup-table"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ====== Module 4: Product GMV Ranking ====== -->
+<h2>📋 四、货号销售排行</h2>
+<div class="card">
+  <div class="filter-row">
+    <label>日期范围：</label>
+    <input type="text" id="m4-start" style="width:120px">
+    <span>-</span>
+    <input type="text" id="m4-end" style="width:120px">
+    <button class="btn btn-sm" onclick="renderM4()">刷新</button>
+  </div>
+  <div class="tbl-wrap" style="max-height:500px"><table><thead><tr><th>#</th><th>货号</th><th>类目</th><th>商品名称</th><th class="num">交易成功GMV</th><th class="num">占比</th><th class="num">订单数</th></tr></thead><tbody id="m4-body"></tbody></table></div>
+</div>
+
+<!-- ====== Module 5: Category Share + Return Rate ====== -->
+<h2>📊 五、类目月度销售占比 & 退货率</h2>
+<div class="card">
+  <div class="row">
+    <div class="col">
+      <h3>月度销售GMV占比（堆叠柱状）</h3>
+      <canvas id="m5Chart" height="300"></canvas>
+    </div>
+    <div class="col">
+      <h3>各类目退货率趋势</h3>
+      <canvas id="m5returnChart" height="300"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Module 6: Marketing Efficiency ====== -->
+<h2>💰 六、营销费用效率分析</h2>
+<div class="card">
+  <div class="row">
+    <div class="col">
+      <h3>月度营销费用构成</h3>
+      <canvas id="m6costChart" height="260"></canvas>
+    </div>
+    <div class="col">
+      <h3>获客成本 & ROI</h3>
+      <canvas id="m6roiChart" height="260"></canvas>
+    </div>
+  </div>
+  <div class="tbl-wrap" style="max-height:300px;margin-top:14px"><table><thead><tr><th>月份</th><th>得物推消耗</th><th>社区投放</th><th>营销总费用</th><th class="num">成交订单</th><th class="num">订单获客成本</th><th class="num">GMV</th><th class="num">ROI</th></tr></thead><tbody id="m6-body"></tbody></table></div>
+</div>
+
+<!-- ====== Module 7: Operational Analysis ====== -->
+<h2>🔍 七、运营诊断与建议</h2>
+<div class="card" id="m7-content"></div>
+
+<script>
+// ============ GLOBAL STATE ============
+const BRAND = D.brand;
+const MONTHS = D.months;
+const DR = D.dr || {s: MONTHS[0]+"-01", e: MONTHS[MONTHS.length-1]+"-01"};
+const ALL_MONTHS = MONTHS;
+const TOP_CATS = D.topCategories || [];
+
+let m1Chart=null, m2Chart=null, m5Chart=null, m5rChart=null, m6cChart=null, m6rChart=null, popChart=null;
+let popupSpu = null;
+
+// ============ HELPERS ============
+function fmt(n,d=0){return Number(n||0).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function fmtPct(n,d=1){return (Number(n||0)*100).toFixed(d)+'%'}
+function shortCat(c){return D.cat_short?.[c]||c.split('-').pop()||c}
+function catKey(c){return shortCat(c)}
+
+// ============ INIT ============
+window.addEventListener('load',function(){
+  document.getElementById('dr-text').textContent = DR.s + ' ~ ' + DR.e;
+  document.getElementById('total-gmv').textContent = '¥'+fmt(D.total_gmv,0);
+  document.getElementById('total-orders').textContent = fmt(D.total_orders,0)+'单';
+
+  // Init flatpickr date pickers
+  const fpOpts = {dateFormat:'Y-m-d',allowInput:true};
+  flatpickr('#m2-start',{...fpOpts,defaultDate:DR.s});
+  flatpickr('#m2-end',{...fpOpts,defaultDate:DR.e});
+  flatpickr('#m3-start',{...fpOpts,defaultDate:DR.s});
+  flatpickr('#m3-end',{...fpOpts,defaultDate:DR.e});
+  flatpickr('#m4-start',{...fpOpts,defaultDate:DR.s});
+  flatpickr('#m4-end',{...fpOpts,defaultDate:DR.e});
+  flatpickr('#popup-start',{...fpOpts,defaultDate:DR.s});
+  flatpickr('#popup-end',{...fpOpts,defaultDate:DR.e});
+
+  // Populate category selectors
+  populateCatSelects();
+  // Populate M1 market selector
+  populateM1Selectors();
+
+  // Initial renders
+  renderM1();
+  renderM2();
+  renderM3();
+  renderM4();
+  renderM5();
+  renderM6();
+  renderM7();
+});
+
+function populateCatSelects(){
+  const opts = TOP_CATS.map(c => '<option value="'+c+'">'+shortCat(c)+'</option>').join('');
+  ['m2-cat','m3-cat'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){el.innerHTML = '<option value="">全部类目</option>'+opts}
+  });
+}
+
+function populateM1Selectors(){
+  // Category multi-select
+  const catSel = document.getElementById('m1-cat');
+  catSel.innerHTML = TOP_CATS.map(c => '<option value="'+c+'">'+shortCat(c)+'</option>').join('');
+  // Select first 3 by default
+  for(let i=0;i<Math.min(3,catSel.options.length);i++) catSel.options[i].selected=true;
+
+  // Market multi-select
+  const mktSel = document.getElementById('m1-market');
+  const mktCats = Object.keys(D.market||{});
+  mktSel.innerHTML = mktCats.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+  // Select first 2
+  for(let i=0;i<Math.min(2,mktSel.options.length);i++) mktSel.options[i].selected=true;
+}
+
+function getSelValues(id){
+  const sel = document.getElementById(id);
+  return Array.from(sel.selectedOptions).map(o=>o.value);
+}
+
+// ============ MODULE 1: Monthly Trend ============
+function renderM1(){
+  const selCats = getSelValues('m1-cat');
+  const selMkt = getSelValues('m1-market');
+  const labels = ALL_MONTHS.map(m => m.substring(5)); // "05","06",...
+
+  const datasets = [];
+  const colors = ['#6c8cff','#4caf84','#f0a060','#e060a0','#60c0e0'];
+
+  // UV line (total)
+  const uvData = ALL_MONTHS.map(m => (D.uv_monthly[m]||{}).uv||0);
+  datasets.push({label:'全店UV',data:uvData,type:'line',borderColor:'#a0b0ff',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y',order:1});
+
+  // Category GMV bars
+  selCats.forEach((cat,i) => {
+    const data = ALL_MONTHS.map(m => {
+      const cm = (D.orders_by_category[m]||{})[cat];
+      return cm ? Math.round(cm.gmv) : 0;
+    });
+    datasets.push({label:shortCat(cat)+' GMV',data,type:'bar',backgroundColor:colors[i%colors.length]+'99',borderColor:colors[i%colors.length],borderWidth:1,yAxisID:'y1',order:2});
+  });
+
+  // Market index lines
+  selMkt.forEach((mkt,i) => {
+    const ma = D.market_monthly_avg[mkt]||{};
+    const data = ALL_MONTHS.map(m => ma[m]||null);
+    datasets.push({label:mkt+'大盘',data,type:'line',borderColor:colors[(i+2)%colors.length],backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],tension:.3,yAxisID:'y2',order:0});
+  });
+
+  if(m1Chart) m1Chart.destroy();
+  const ctx = document.getElementById('m1Chart').getContext('2d');
+  m1Chart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+fmt(ctx.raw,ctx.dataset.type==='bar'?0:0)}}}},
+      scales:{
+        y:{type:'linear',position:'left',title:{display:true,text:'UV'},grid:{color:'#2a2d3a'},ticks:{color:'#a0b0ff'}},
+        y1:{type:'linear',position:'right',title:{display:true,text:'GMV (元)'},grid:{drawOnChartArea:false},ticks:{color:'#4caf84',callback:v=>'¥'+fmt(v/10000,1)+'万'}},
+        y2:{type:'linear',position:'left',title:{display:true,text:'大盘指数'},grid:{drawOnChartArea:false},ticks:{color:'#f0a060'}},
+        x:{grid:{color:'#2a2d3a'},ticks:{color:'#e0e0e0'}}
+      }
+    }
+  });
+}
+
+// ============ MODULE 2: Daily Trend ============
+function renderM2(){
+  const s = document.getElementById('m2-start').value || DR.s;
+  const e = document.getElementById('m2-end').value || DR.e;
+  const cat = document.getElementById('m2-cat').value;
+
+  let days = D.uv_daily.filter(d => d.date >= s && d.date <= e);
+  const labels = days.map(d => d.date.substring(5)); // "MM-DD"
+
+  const uvData = days.map(d => d.uv);
+  const gmvData = days.map(d => Math.round(d.gmv));
+  const ordData = days.map(d => d.orders);
+
+  if(m2Chart) m2Chart.destroy();
+  const ctx = document.getElementById('m2Chart').getContext('2d');
+  m2Chart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'UV',data:uvData,type:'line',borderColor:'#a0b0ff',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y',order:1},
+      {label:'GMV',data:gmvData,type:'bar',backgroundColor:'#4caf8499',borderColor:'#4caf84',yAxisID:'y1',order:2},
+      {label:'订单数',data:ordData,type:'bar',backgroundColor:'#f0a06099',borderColor:'#f0a060',yAxisID:'y2',order:3}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{tooltip:{callbacks:{label:function(ctx){
+        if(ctx.datasetIndex===0) return 'UV: '+fmt(ctx.raw);
+        if(ctx.datasetIndex===1) return 'GMV: ¥'+fmt(ctx.raw);
+        return '订单: '+fmt(ctx.raw);
+      }}}},
+      scales:{
+        y:{type:'linear',position:'left',title:{display:true,text:'UV'},grid:{color:'#2a2d3a'},ticks:{color:'#a0b0ff'}},
+        y1:{type:'linear',position:'right',title:{display:true,text:'GMV'},grid:{drawOnChartArea:false},ticks:{color:'#4caf84',callback:v=>'¥'+fmt(v/1000,0)+'k'}},
+        y2:{type:'linear',position:'right',title:{display:true,text:'订单'},grid:{drawOnChartArea:false},ticks:{color:'#f0a060'}},
+        x:{grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+}
+
+// ============ MODULE 3: TOP20 Rankings ============
+function renderM3(){
+  const s = document.getElementById('m3-start').value || DR.s;
+  const e = document.getElementById('m3-end').value || DR.e;
+  const catFilter = document.getElementById('m3-cat').value;
+
+  // Aggregate UV data by SPU within date range
+  const spuAgg = {};
+  D.uv_by_spu.forEach(spu => {
+    let uv=0,gmv=0,ord=0;
+    spu.dl.forEach(d => {
+      if(d.date >= s && d.date <= e){uv+=d.uv;gmv+=d.gmv;ord+=d.o}
+    });
+    if(uv>0||gmv>0||ord>0){
+      spuAgg[spu.spu] = {spu:spu.spu,hh:spu.hh,uv,gmv,ord};
+    }
+  });
+
+  const spuList = Object.values(spuAgg);
+  const topUV = spuList.sort((a,b)=>b.uv-a.uv).slice(0,20);
+  const topOrd = [...spuList].sort((a,b)=>b.ord-a.ord).slice(0,20);
+  const topGmv = [...spuList].sort((a,b)=>b.gmv-a.gmv).slice(0,20);
+
+  function trunc(s,n=22){return (s||'').length>n?s.substring(0,n)+'...':s}
+
+  document.getElementById('m3-uv-body').innerHTML = topUV.map((x,i)=>`<tr><td>${i+1}</td><td>${x.hh||'-'}</td><td class="slnk" data-spu="${x.spu.replace(/"/g,'&quot;')}" onclick="openPopup(this)" style="cursor:pointer;color:var(--accent)">${trunc(x.spu)}</td><td class="num">${fmt(x.uv)}</td></tr>`).join('');
+  document.getElementById('m3-ord-body').innerHTML = topOrd.map((x,i)=>`<tr><td>${i+1}</td><td>${x.hh||'-'}</td><td class="slnk" data-spu="${x.spu.replace(/"/g,'&quot;')}" onclick="openPopup(this)" style="cursor:pointer;color:var(--accent)">${trunc(x.spu)}</td><td class="num">${fmt(x.ord)}</td></tr>`).join('');
+  document.getElementById('m3-gmv-body').innerHTML = topGmv.map((x,i)=>`<tr><td>${i+1}</td><td>${x.hh||'-'}</td><td class="slnk" data-spu="${x.spu.replace(/"/g,'&quot;')}" onclick="openPopup(this)" style="cursor:pointer;color:var(--accent)">${trunc(x.spu)}</td><td class="num">¥${fmt(x.gmv,0)}</td></tr>`).join('');
+}
+
+// ============ POPUP ============
+function openPopup(el){
+  const spu = el.getAttribute('data-spu').replace(/&quot;/g,'"');
+  popupSpu = spu;
+  document.getElementById('popup-title').textContent = spu;
+  document.getElementById('popup-overlay').classList.add('active');
+
+  // Set default dates
+  if(!document.getElementById('popup-start').value) document.getElementById('popup-start').value = DR.s;
+  if(!document.getElementById('popup-end').value) document.getElementById('popup-end').value = DR.e;
+
+  renderPopup();
+}
+
+function closePopup(){
+  document.getElementById('popup-overlay').classList.remove('active');
+  popupSpu = null;
+  if(popChart){popChart.destroy();popChart=null}
+}
+
+function renderPopup(){
+  if(!popupSpu) return;
+  const s = document.getElementById('popup-start').value || DR.s;
+  const e = document.getElementById('popup-end').value || DR.e;
+
+  // Find SPU data
+  let spuData = null;
+  for(const spu of D.uv_by_spu){
+    if(spu.spu === popupSpu){spuData = spu;break}
+  }
+
+  if(!spuData){
+    document.getElementById('popup-table').innerHTML = '<tr><td colspan="4">该款式暂无商详访客数据</td></tr>';
+    return;
+  }
+
+  // Filter daily data
+  const dl = spuData.dl.filter(d => d.date >= s && d.date <= e);
+  const labels = dl.map(d => d.date.substring(5));
+  const uvData = dl.map(d => d.uv);
+  const gmvData = dl.map(d => Math.round(d.gmv));
+  const ordData = dl.map(d => d.o);
+
+  if(popChart) popChart.destroy();
+  const ctx = document.getElementById('popupChart').getContext('2d');
+  popChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'UV',data:uvData,type:'line',borderColor:'#a0b0ff',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y',order:1},
+      {label:'GMV',data:gmvData,type:'bar',backgroundColor:'#4caf8499',borderColor:'#4caf84',yAxisID:'y1',order:2}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{tooltip:{callbacks:{label:function(ctx){
+        if(ctx.datasetIndex===0) return 'UV: '+fmt(ctx.raw);
+        return 'GMV: ¥'+fmt(ctx.raw);
+      }}}},
+      scales:{
+        y:{type:'linear',position:'left',title:{display:true,text:'UV'},grid:{color:'#2a2d3a'}},
+        y1:{type:'linear',position:'right',title:{display:true,text:'GMV'},grid:{drawOnChartArea:false},ticks:{callback:v=>'¥'+fmt(v,0)}},
+        x:{grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+
+  // Monthly summary table
+  const ml = spuData.ml||{};
+  document.getElementById('popup-table').innerHTML = ALL_MONTHS.filter(m => ml[m]).map(m => {
+    const d = ml[m];
+    return `<tr><td>${m}</td><td class="num">${fmt(d.uv)}</td><td class="num">¥${fmt(d.gmv,0)}</td><td class="num">${fmt(d.o)}</td></tr>`;
+  }).join('') || '<tr><td colspan="4">暂无数据</td></tr>';
+}
+
+// Click overlay to close
+document.getElementById('popup-overlay').addEventListener('click',function(e){
+  if(e.target === this) closePopup();
+});
+
+// ============ MODULE 4: Product GMV Ranking ============
+function renderM4(){
+  const s = document.getElementById('m4-start').value || DR.s;
+  const e = document.getElementById('m4-end').value || DR.e;
+
+  // Aggregate huohao by date range
+  const agg = {};
+  const allDates = Object.keys(D.huohao_daily||{}).filter(d => d >= s && d <= e);
+  allDates.forEach(d => {
+    const hh = D.huohao_daily[d];
+    for(const [h,v] of Object.entries(hh)){
+      if(!agg[h]) agg[h] = {hh:h,gmv:0,o:0,c:'',n:''};
+      agg[h].gmv += v.gmv;
+      agg[h].o += v.o;
+    }
+  });
+
+  // Fill in category/name from orders_by_huohao
+  (D.orders_by_huohao||[]).forEach(x => {
+    if(agg[x.hh]){agg[x.hh].c=x.c;agg[x.hh].n=x.n}
+  });
+
+  const list = Object.values(agg).sort((a,b)=>b.gmv-a.gmv);
+  const totalGmv = list.reduce((s,x)=>s+x.gmv,0);
+
+  document.getElementById('m4-body').innerHTML = list.slice(0,100).map((x,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>${x.hh}</td>
+      <td>${shortCat(x.c)}</td>
+      <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(x.n||'').substring(0,40)}</td>
+      <td class="num">¥${fmt(x.gmv,0)}</td>
+      <td class="num">${fmtPct(x.gmv/totalGmv)}</td>
+      <td class="num">${fmt(x.o)}</td>
+    </tr>`).join('');
+}
+
+// ============ MODULE 5: Category Share + Return Rate ============
+function renderM5(){
+  const cats = TOP_CATS.slice(0,6); // Top 6 categories
+  const colors = ['#6c8cff','#4caf84','#f0a060','#e060a0','#60c0e0','#c0a060'];
+
+  // Sales share stacked bar
+  const labels = ALL_MONTHS;
+  const datasets = cats.map((cat,i) => {
+    const data = ALL_MONTHS.map(m => {
+      const cm = (D.orders_by_category[m]||{})[cat];
+      return cm ? Math.round(cm.gmv) : 0;
+    });
+    return {label:shortCat(cat),data,backgroundColor:colors[i]+'99',borderColor:colors[i],borderWidth:1};
+  });
+
+  if(m5Chart) m5Chart.destroy();
+  const ctx5 = document.getElementById('m5Chart').getContext('2d');
+  m5Chart = new Chart(ctx5,{
+    type:'bar',
+    data:{labels,datasets},
+    options:{
+      responsive:true,
+      plugins:{
+        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': ¥'+fmt(ctx.raw,0)}}}
+      },
+      scales:{
+        x:{stacked:true,grid:{color:'#2a2d3a'}},
+        y:{stacked:true,title:{display:true,text:'GMV (元)'},ticks:{callback:v=>'¥'+fmt(v/10000,1)+'万'},grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+
+  // Return rate chart
+  const returnRates = [];
+  cats.forEach((cat,i) => {
+    const data = ALL_MONTHS.map(m => {
+      const sales = ((D.orders_by_category[m]||{})[cat]||{}).gmv||0;
+      const rets = ((D.returns_by_category[m]||{})[cat]||{}).gmv||0;
+      return sales > 0 ? rets/sales : 0;
+    });
+    returnRates.push({label:shortCat(cat)+'退货率',data,borderColor:colors[i],backgroundColor:'transparent',tension:.3,fill:false});
+  });
+
+  if(m5rChart) m5rChart.destroy();
+  const ctx5r = document.getElementById('m5returnChart').getContext('2d');
+  m5rChart = new Chart(ctx5r,{
+    type:'line',
+    data:{labels,datasets:returnRates},
+    options:{
+      responsive:true,
+      plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+fmtPct(ctx.raw)}}}},
+      scales:{
+        y:{title:{display:true,text:'退货率'},ticks:{callback:v=>fmtPct(v)},grid:{color:'#2a2d3a'}},
+        x:{grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+}
+
+// ============ MODULE 6: Marketing Efficiency ============
+function renderM6(){
+  const colors = ['#6c8cff','#f0a060'];
+
+  // Cost composition chart
+  const labels = ALL_MONTHS;
+  const pushData = ALL_MONTHS.map(m => D.push_monthly[m]||0);
+  const commData = ALL_MONTHS.map(m => (D.comm_monthly[m]||{}).cost||0);
+
+  if(m6cChart) m6cChart.destroy();
+  const ctx6c = document.getElementById('m6costChart').getContext('2d');
+  m6cChart = new Chart(ctx6c,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'得物推消耗',data:pushData,backgroundColor:colors[0]+'99',borderColor:colors[0]},
+      {label:'社区投放',data:commData,backgroundColor:colors[1]+'99',borderColor:colors[1]}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': ¥'+fmt(ctx.raw,0)}}}},
+      scales:{
+        x:{stacked:true,grid:{color:'#2a2d3a'}},
+        y:{stacked:true,title:{display:true,text:'费用 (元)'},ticks:{callback:v=>'¥'+fmt(v,0)},grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+
+  // ROI & CAC chart
+  const cacData = ALL_MONTHS.map(m => {
+    const cost = (D.push_monthly[m]||0) + ((D.comm_monthly[m]||{}).cost||0);
+    const orders = (D.orders_monthly[m]||{}).o||1;
+    return Math.round(cost/orders*100)/100;
+  });
+  const roiData = ALL_MONTHS.map(m => {
+    const cost = (D.push_monthly[m]||0) + ((D.comm_monthly[m]||{}).cost||0);
+    const gmv = (D.orders_monthly[m]||{}).gmv||0;
+    return cost>0 ? Math.round(gmv/cost*100)/100 : 0;
+  });
+
+  if(m6rChart) m6rChart.destroy();
+  const ctx6r = document.getElementById('m6roiChart').getContext('2d');
+  m6rChart = new Chart(ctx6r,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'获客成本(元/单)',data:cacData,type:'bar',backgroundColor:'#e060a099',borderColor:'#e060a0',yAxisID:'y'},
+      {label:'ROI',data:roiData,type:'line',borderColor:'#4caf84',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y1'}
+    ]},
+    options:{
+      responsive:true,
+      plugins:{tooltip:{callbacks:{label:function(ctx){
+        if(ctx.datasetIndex===0) return '获客成本: ¥'+fmt(ctx.raw,1);
+        return 'ROI: '+fmt(ctx.raw,1);
+      }}}},
+      scales:{
+        y:{type:'linear',position:'left',title:{display:true,text:'获客成本 (元)'},grid:{color:'#2a2d3a'},ticks:{color:'#e060a0'}},
+        y1:{type:'linear',position:'right',title:{display:true,text:'ROI'},grid:{drawOnChartArea:false},ticks:{color:'#4caf84'}},
+        x:{grid:{color:'#2a2d3a'}}
+      }
+    }
+  });
+
+  // Summary table
+  document.getElementById('m6-body').innerHTML = ALL_MONTHS.map(m => {
+    const push = D.push_monthly[m]||0;
+    const comm = (D.comm_monthly[m]||{}).cost||0;
+    const totalCost = push + comm;
+    const orders = (D.orders_monthly[m]||{}).o||0;
+    const gmv = (D.orders_monthly[m]||{}).gmv||0;
+    const cac = orders>0 ? Math.round(totalCost/orders*100)/100 : 0;
+    const roi = totalCost>0 ? Math.round(gmv/totalCost*100)/100 : 0;
+    return `<tr>
+      <td>${m}</td>
+      <td class="num">¥${fmt(push,0)}</td>
+      <td class="num">¥${fmt(comm,0)}</td>
+      <td class="num">¥${fmt(totalCost,0)}</td>
+      <td class="num">${fmt(orders)}</td>
+      <td class="num">¥${fmt(cac,1)}</td>
+      <td class="num">¥${fmt(gmv,0)}</td>
+      <td class="num">${fmt(roi,1)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============ MODULE 7: Operational Analysis ============
+function renderM7(){
+  // Compute key metrics
+  const lastMonth = ALL_MONTHS[ALL_MONTHS.length-1];
+  const prevMonth = ALL_MONTHS[ALL_MONTHS.length-2];
+
+  const lm = D.orders_monthly[lastMonth]||{gmv:0,o:0};
+  const pm = D.orders_monthly[prevMonth]||{gmv:0,o:0};
+
+  const gmvm = lm.gmv>0 ? ((lm.gmv-pm.gmv)/pm.gmv*100) : 0;
+  const gmvTotal = D.total_gmv||0;
+  const ordersTotal = D.total_orders||0;
+  const avgPrice = ordersTotal>0 ? gmvTotal/ordersTotal : 0;
+
+  // Category breakdown
+  const catList = Object.entries(D.all_categories||{}).sort((a,b)=>b[1].gmv-a[1].gmv);
+
+  // Return rate
+  const totalReturns = Object.values(D.returns_monthly||{}).reduce((s,v)=>s+v.gmv,0);
+  const returnRate = gmvTotal>0 ? totalReturns/gmvTotal : 0;
+
+  // Top products concentration
+  const top5Gmv = (D.orders_by_huohao||[]).slice(0,5).reduce((s,x)=>s+x.gmv,0);
+  const top5Concentration = gmvTotal>0 ? top5Gmv/gmvTotal : 0;
+
+  const lastMonthName = lastMonth||'';
+  const html = `
+    <div class="row" style="margin-bottom:16px">
+      <div class="col"><div class="metric"><div class="val">¥${fmt(gmvTotal/10000,1)}万</div><div class="lbl">累计GMV（13个月）</div></div></div>
+      <div class="col"><div class="metric"><div class="val">${fmt(ordersTotal)}单</div><div class="lbl">累计订单数</div></div></div>
+      <div class="col"><div class="metric"><div class="val">¥${fmt(avgPrice,0)}</div><div class="lbl">平均客单价</div></div></div>
+      <div class="col"><div class="metric"><div class="val ${gmvm>0?'positive':'negative'}">${gmvm>0?'+':''}${fmtPct(gmvm/100)}</div><div class="lbl">${lastMonthName} vs 上月GMV环比</div></div></div>
+      <div class="col"><div class="metric"><div class="val">${fmtPct(returnRate)}</div><div class="lbl">整体退货率</div></div></div>
+    </div>
+
+    <h3>📊 运营概况</h3>
+    <p>峨眉山店铺在13个月内累计实现 <b>¥${fmt(gmvTotal/10000,1)}万</b> GMV，<b>${fmt(ordersTotal)}</b> 笔订单，客单价约 <b>¥${fmt(avgPrice,0)}</b>。整体退货率 <b>${fmtPct(returnRate)}</b>。</p>
+
+    <h3>🏷️ 品类结构</h3>
+    <p>Top5品类贡献了绝大部分GMV：</p>
+    <p>${catList.slice(0,5).map((c,i)=>`${i+1}. <b>${shortCat(c[0])}</b>：¥${fmt(c[1].gmv,0)}（${fmtPct(c[1].gmv/gmvTotal)}），${c[1].o}单`).join('<br>')}</p>
+    <p>Top5 SKU集中度：<b>${fmtPct(top5Concentration)}</b>，${top5Concentration>0.3?'<span class="negative">⚠️ 集中度偏高，依赖头部款式的风险较大</span>':'集中度合理，款式分布较均匀'}。</p>
+
+    <h3>📈 趋势判断</h3>
+    <p>最近一月（${lastMonthName}）GMV为 <b>¥${fmt(lm.gmv,0)}</b>，环比上月 ${gmvm>0?'<span class="positive">+'+fmtPct(gmvm/100)+'</span>':'<span class="negative">'+fmtPct(gmvm/100)+'</span>'}。</p>
+
+    <h3>💡 运营建议</h3>
+    <ul style="padding-left:20px;line-height:2">
+      <li><b>品类聚焦</b>：${catList[0]?shortCat(catList[0][0]):''}是核心品类（占比${catList[0]?fmtPct(catList[0][1].gmv/gmvTotal):''}），建议持续深耕，提升转化率</li>
+      <li><b>退货管控</b>：退货率${fmtPct(returnRate)}，${returnRate>0.1?'<span class="negative">偏高，需排查高退货率品类/款式原因</span>':'处于合理范围'}</li>
+      <li><b>流量获取</b>：UV与GMV趋势的匹配度需要关注，如果UV增长但GMV未同步，说明转化率下降</li>
+      <li><b>营销效率</b>：关注获客成本和ROI变化趋势，${gmvm<0?'当前GMV环比下滑，需审视投放策略':'投放效率需持续监控'}</li>
+      <li><b>款式管理</b>：定期清理低效SKU，集中资源推广高转化款式</li>
+    </ul>
+  `;
+
+  document.getElementById('m7-content').innerHTML = html;
+}
+
+</script>
+</body>
+</html>
