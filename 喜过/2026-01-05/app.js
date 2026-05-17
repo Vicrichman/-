@@ -5,6 +5,10 @@ var CC="#f59e0b",CHC="#a78bfa",TX="#94a3b8",GG="#1e2235",GRN="#22c55e",RED="#ef4
 function gm(b,k){var m=D.orders_monthly[b]||{},r=[];MO.forEach(function(x){r.push(m[x]?m[x][k]||0:0)});return r;}
 function uvm(b,k){var m=D.uv_monthly[b]||{},r=[];MO.forEach(function(x){r.push(m[x]?m[x][k]||0:0)});return r;}
 
+// 全局变量（模块四/五共享）
+var pc=[],pch=[],cc2=[],mc=[],mch=[];
+var cacC=[],cacCh=[],roiC=[],roiCh=[];
+
 window.addEventListener("load",function(){
 // ===== KPI =====
 var cg=gm("卡西欧","gmv"),co=gm("卡西欧","orders"),chg=gm("蔻驰","gmv"),cho=gm("蔻驰","orders");
@@ -14,8 +18,9 @@ document.getElementById("kv-co").textContent=co.reduce(function(a,b){return a+b}
 document.getElementById("kv-chgmv").textContent="¥"+(chg.reduce(function(a,b){return a+b},0)/10000).toFixed(1)+"万";
 document.getElementById("kv-cho").textContent=cho.reduce(function(a,b){return a+b},0);
 
-// ===== 模块一: UV曲线 + GMV柱状图 + 大盘指数 =====
+// ===== 模块一: UV曲线 + GMV柱状图 + 大盘指数(日韩表+单肩包) =====
 var mktAvg=MO.map(function(m){return D.market_monthly_avg?D.market_monthly_avg[m]||null:null});
+var mktBagAvg=MO.map(function(m){return D.market_monthly_bag_avg?D.market_monthly_bag_avg[m]||null:null});
 var gmvC=MO.map(function(m){var v=D.orders_monthly["卡西欧"]&&D.orders_monthly["卡西欧"][m]?D.orders_monthly["卡西欧"][m].gmv:0;return v/10000;});
 var gmvCH=MO.map(function(m){var v=D.orders_monthly["蔻驰"]&&D.orders_monthly["蔻驰"][m]?D.orders_monthly["蔻驰"][m].gmv:0;return v/10000;});
 
@@ -26,8 +31,9 @@ new Chart(document.getElementById("c1"),{type:"bar",data:{labels:ML,datasets:[
 // GMV 柱状图
 {label:"卡西欧 GMV(万)",data:gmvC,backgroundColor:CC+"70",borderColor:CC,borderWidth:1,yAxisID:"y1",order:3},
 {label:"蔻驰 GMV(万)",data:gmvCH,backgroundColor:CHC+"70",borderColor:CHC,borderWidth:1,yAxisID:"y1",order:4},
-// 大盘指数 曲线
-{label:"大盘指数(日韩表)",data:mktAvg,borderColor:"#64748b",backgroundColor:"transparent",yAxisID:"y2",tension:0.3,borderWidth:1.5,pointRadius:3,pointBackgroundColor:"#64748b",type:"line",order:0}
+// 大盘指数 曲线（日韩表 + 单肩包）
+{label:"大盘·日韩表",data:mktAvg,borderColor:"#64748b",backgroundColor:"transparent",yAxisID:"y2",tension:0.3,borderWidth:1.5,pointRadius:3,pointBackgroundColor:"#64748b",type:"line",order:0},
+{label:"大盘·单肩包",data:mktBagAvg,borderColor:"#f97316",backgroundColor:"transparent",yAxisID:"y2",tension:0.3,borderWidth:1.5,borderDash:[3,3],pointRadius:3,pointBackgroundColor:"#f97316",type:"line",order:0}
 ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:TX,usePointStyle:true,padding:14,font:{size:11}},position:"top"},tooltip:{callbacks:{label:function(ctx){var v=ctx.raw;if(ctx.dataset.label.indexOf("UV")>=0)return ctx.dataset.label+": "+v.toLocaleString();if(ctx.dataset.label.indexOf("大盘")>=0)return ctx.dataset.label+": "+v;return ctx.dataset.label+": ¥"+v.toFixed(1)+"万";}}}},scales:{y:{position:"left",title:{display:true,text:"UV",color:TX},grid:{color:GG},ticks:{color:TX,callback:function(v){return v>=1000?(v/1000).toFixed(0)+"k":v}}},y1:{position:"right",title:{display:true,text:"GMV(万元)",color:TX},grid:{drawOnChartArea:false},ticks:{color:TX,callback:function(v){return"¥"+v.toFixed(1)}},beginAtZero:true},y2:{position:"right",title:{display:true,text:"大盘指数",color:"#64748b"},grid:{drawOnChartArea:false},ticks:{color:"#64748b"},min:0},x:{ticks:{color:TX},grid:{color:GG}}}}});
 
 
@@ -56,10 +62,9 @@ new Chart(document.getElementById("c3"),{type:"bar",data:{labels:ML,datasets:[
 ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TX,usePointStyle:true}},tooltip:{callbacks:{label:function(ctx){var v=ctx.raw,t=sd[ctx.dataIndex].total,p=t>0?(v/t*100).toFixed(1):"0";return ctx.dataset.label+": \u00A5"+v.toLocaleString()+" ("+p+"%)";}}}},scales:{x:{stacked:true,ticks:{color:TX},grid:{color:GG}},y:{stacked:true,ticks:{color:TX,callback:function(v){return"\u00A5"+(v/10000).toFixed(0)+"\u4E07";}},grid:{color:GG}}}}});
 
 // ===== 模块四: 营销效率 =====
-var pc=[],pch=[],cc2=[];
 MO.forEach(function(m,i){pc.push(D.push_monthly["卡西欧"]?D.push_monthly["卡西欧"][m]||0:0);pch.push(D.push_monthly["蔻驰"]?D.push_monthly["蔻驰"][m]||0:0);cc2.push(D.comm_monthly["卡西欧"]&&D.comm_monthly["卡西欧"][m]?D.comm_monthly["卡西欧"][m].cost||0:0)});
-var mc=[];MO.forEach(function(m,i){mc.push(pc[i]+cc2[i])});
-var mch=pch,cacC=[],cacCh=[],roiC=[],roiCh=[];
+MO.forEach(function(m,i){mc.push(pc[i]+cc2[i])});
+mch=pch;
 MO.forEach(function(m,i){cacC.push(co[i]>0?mc[i]/co[i]:0);cacCh.push(cho[i]>0?mch[i]/cho[i]:0);roiC.push(mc[i]>0?cg[i]/mc[i]:0);roiCh.push(mch[i]>0?chg[i]/mch[i]:0)});
 
 new Chart(document.getElementById("c4a"),{type:"bar",data:{labels:ML,datasets:[
@@ -98,9 +103,9 @@ var tbl=document.getElementById("stb");tbl.innerHTML="";
 var mo2=sd2.monthly||{};
 Object.keys(mo2).sort().forEach(function(m){var d=mo2[m],tr=document.createElement("tr");tr.innerHTML="<td>"+m+"</td><td style='text-align:right'>"+d.uv.toLocaleString()+"</td><td style='text-align:right'>"+d.orders+"</td><td style='text-align:right'>¥"+d.gmv.toLocaleString()+"</td>";tbl.appendChild(tr);});
 if(spC)spC.destroy();
-spC=new Chart(document.getElementById("sc"),{type:"line",data:{labels:lbs,datasets:[
-{label:"UV",data:uv,borderColor:"#60a5fa",yAxisID:"y",tension:0.3,borderWidth:2,pointRadius:0},
-{label:"GMV(元)",data:gmv,borderColor:CHC,yAxisID:"y1",tension:0.3,borderWidth:2,pointRadius:0}
+spC=new Chart(document.getElementById("sc"),{type:"bar",data:{labels:lbs,datasets:[
+{label:"UV",data:uv,borderColor:"#60a5fa",backgroundColor:"transparent",yAxisID:"y",tension:0.3,borderWidth:2,pointRadius:0,type:"line",order:1},
+{label:"GMV(元)",data:gmv,backgroundColor:CHC+"70",borderColor:CHC,borderWidth:1,yAxisID:"y1",order:2}
 ]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{position:"left",ticks:{color:TX},grid:{color:GG}},y1:{position:"right",ticks:{color:TX,callback:function(v){return"¥"+(v/1000).toFixed(0)+"k"}},grid:{drawOnChartArea:false}},x:{ticks:{color:TX,maxTicksLimit:15},grid:{color:GG}}},plugins:{legend:{display:false}}}});
 }
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMd()});
@@ -131,7 +136,7 @@ var uvOrd_CH=uvm("蔻驰","orders").reduce(function(a,b){return a+b},0);
 var cvr_C=totalUV_C>0?(uvOrd_C/totalUV_C*100):0;
 var cvr_CH=totalUV_CH>0?(uvOrd_CH/totalUV_CH*100):0;
 
-// 营销总费用
+// 营销总费用（使用全局变量）
 var totalPushC=pc.reduce(function(a,b){return a+b},0);
 var totalPushCH=pch.reduce(function(a,b){return a+b},0);
 var totalCommC=cc2.reduce(function(a,b){return a+b},0);
@@ -210,44 +215,52 @@ html+='</div>';
 // 市场环境
 html+='<h3 style="color:#64748b">🌐 市场环境</h3>';
 html+='<div style="font-size:13px;margin-bottom:12px">';
-html+='<div><b>大盘趋势（日韩表）：</b>年初指数 '+mktVals[0].toFixed(0)+' → '+lastM.replace("2026-","")+'月 '+mktVals[mktVals.length-1].toFixed(0)+'，累计变动 <span style="color:'+(mktTrend>=0?GRN:RED)+'">'+(mktTrend>=0?'+':'')+mktTrend.toFixed(1)+'%</span></div>';
+html+='<div><b>大盘·日韩表：</b>年初指数 '+mktVals[0].toFixed(0)+' → '+lastM.replace("2026-","")+'月 '+mktVals[mktVals.length-1].toFixed(0)+'，累计变动 <span style="color:'+(mktTrend>=0?GRN:RED)+'\">'+(mktTrend>=0?'+':'')+mktTrend.toFixed(1)+'%</span></div>';
+
+// 单肩包大盘趋势
+var mktBagVals=D.market_monthly_bag_avg?Object.values(D.market_monthly_bag_avg):[];
+if(mktBagVals.length>=2){
+var mktBagTrend=((mktBagVals[mktBagVals.length-1]/mktBagVals[0])-1)*100;
+html+='<div style="margin-top:4px"><b>大盘·单肩包：</b>年初指数 '+mktBagVals[0].toFixed(0)+' → '+lastM.replace("2026-","")+'月 '+mktBagVals[mktBagVals.length-1].toFixed(0)+'，累计变动 <span style="color:'+(mktBagTrend>=0?GRN:RED)+'\">'+(mktBagTrend>=0?'+':'')+mktBagTrend.toFixed(1)+'%</span></div>';
+}
 html+='<div style="margin-top:4px"><b>蔻驰占比：</b>整体 '+chPct.toFixed(1)+'% | '+lastM.replace("2026-","")+'月 '+lmChPct.toFixed(1)+'%</div>';
 html+='</div>';
 
 // 核心建议
 html+='<h3 style="color:#22c55e">⚡ 核心建议</h3>';
 html+='<table class="st" style="font-size:13px">';
+html+='<thead><tr><th style="width:36px;text-align:center">级别</th><th>建议详情</th></tr></thead>';
 
 // P0
 if(roiAvgC>2 && trendC<-5){
-html+='<tr><td style="color:#ef4444;font-weight:600;width:40px">P0</td><td><b>卡西欧下滑预警：</b>GMV月环比'+trendC.toFixed(0)+'%，检查TOP款是否被竞品截流，重点加固TOP3商品（占'+concC.toFixed(0)+'%GMV）的详情页和评价</td></tr>';
+html+='<tr><td style="color:#ef4444;font-weight:600;text-align:center">P0</td><td><b>卡西欧下滑预警：</b>GMV月环比'+trendC.toFixed(0)+'%，检查TOP款是否被竞品截流，重点加固TOP3商品（占'+concC.toFixed(0)+'%GMV）的详情页和评价。建议立即排查价格竞争力+竞品投放动态。</td></tr>';
 }
 if(asp_CH>asp_C*2){
-html+='<tr><td style="color:'+GRN+';font-weight:600">P0</td><td><b>蔻驰高客单价机会：</b>笔单价¥'+asp_CH.toFixed(0)+'（'+((asp_CH/asp_C).toFixed(1))+'x卡西欧），建议增加蔻驰SPU至20+个，补齐中高端价格带</td></tr>';
+html+='<tr><td style="color:'+GRN+';font-weight:600;text-align:center">P0</td><td><b>蔻驰高客单价机会：</b>笔单价¥'+asp_CH.toFixed(0)+'（'+((asp_CH/asp_C).toFixed(1))+'x卡西欧），高客单意味着高利润空间。建议：①增加蔻驰SPU至20+个，补齐¥800-2000价格带；②针对高客单用户做精准得物推投放。</td></tr>';
 }
 if(chPct<15 && totalGMV_CH>30000){
-html+='<tr><td style="color:'+GRN+';font-weight:600">P0</td><td><b>蔻驰增长空间大：</b>当前仅占'+chPct.toFixed(1)+'%，'+lastM.replace('2026-','')+'月提升至'+lmChPct.toFixed(1)+'%。建议启动社区投放+得物推，参照美兰经验</td></tr>';
+html+='<tr><td style="color:'+GRN+';font-weight:600;text-align:center">P0</td><td><b>蔻驰增长空间大：</b>当前仅占'+chPct.toFixed(1)+'%，'+lastM.replace('2026-','')+'月提升至'+lmChPct.toFixed(1)+'%。建议：①启动社区投放（参照美兰经验，首月预算¥5,000-8,000）；②为蔻驰开设独立得物推计划，月预算¥2,000-5,000；③增加SPU数量丰富产品线。</td></tr>';
 }
 
 // P1
 if(concC>60){
-html+='<tr><td style="color:#f59e0b;font-weight:600">P1</td><td><b>卡西欧头部风险：</b>TOP3占'+concC.toFixed(0)+'%GMV，过度集中。建议筛选4-8名潜力款（GMV>¥5,000），加大曝光测试</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P1</td><td><b>卡西欧头部风险：</b>TOP3占'+concC.toFixed(0)+'%GMV，过度集中。建议：①筛选第4-8名潜力款（GMV>¥5,000），加大详情页优化和得物推曝光测试；②优化腰部商品标题/主图/评价，降低对头部款依赖。</td></tr>';
 }
 if(cvr_C<cvr_CH){
-html+='<tr><td style="color:#f59e0b;font-weight:600">P1</td><td><b>卡西欧转化优化：</b>转化率'+cvr_C.toFixed(2)+'%低于蔻驰('+cvr_CH.toFixed(2)+'%)，建议优化详情页视频、增加买家秀</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P1</td><td><b>卡西欧转化优化：</b>商详转化率'+cvr_C.toFixed(2)+'%低于蔻驰('+cvr_CH.toFixed(2)+'%)。建议：①优化TOP10款详情页视频和首图；②增加买家秀和问答区维护；③对比蔻驰详情页结构，找差异点。</td></tr>';
 }
 if(totalMktC>0 && roiAvgC<3){
-html+='<tr><td style="color:#f59e0b;font-weight:600">P1</td><td><b>营销效率优化：</b>综合ROI仅'+roiAvgC.toFixed(1)+'x，建议按SPU拆分得物推数据，砍掉ROI<1的款，资金集中到ROI>3的头部款</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P1</td><td><b>营销效率优化：</b>综合ROI仅'+roiAvgC.toFixed(1)+'x。建议：①按SPU拆分得物推数据，砍掉ROI<1的款，资金集中到ROI>3的头部款；②优化社区投放选品策略，优先投放TOP10高转化款。</td></tr>';
 }
 if(totalPushCH===0 && totalGMV_CH>30000){
-html+='<tr><td style="color:#f59e0b;font-weight:600">P1</td><td><b>蔻驰付费测试：</b>GMV已超¥3万但零投放。建议'+lastM.replace('2026-','')+'月启动3-5款得物推新品测款，预算¥2,000-5,000/月</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P1</td><td><b>蔻驰付费测试：</b>GMV已超¥3万但零付费投放。建议'+lastM.replace('2026-','')+'月启动得物推新品测款：①选3-5款TOP商品做精准投放，预算¥2,000-5,000/月；②投放后跟踪7日ROI和加购率，择优加码。</td></tr>';
 }
 
 // P2
 if(mktTrend>10){
-html+='<tr><td style="color:#f59e0b;font-weight:600">P2</td><td><b>大盘向好：</b>日韩表大盘指数累计增长'+mktTrend.toFixed(0)+'%，是品类红利期。建议适度加码整体预算</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P2</td><td><b>大盘向好：</b>日韩表大盘指数累计增长'+mktTrend.toFixed(0)+'%，品类处于红利期。建议：①适度加码整体预算10-20%；②扩充日韩表SPU数量（新品+配件），抢占流量窗口。</td></tr>';
 }
-html+='<tr><td style="color:#f59e0b;font-weight:600">P2</td><td><b>数据监控：</b>每周更新一次看板，重点盯UV增长率和GMV月环比。当单品UV突然下降>30%时排查竞品投放/价格变化</td></tr>';
+html+='<tr><td style="color:#f59e0b;font-weight:600;text-align:center">P2</td><td><b>数据监控：</b>建议每周更新一次看板，重点盯UV增长率和GMV月环比。当单品UV突然下降>30%时排查竞品投放/价格变化；当获客成本连续2月上升>20%时评估投放效率并调整。</td></tr>';
 
 html+='</table></div>';
 
