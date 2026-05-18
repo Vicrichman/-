@@ -27,10 +27,8 @@ th{background:#252836;color:#aaa;font-weight:500;position:sticky;top:0;white-spa
 td:first-child,th:first-child{text-align:left}
 tr:hover{background:#2a2d3a}
 .summary{line-height:1.8;font-size:14px}
-.summary h4{color:#3d7eff;margin:12px 0 6px}
-.summary p{color:#ccc;margin:4px 0}
-.summary .highlight{color:#ff6b6b}
-.summary .good{color:#51cf66}
+.summary h4{color:#3d7eff;margin:12px 0 6px;font-size:15px}
+.summary p{color:#ccc;margin:4px 0 10px}
 .footer{text-align:center;padding:20px;color:#555;font-size:12px}
 .table-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
 @media(max-width:768px){.chart-row{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(3,1fr)}}
@@ -56,8 +54,8 @@ tr:hover{background:#2a2d3a}
 <div class="section">
 <h2>一、趋势图</h2>
 <div class="chart-row">
-<div class="chart-box"><h3>店铺核心指标趋势 (5.1-5.17)</h3><canvas id="chart1" height="280"></canvas></div>
-<div class="chart-box"><h3>大盘子类目成交指数 (万元)</h3><canvas id="chart2" height="280"></canvas></div>
+<div class="chart-box"><h3>店铺核心指标趋势 (5.1-5.17)</h3><canvas id="chart1" height="300"></canvas></div>
+<div class="chart-box"><h3>大盘子类目成交指数 (万元)</h3><canvas id="chart2" height="300"></canvas></div>
 </div>
 </div>
 
@@ -68,55 +66,72 @@ tr:hover{background:#2a2d3a}
 <thead><tr><th>日期</th><th>支付GMV</th><th>去退GMV</th><th>退货率</th><th>UV</th><th>动销商品数</th><th>引力花费</th></tr></thead>
 <tbody><tr>
         <td>05/01</td><td>¥6,782</td><td>¥5,006</td>
-        <td>26.2%</td><td>8,701</td><td>57</td><td>¥0</td>
+        <td>26.2%</td><td>8,701</td>
+        <td>57</td><td>¥0</td>
     </tr><tr>
         <td>05/02</td><td>¥6,034</td><td>¥4,625</td>
-        <td>23.4%</td><td>8,501</td><td>52</td><td>¥0</td>
+        <td>23.4%</td><td>8,501</td>
+        <td>52</td><td>¥0</td>
     </tr><tr>
         <td>05/03</td><td>¥7,314</td><td>¥5,237</td>
-        <td>28.4%</td><td>7,688</td><td>53</td><td>¥0</td>
+        <td>28.4%</td><td>7,688</td>
+        <td>53</td><td>¥0</td>
     </tr><tr>
         <td>05/04</td><td>¥6,156</td><td>¥4,224</td>
-        <td>31.4%</td><td>7,208</td><td>50</td><td>¥0</td>
+        <td>31.4%</td><td>7,208</td>
+        <td>50</td><td>¥0</td>
     </tr><tr>
         <td>05/05</td><td>¥7,863</td><td>¥6,309</td>
-        <td>19.8%</td><td>6,635</td><td>55</td><td>¥0</td>
+        <td>19.8%</td><td>6,635</td>
+        <td>55</td><td>¥0</td>
     </tr><tr>
         <td>05/06</td><td>¥7,794</td><td>¥6,435</td>
-        <td>17.4%</td><td>6,616</td><td>54</td><td>¥0</td>
+        <td>17.4%</td><td>6,616</td>
+        <td>54</td><td>¥0</td>
     </tr><tr>
         <td>05/07</td><td>¥7,855</td><td>¥4,735</td>
-        <td>39.7%</td><td>6,452</td><td>46</td><td>¥0</td>
+        <td>39.7%</td><td>6,452</td>
+        <td>46</td><td>¥0</td>
     </tr><tr>
         <td>05/08</td><td>¥8,554</td><td>¥6,149</td>
-        <td>28.1%</td><td>6,294</td><td>51</td><td>¥0</td>
+        <td>28.1%</td><td>6,294</td>
+        <td>51</td><td>¥0</td>
     </tr><tr>
         <td>05/09</td><td>¥8,235</td><td>¥6,562</td>
-        <td>20.3%</td><td>6,651</td><td>55</td><td>¥0</td>
+        <td>20.3%</td><td>6,651</td>
+        <td>55</td><td>¥0</td>
     </tr><tr>
         <td>05/10</td><td>¥10,741</td><td>¥9,374</td>
-        <td>12.7%</td><td>8,577</td><td>65</td><td>¥0</td>
+        <td>12.7%</td><td>8,577</td>
+        <td>65</td><td>¥0</td>
     </tr><tr>
         <td>05/11</td><td>¥5,547</td><td>¥4,663</td>
-        <td>15.9%</td><td>6,984</td><td>48</td><td>¥0</td>
+        <td>15.9%</td><td>6,984</td>
+        <td>48</td><td>¥0</td>
     </tr><tr>
         <td>05/12</td><td>¥5,650</td><td>¥4,587</td>
-        <td>18.8%</td><td>7,634</td><td>49</td><td>¥0</td>
+        <td>18.8%</td><td>7,634</td>
+        <td>49</td><td>¥0</td>
     </tr><tr>
         <td>05/13</td><td>¥6,167</td><td>¥5,372</td>
-        <td>12.9%</td><td>7,215</td><td>47</td><td>¥0</td>
+        <td>12.9%</td><td>7,215</td>
+        <td>47</td><td>¥0</td>
     </tr><tr>
         <td>05/14</td><td>¥5,718</td><td>¥5,018</td>
-        <td>12.2%</td><td>7,370</td><td>53</td><td>¥0</td>
+        <td>12.2%</td><td>7,370</td>
+        <td>53</td><td>¥0</td>
     </tr><tr>
         <td>05/15</td><td>¥7,998</td><td>¥6,404</td>
-        <td>19.9%</td><td>8,706</td><td>57</td><td>¥0</td>
+        <td>19.9%</td><td>8,706</td>
+        <td>57</td><td>¥0</td>
     </tr><tr>
         <td>05/16</td><td>¥11,030</td><td>¥8,461</td>
-        <td>23.3%</td><td>11,112</td><td>71</td><td>¥420</td>
+        <td>23.3%</td><td>11,112</td>
+        <td>71</td><td>¥420</td>
     </tr><tr>
         <td>05/17</td><td>¥14,800</td><td>¥12,086</td>
-        <td>18.3%</td><td>10,779</td><td>83</td><td>¥0</td>
+        <td>18.3%</td><td>10,779</td>
+        <td>83</td><td>¥0</td>
     </tr><tr style="font-weight:bold;background:#252836;border-top:2px solid #3d7eff">
     <td>合计</td><td>¥134,238</td><td>¥105,247</td>
     <td>21.6%</td><td>133,123</td>
@@ -137,36 +152,306 @@ tr:hover{background:#2a2d3a}
 </div>
 
 <div class="section">
-<h2>四、品类对比</h2>
+<h2>四、子类目对比</h2>
 <div class="table-scroll">
 <table>
 <thead>
-<tr><th rowspan="2">类目</th>
+<tr><th rowspan="2">子类目</th>
 <th colspan="6">上周 (5.4-5.10)</th>
 <th colspan="6">本周 (5.11-5.17)</th>
 <th colspan="3">环比</th></tr>
-<tr><th>销量</th><th>销量占比</th><th>GMV</th><th>GMV占比</th><th>UV</th><th>件单价</th>
-<th>销量</th><th>销量占比</th><th>GMV</th><th>GMV占比</th><th>UV</th><th>件单价</th>
+<tr><th>销量</th><th>占比</th><th>GMV</th><th>GMV占比</th><th>UV</th><th>件单价</th>
+<th>销量</th><th>占比</th><th>GMV</th><th>GMV占比</th><th>UV</th><th>件单价</th>
 <th>销量</th><th>GMV</th><th>UV</th></tr>
 </thead>
-<tbody><tr>
-        <td>流行饰品/眼镜/服配</td>
-        <td>730</td><td>83.7%</td>
-        <td>¥47,883</td><td>83.7%</td>
-        <td>8,641</td><td>¥65.6</td>
-        <td>829</td><td>92.7%</td>
-        <td>¥52,807</td><td>92.7%</td>
-        <td>9,713</td><td>¥63.7</td>
-        <td><span style="color:#ff6b6b">↑13.6%</span></td><td><span style="color:#ff6b6b">↑10.3%</span></td><td><span style="color:#ff6b6b">↑12.4%</span></td>
+<tbody><tr style="background:#252836;font-weight:bold"><td colspan="16">流行饰品/眼镜/服配</td></tr><tr>
+        <td>木作手串</td>
+        <td>173</td><td>15.6%</td>
+        <td>¥7,457</td><td>15.6%</td>
+        <td>3,347</td><td>¥43.1</td>
+        <td>208</td><td>16.2%</td>
+        <td>¥8,562</td><td>16.2%</td>
+        <td>3,772</td><td>¥41.2</td>
+        <td><span style="color:#ff6b6b">↑20.2%</span></td><td><span style="color:#ff6b6b">↑14.8%</span></td><td><span style="color:#ff6b6b">↑12.7%</span></td>
     </tr><tr>
-        <td>黄金/珠宝/翡翠/玉石</td>
-        <td>55</td><td>16.3%</td>
-        <td>¥9,315</td><td>16.3%</td>
-        <td>2,248</td><td>¥169.4</td>
-        <td>28</td><td>7.3%</td>
-        <td>¥4,132</td><td>7.3%</td>
-        <td>2,042</td><td>¥147.6</td>
-        <td><span style="color:#51cf66">↓49.1%</span></td><td><span style="color:#51cf66">↓55.6%</span></td><td><span style="color:#51cf66">↓9.2%</span></td>
+        <td>手绳</td>
+        <td>142</td><td>12.8%</td>
+        <td>¥6,138</td><td>12.8%</td>
+        <td>3,249</td><td>¥43.2</td>
+        <td>94</td><td>16.2%</td>
+        <td>¥8,552</td><td>16.2%</td>
+        <td>2,803</td><td>¥91.0</td>
+        <td><span style="color:#51cf66">↓33.8%</span></td><td><span style="color:#ff6b6b">↑39.3%</span></td><td><span style="color:#51cf66">↓13.7%</span></td>
+    </tr><tr>
+        <td>菩提类手串</td>
+        <td>142</td><td>12.8%</td>
+        <td>¥6,108</td><td>12.8%</td>
+        <td>3,963</td><td>¥43.0</td>
+        <td>166</td><td>15.1%</td>
+        <td>¥7,978</td><td>15.1%</td>
+        <td>3,711</td><td>¥48.1</td>
+        <td><span style="color:#ff6b6b">↑16.9%</span></td><td><span style="color:#ff6b6b">↑30.6%</span></td><td><span style="color:#51cf66">↓6.4%</span></td>
+    </tr><tr>
+        <td>黑曜石手串</td>
+        <td>70</td><td>12.0%</td>
+        <td>¥5,760</td><td>12.0%</td>
+        <td>2,313</td><td>¥82.3</td>
+        <td>160</td><td>13.4%</td>
+        <td>¥7,086</td><td>13.4%</td>
+        <td>4,707</td><td>¥44.3</td>
+        <td><span style="color:#ff6b6b">↑128.6%</span></td><td><span style="color:#ff6b6b">↑23.0%</span></td><td><span style="color:#ff6b6b">↑103.5%</span></td>
+    </tr><tr>
+        <td>手串</td>
+        <td>30</td><td>6.7%</td>
+        <td>¥3,208</td><td>6.7%</td>
+        <td>2,028</td><td>¥106.9</td>
+        <td>38</td><td>7.6%</td>
+        <td>¥4,002</td><td>7.6%</td>
+        <td>2,629</td><td>¥105.3</td>
+        <td><span style="color:#ff6b6b">↑26.7%</span></td><td><span style="color:#ff6b6b">↑24.8%</span></td><td><span style="color:#ff6b6b">↑29.6%</span></td>
+    </tr><tr>
+        <td>朱砂手串</td>
+        <td>22</td><td>6.4%</td>
+        <td>¥3,067</td><td>6.4%</td>
+        <td>1,166</td><td>¥139.4</td>
+        <td>28</td><td>5.1%</td>
+        <td>¥2,692</td><td>5.1%</td>
+        <td>2,142</td><td>¥96.1</td>
+        <td><span style="color:#ff6b6b">↑27.3%</span></td><td><span style="color:#51cf66">↓12.2%</span></td><td><span style="color:#ff6b6b">↑83.7%</span></td>
+    </tr><tr>
+        <td>手链</td>
+        <td>26</td><td>5.4%</td>
+        <td>¥2,584</td><td>5.4%</td>
+        <td>2,168</td><td>¥99.4</td>
+        <td>36</td><td>4.5%</td>
+        <td>¥2,374</td><td>4.5%</td>
+        <td>1,769</td><td>¥65.9</td>
+        <td><span style="color:#ff6b6b">↑38.5%</span></td><td><span style="color:#51cf66">↓8.1%</span></td><td><span style="color:#51cf66">↓18.4%</span></td>
+    </tr><tr>
+        <td>玛瑙/玉髓项链</td>
+        <td>37</td><td>5.4%</td>
+        <td>¥2,579</td><td>5.4%</td>
+        <td>1,634</td><td>¥69.7</td>
+        <td>4</td><td>3.8%</td>
+        <td>¥1,996</td><td>3.8%</td>
+        <td>710</td><td>¥499.0</td>
+        <td><span style="color:#51cf66">↓89.2%</span></td><td><span style="color:#51cf66">↓22.6%</span></td><td><span style="color:#51cf66">↓56.5%</span></td>
+    </tr><tr>
+        <td>石英岩玉手镯</td>
+        <td>3</td><td>3.1%</td>
+        <td>¥1,497</td><td>3.1%</td>
+        <td>688</td><td>¥499.0</td>
+        <td>15</td><td>3.2%</td>
+        <td>¥1,715</td><td>3.2%</td>
+        <td>2,128</td><td>¥114.3</td>
+        <td><span style="color:#ff6b6b">↑400.0%</span></td><td><span style="color:#ff6b6b">↑14.6%</span></td><td><span style="color:#ff6b6b">↑209.3%</span></td>
+    </tr><tr>
+        <td>手镯</td>
+        <td>13</td><td>3.1%</td>
+        <td>¥1,487</td><td>3.1%</td>
+        <td>2,021</td><td>¥114.4</td>
+        <td>11</td><td>2.5%</td>
+        <td>¥1,349</td><td>2.5%</td>
+        <td>1,091</td><td>¥122.6</td>
+        <td><span style="color:#51cf66">↓15.4%</span></td><td><span style="color:#51cf66">↓9.3%</span></td><td><span style="color:#51cf66">↓46.0%</span></td>
+    </tr><tr>
+        <td>水晶手串</td>
+        <td>9</td><td>2.6%</td>
+        <td>¥1,261</td><td>2.6%</td>
+        <td>813</td><td>¥140.1</td>
+        <td>13</td><td>2.2%</td>
+        <td>¥1,187</td><td>2.2%</td>
+        <td>1,094</td><td>¥91.3</td>
+        <td><span style="color:#ff6b6b">↑44.4%</span></td><td><span style="color:#51cf66">↓5.9%</span></td><td><span style="color:#ff6b6b">↑34.6%</span></td>
+    </tr><tr>
+        <td>首饰配件</td>
+        <td>11</td><td>2.1%</td>
+        <td>¥1,019</td><td>2.1%</td>
+        <td>941</td><td>¥92.6</td>
+        <td>6</td><td>1.9%</td>
+        <td>¥1,024</td><td>1.9%</td>
+        <td>787</td><td>¥170.7</td>
+        <td><span style="color:#51cf66">↓45.5%</span></td><td><span style="color:#ff6b6b">↑0.5%</span></td><td><span style="color:#51cf66">↓16.4%</span></td>
+    </tr><tr>
+        <td>朱砂项链</td>
+        <td>6</td><td>2.0%</td>
+        <td>¥964</td><td>2.0%</td>
+        <td>750</td><td>¥160.7</td>
+        <td>7</td><td>1.2%</td>
+        <td>¥653</td><td>1.2%</td>
+        <td>934</td><td>¥93.3</td>
+        <td><span style="color:#ff6b6b">↑16.7%</span></td><td><span style="color:#51cf66">↓32.3%</span></td><td><span style="color:#ff6b6b">↑24.5%</span></td>
+    </tr><tr>
+        <td>玛瑙/玉髓手镯</td>
+        <td>2</td><td>1.6%</td>
+        <td>¥788</td><td>1.6%</td>
+        <td>2,314</td><td>¥394.0</td>
+        <td>7</td><td>1.2%</td>
+        <td>¥643</td><td>1.2%</td>
+        <td>1,134</td><td>¥91.9</td>
+        <td><span style="color:#ff6b6b">↑250.0%</span></td><td><span style="color:#51cf66">↓18.4%</span></td><td><span style="color:#51cf66">↓51.0%</span></td>
+    </tr><tr>
+        <td>玉石手串</td>
+        <td>6</td><td>1.4%</td>
+        <td>¥694</td><td>1.4%</td>
+        <td>649</td><td>¥115.7</td>
+        <td>11</td><td>1.1%</td>
+        <td>¥599</td><td>1.1%</td>
+        <td>598</td><td>¥54.5</td>
+        <td><span style="color:#ff6b6b">↑83.3%</span></td><td><span style="color:#51cf66">↓13.7%</span></td><td><span style="color:#51cf66">↓7.9%</span></td>
+    </tr><tr>
+        <td>石英岩玉手串</td>
+        <td>7</td><td>1.4%</td>
+        <td>¥693</td><td>1.4%</td>
+        <td>1,088</td><td>¥99.0</td>
+        <td>4</td><td>0.8%</td>
+        <td>¥446</td><td>0.8%</td>
+        <td>821</td><td>¥111.5</td>
+        <td><span style="color:#51cf66">↓42.9%</span></td><td><span style="color:#51cf66">↓35.6%</span></td><td><span style="color:#51cf66">↓24.5%</span></td>
+    </tr><tr>
+        <td>玛瑙/玉髓手串</td>
+        <td>8</td><td>1.3%</td>
+        <td>¥622</td><td>1.3%</td>
+        <td>1,023</td><td>¥77.8</td>
+        <td>6</td><td>0.8%</td>
+        <td>¥394</td><td>0.8%</td>
+        <td>1,072</td><td>¥65.7</td>
+        <td><span style="color:#51cf66">↓25.0%</span></td><td><span style="color:#51cf66">↓36.7%</span></td><td><span style="color:#ff6b6b">↑4.8%</span></td>
+    </tr><tr>
+        <td>木作项链</td>
+        <td>7</td><td>1.1%</td>
+        <td>¥533</td><td>1.1%</td>
+        <td>1,049</td><td>¥76.1</td>
+        <td>5</td><td>0.7%</td>
+        <td>¥375</td><td>0.7%</td>
+        <td>986</td><td>¥75.0</td>
+        <td><span style="color:#51cf66">↓28.6%</span></td><td><span style="color:#51cf66">↓29.6%</span></td><td><span style="color:#51cf66">↓6.0%</span></td>
+    </tr><tr>
+        <td>项链</td>
+        <td>3</td><td>0.6%</td>
+        <td>¥287</td><td>0.6%</td>
+        <td>1,014</td><td>¥95.7</td>
+        <td>1</td><td>0.4%</td>
+        <td>¥199</td><td>0.4%</td>
+        <td>297</td><td>¥199.0</td>
+        <td><span style="color:#51cf66">↓66.7%</span></td><td><span style="color:#51cf66">↓30.7%</span></td><td><span style="color:#51cf66">↓70.7%</span></td>
+    </tr><tr>
+        <td>水晶手绳</td>
+        <td>2</td><td>0.6%</td>
+        <td>¥278</td><td>0.6%</td>
+        <td>169</td><td>¥139.0</td>
+        <td>2</td><td>0.4%</td>
+        <td>¥198</td><td>0.4%</td>
+        <td>840</td><td>¥99.0</td>
+        <td><span style="color:#888">0%</span></td><td><span style="color:#51cf66">↓28.8%</span></td><td><span style="color:#ff6b6b">↑397.0%</span></td>
+    </tr><tr>
+        <td>黑曜石项链</td>
+        <td>3</td><td>0.6%</td>
+        <td>¥277</td><td>0.6%</td>
+        <td>796</td><td>¥92.3</td>
+        <td>1</td><td>0.3%</td>
+        <td>¥149</td><td>0.3%</td>
+        <td>721</td><td>¥149.0</td>
+        <td><span style="color:#51cf66">↓66.7%</span></td><td><span style="color:#51cf66">↓46.2%</span></td><td><span style="color:#51cf66">↓9.4%</span></td>
+    </tr><tr>
+        <td>菩提类项链</td>
+        <td>4</td><td>0.5%</td>
+        <td>¥256</td><td>0.5%</td>
+        <td>538</td><td>¥64.0</td>
+        <td>1</td><td>0.3%</td>
+        <td>¥139</td><td>0.3%</td>
+        <td>238</td><td>¥139.0</td>
+        <td><span style="color:#51cf66">↓75.0%</span></td><td><span style="color:#51cf66">↓45.7%</span></td><td><span style="color:#51cf66">↓55.8%</span></td>
+    </tr><tr>
+        <td>木作手镯</td>
+        <td>2</td><td>0.4%</td>
+        <td>¥198</td><td>0.4%</td>
+        <td>547</td><td>¥99.0</td>
+        <td>1</td><td>0.2%</td>
+        <td>¥109</td><td>0.2%</td>
+        <td>156</td><td>¥109.0</td>
+        <td><span style="color:#51cf66">↓50.0%</span></td><td><span style="color:#51cf66">↓44.9%</span></td><td><span style="color:#51cf66">↓71.5%</span></td>
+    </tr><tr>
+        <td>水晶手链</td>
+        <td>1</td><td>0.2%</td>
+        <td>¥79</td><td>0.2%</td>
+        <td>666</td><td>¥79.0</td>
+        <td>1</td><td>0.2%</td>
+        <td>¥109</td><td>0.2%</td>
+        <td>233</td><td>¥109.0</td>
+        <td><span style="color:#888">0%</span></td><td><span style="color:#ff6b6b">↑38.0%</span></td><td><span style="color:#51cf66">↓65.0%</span></td>
+    </tr><tr>
+        <td>木作手绳</td>
+        <td>1</td><td>0.1%</td>
+        <td>¥49</td><td>0.1%</td>
+        <td>191</td><td>¥49.0</td>
+        <td>1</td><td>0.2%</td>
+        <td>¥99</td><td>0.2%</td>
+        <td>156</td><td>¥99.0</td>
+        <td><span style="color:#888">0%</span></td><td><span style="color:#ff6b6b">↑102.0%</span></td><td><span style="color:#51cf66">↓18.3%</span></td>
+    </tr><tr>
+        <td>菩提类手链</td>
+        <td>0</td><td>0.0%</td>
+        <td>¥0</td><td>0.0%</td>
+        <td>64</td><td>¥0.0</td>
+        <td>1</td><td>0.2%</td>
+        <td>¥99</td><td>0.2%</td>
+        <td>597</td><td>¥99.0</td>
+        <td><span style="color:#ff6b6b">∞</span></td><td><span style="color:#ff6b6b">∞</span></td><td><span style="color:#ff6b6b">↑832.8%</span></td>
+    </tr><tr>
+        <td>核桃类手串</td>
+        <td>0</td><td>0.0%</td>
+        <td>¥0</td><td>0.0%</td>
+        <td>297</td><td>¥0.0</td>
+        <td>1</td><td>0.1%</td>
+        <td>¥79</td><td>0.1%</td>
+        <td>637</td><td>¥79.0</td>
+        <td><span style="color:#ff6b6b">∞</span></td><td><span style="color:#ff6b6b">∞</span></td><td><span style="color:#ff6b6b">↑114.5%</span></td>
+    </tr><tr style="background:#252836;font-weight:bold"><td colspan="16">黄金/珠宝/翡翠/玉石</td></tr><tr>
+        <td>石榴石类手串</td>
+        <td>45</td><td>74.0%</td>
+        <td>¥6,895</td><td>74.0%</td>
+        <td>1,871</td><td>¥153.2</td>
+        <td>23</td><td>78.8%</td>
+        <td>¥3,257</td><td>78.8%</td>
+        <td>1,717</td><td>¥141.6</td>
+        <td><span style="color:#51cf66">↓48.9%</span></td><td><span style="color:#51cf66">↓52.8%</span></td><td><span style="color:#51cf66">↓8.2%</span></td>
+    </tr><tr>
+        <td>小叶紫檀手串</td>
+        <td>5</td><td>16.1%</td>
+        <td>¥1,495</td><td>16.1%</td>
+        <td>308</td><td>¥299.0</td>
+        <td>4</td><td>17.1%</td>
+        <td>¥706</td><td>17.1%</td>
+        <td>634</td><td>¥176.5</td>
+        <td><span style="color:#51cf66">↓20.0%</span></td><td><span style="color:#51cf66">↓52.8%</span></td><td><span style="color:#ff6b6b">↑105.8%</span></td>
+    </tr><tr>
+        <td>和田玉项链</td>
+        <td>3</td><td>6.1%</td>
+        <td>¥567</td><td>6.1%</td>
+        <td>649</td><td>¥189.0</td>
+        <td>1</td><td>4.1%</td>
+        <td>¥169</td><td>4.1%</td>
+        <td>401</td><td>¥169.0</td>
+        <td><span style="color:#51cf66">↓66.7%</span></td><td><span style="color:#51cf66">↓70.2%</span></td><td><span style="color:#51cf66">↓38.2%</span></td>
+    </tr><tr>
+        <td>月光/日光/天河石/长石手串</td>
+        <td>1</td><td>2.2%</td>
+        <td>¥209</td><td>2.2%</td>
+        <td>343</td><td>¥209.0</td>
+        <td>0</td><td>0.0%</td>
+        <td>¥0</td><td>0.0%</td>
+        <td>0</td><td>¥0.0</td>
+        <td><span style="color:#51cf66">↓100.0%</span></td><td><span style="color:#51cf66">↓100.0%</span></td><td><span style="color:#51cf66">↓100.0%</span></td>
+    </tr><tr>
+        <td>翡翠项链</td>
+        <td>1</td><td>1.6%</td>
+        <td>¥149</td><td>1.6%</td>
+        <td>648</td><td>¥149.0</td>
+        <td>0</td><td>0.0%</td>
+        <td>¥0</td><td>0.0%</td>
+        <td>230</td><td>¥0.0</td>
+        <td><span style="color:#51cf66">↓100.0%</span></td><td><span style="color:#51cf66">↓100.0%</span></td><td><span style="color:#51cf66">↓64.5%</span></td>
     </tr></tbody>
 </table>
 </div>
@@ -182,125 +467,117 @@ tr:hover{background:#2a2d3a}
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】新中式国潮简约高级复古单圈转运珠时来运转招财进宝事业高升 黑曜石 手串 男女同款情侣款">峨眉山 【峨眉山已过香】新中式国潮简约高级复古单圈转运珠时来运转招财进宝事业高升 黑曜石 手串 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-黑曜石-黑曜石手串</td><td>1,843</td><td>46</td>
         <td>¥2,333</td><td>11.4%</td><td>¥50.7</td>
-        <td>26</td><td>2.2%</td><td>--</td>
+        <td>26</td><td>2.2%</td><td>1</td>
     </tr><tr>
         <td>2</td><td>24554947</td><td>HYSC0573-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 福禄平安 新中式国潮葫芦上上签路路通时来运转招财进宝高级感礼盒#好运处理石榴石手串 男女同款情侣款">【峨眉山已过香】 峨眉山 福禄平安 新中式国潮葫芦上上签路路通时来运转招财进宝高级感礼盒#好运处理石榴石手串 男女同款情侣款</td>
         <td>黄金/珠宝/翡翠/玉石-石榴石/紫牙乌/沙弗莱/芬达石-石榴石类手串</td><td>1,100</td><td>15</td>
         <td>¥2,196</td><td>10.8%</td><td>¥146.4</td>
-        <td>7</td><td>4.2%</td><td>--</td>
+        <td>7</td><td>4.2%</td><td>0</td>
     </tr><tr>
         <td>3</td><td>22286494</td><td>EMSJHSS289</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】锦鲤本命年新中式招财转纳福运吉祥如意诸事顺利事业学业上岸编织红绳手饰 好运 织物 手绳 男女同款情侣款">峨眉山 【峨眉山已过香】锦鲤本命年新中式招财转纳福运吉祥如意诸事顺利事业学业上岸编织红绳手饰 好运 织物 手绳 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-首饰-手链</td><td>1,169</td><td>18</td>
         <td>¥1,864</td><td>9.1%</td><td>¥103.6</td>
-        <td>14</td><td>4.2%</td><td>--</td>
+        <td>14</td><td>4.2%</td><td>1</td>
     </tr><tr>
         <td>4</td><td>22263952</td><td>EMSXYJ018</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 十二生肖 多宝十八籽纳福转运佛珠平安顺遂诸事顺利招财纳福好运串珠#好运 菩提根 手串 男女同款情侣款">【峨眉山已过香】 峨眉山 十二生肖 多宝十八籽纳福转运佛珠平安顺遂诸事顺利招财纳福好运串珠#好运 菩提根 手串 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-菩提-菩提类手串</td><td>1,625</td><td>60</td>
         <td>¥1,858</td><td>9.1%</td><td>¥31.0</td>
-        <td>29</td><td>3.9%</td><td>--</td>
+        <td>29</td><td>3.9%</td><td>0</td>
     </tr><tr>
         <td>5</td><td>24304631</td><td>HYSC0455-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 新中式国风小众设计森系百搭多宝可调节叠戴转运珠福禄双全时来运转吉祥如意轻奢气质礼盒 琉璃 手串 女款">【峨眉山已过香】 峨眉山 新中式国风小众设计森系百搭多宝可调节叠戴转运珠福禄双全时来运转吉祥如意轻奢气质礼盒 琉璃 手串 女款</td>
         <td>流行饰品/眼镜/服配-首饰-手串</td><td>1,785</td><td>16</td>
         <td>¥1,345</td><td>6.6%</td><td>¥84.1</td>
-        <td>27</td><td>1.3%</td><td>--</td>
+        <td>27</td><td>1.3%</td><td>0</td>
     </tr><tr>
         <td>6</td><td>24434311</td><td>HYSS0072-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 纯银999 饕餮图腾转运珠手链 新中式国潮复古好运民族风招财纳福霸气手饰周年礼盒好运 足银 手绳 男款">【峨眉山已过香】 峨眉山 纯银999 饕餮图腾转运珠手链 新中式国潮复古好运民族风招财纳福霸气手饰周年礼盒好运 足银 手绳 男款</td>
         <td>流行饰品/眼镜/服配-首饰-手绳</td><td>690</td><td>12</td>
         <td>¥1,253</td><td>6.1%</td><td>¥104.4</td>
-        <td>10</td><td>2.2%</td><td>--</td>
+        <td>10</td><td>2.2%</td><td>0</td>
     </tr><tr>
         <td>7</td><td>22994405</td><td>EMSC009-1</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】108颗多圈佛珠禅玩串珠 国潮复古新中式八方来财上岸转运叠戴男生护身好运手饰 礼盒 黑檀 手串 男女同款情侣款">峨眉山 【峨眉山已过香】108颗多圈佛珠禅玩串珠 国潮复古新中式八方来财上岸转运叠戴男生护身好运手饰 礼盒 黑檀 手串 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-木作-木作手串</td><td>885</td><td>46</td>
         <td>¥1,200</td><td>5.9%</td><td>¥26.1</td>
-        <td>15</td><td>6.2%</td><td>--</td>
+        <td>15</td><td>6.2%</td><td>0</td>
     </tr><tr>
         <td>8</td><td>22215031</td><td>EMSJAL009</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 新中式叠戴国潮文玩多财多福平安男生吉祥如意转运珠佛珠串珠手饰周年礼盒 檀木 手串 男女同款情侣款">【峨眉山已过香】 峨眉山 新中式叠戴国潮文玩多财多福平安男生吉祥如意转运珠佛珠串珠手饰周年礼盒 檀木 手串 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-木作-木作手串</td><td>1,479</td><td>42</td>
         <td>¥1,193</td><td>5.8%</td><td>¥28.4</td>
-        <td>34</td><td>4.2%</td><td>--</td>
+        <td>34</td><td>4.2%</td><td>0</td>
     </tr><tr>
         <td>9</td><td>23480462</td><td>HYSL051-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】无限有钱 国潮复古新中式招财转运纳福财源滚滚诸事顺利编织红绳手饰 手绳 男女同款情侣款">峨眉山 【峨眉山已过香】无限有钱 国潮复古新中式招财转运纳福财源滚滚诸事顺利编织红绳手饰 手绳 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-首饰-手绳</td><td>1,051</td><td>42</td>
         <td>¥1,184</td><td>5.8%</td><td>¥28.2</td>
-        <td>15</td><td>4.1%</td><td>--</td>
+        <td>15</td><td>4.1%</td><td>0</td>
     </tr><tr>
         <td>10</td><td>22202981</td><td>EMSJAL094</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】好运连连平安喜乐莫相离龙舟多财多福阖家安康爱情 手绳 男女同款情侣款">峨眉山 【峨眉山已过香】好运连连平安喜乐莫相离龙舟多财多福阖家安康爱情 手绳 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-首饰-手绳</td><td>678</td><td>10</td>
         <td>¥1,130</td><td>5.5%</td><td>¥113.0</td>
-        <td>6</td><td>0.8%</td><td>--</td>
+        <td>6</td><td>0.8%</td><td>0</td>
     </tr><tr>
         <td>11</td><td>23593495</td><td>HYPJ0001-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 招财转运健康平安 事业有成学业考研上岸 新中式国潮观音赐福平安御守护身符好运礼盒 织物 配件 男女同款情侣款">【峨眉山已过香】 峨眉山 招财转运健康平安 事业有成学业考研上岸 新中式国潮观音赐福平安御守护身符好运礼盒 织物 配件 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-首饰-首饰配件</td><td>706</td><td>13</td>
         <td>¥1,009</td><td>4.9%</td><td>¥77.6</td>
-        <td>8</td><td>1.2%</td><td>--</td>
+        <td>8</td><td>1.2%</td><td>0</td>
     </tr><tr>
         <td>12</td><td>22873226</td><td>ESMSZ001</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 白月光藕粉玉镯 新中式国潮古风冰蓝 一步一响清冷素雅招财桃花简约高级感平安镯#好运 琉璃 手镯 女款">【峨眉山已过香】 峨眉山 白月光藕粉玉镯 新中式国潮古风冰蓝 一步一响清冷素雅招财桃花简约高级感平安镯#好运 琉璃 手镯 女款</td>
         <td>流行饰品/眼镜/服配-首饰-手镯</td><td>1,148</td><td>10</td>
         <td>¥991</td><td>4.9%</td><td>¥99.1</td>
-        <td>18</td><td>1.3%</td><td>--</td>
+        <td>18</td><td>1.3%</td><td>0</td>
     </tr><tr>
         <td>13</td><td>22276217</td><td>EMSJHSS302</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="【峨眉山已过香】 峨眉山 本命年招财红绳新 中式小众诸事顺利护身符平安富贵马年手饰学常礼盒转运#好运 织物 手绳 男女同款情侣款">【峨眉山已过香】 峨眉山 本命年招财红绳新 中式小众诸事顺利护身符平安富贵马年手饰学常礼盒转运#好运 织物 手绳 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-首饰-手绳</td><td>2,110</td><td>43</td>
         <td>¥987</td><td>4.8%</td><td>¥23.0</td>
-        <td>23</td><td>1.7%</td><td>--</td>
+        <td>23</td><td>1.7%</td><td>0</td>
     </tr><tr>
         <td>14</td><td>24578463</td><td>HYSC0507-E</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 【峨眉山已过香】新中式国潮 转运佛珠 平安纳福招财好运 黑曜石 手串 男女同款情侣款">峨眉山 【峨眉山已过香】新中式国潮 转运佛珠 平安纳福招财好运 黑曜石 手串 男女同款情侣款</td>
         <td>流行饰品/眼镜/服配-黑曜石-黑曜石手串</td><td>728</td><td>14</td>
         <td>¥977</td><td>4.8%</td><td>¥69.8</td>
-        <td>10</td><td>3.7%</td><td>--</td>
+        <td>10</td><td>3.7%</td><td>0</td>
     </tr><tr>
         <td>15</td><td>24828629</td><td>HYSC0574-E-1</td>
         <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="峨眉山 新中式国潮复古气质好运连连时尚简约平安顺遂静心纳福 星月菩提 手串 女款">峨眉山 新中式国潮复古气质好运连连时尚简约平安顺遂静心纳福 星月菩提 手串 女款</td>
         <td>流行饰品/眼镜/服配-菩提-菩提类手串</td><td>1,877</td><td>24</td>
         <td>¥878</td><td>4.3%</td><td>¥36.6</td>
-        <td>26</td><td>1.1%</td><td>--</td>
+        <td>26</td><td>1.1%</td><td>0</td>
     </tr></tbody>
 </table>
 </div>
 </div>
 
 <div class="section">
-<h2>六、运营分析总结</h2>
+<h2>六、运营总结</h2>
 <div class="summary">
-<h4>整体表现</h4>
-<p>本周支付GMV <b>¥56,910</b>（环比<span style="color:#51cf66">↓0.5%</span>），去退GMV <b>¥46,591</b>（环比<span style="color:#ff6b6b">↑6.4%</span>）。退货率 <span class="good">18.1%</span>（上周23.4%，<span class="good">↓5.3pp</span>），是本周最大亮点。UV <b>59,800</b>（<span style="color:#ff6b6b">↑23.5%</span>），支付单量856单（<span style="color:#ff6b6b">↑9.0%</span>），转化率1.43%（上周1.62%）。件单价¥66.5（<span style="color:#51cf66">↓8.8%</span>），动销商品数158。</p>
+<h4>🏪 店铺总体表现</h4>
+<p>1. 本周支付GMV ¥56,910，去退GMV ¥46,591，环比 <span style="color:#ff6b6b">↑6.4%</span>；</p>
+<p>2. 受平台520节点带动，访客环比 <span style="color:#ff6b6b">↑23.5%</span>；支付单量856单（<span style="color:#ff6b6b">↑9.0%</span>）；动销商品数158个。</p>
+<p>3. 退货率18.1%，较上周 <span style="color:#51cf66">↓5.3%</span>。</p>
 
-<h4>趋势分析</h4>
-<p>UV大幅增长23.5%（从48,433到59,800），但GMV增长仅6.4%（去退口径），转化率从1.62%降至1.43%。5月16-17日（周五六）UV突破1万，支付GMV达¥11,030和¥14,800，为全月最高。流量增长但转化效率下降，需关注流量精准度。</p>
+<h4>📦 类目情况</h4>
+<p>本周木作类、菩提根类、黑曜石类主要销售品类GMV ¥52,807（占比92.7%），环比+10.3%。黄金/珠宝/翡翠/玉石类目GMV从¥9,315降至¥4,132（↓55.6%），销量从55单降至28单。后续高客单价产品需匹配优质达人进行投放。</p>
 
-<h4>退货率改善</h4>
-<p>退货率从上周23.4%降至18.1%，<span class="good">下降5.3个百分点</span>。件单价从¥72.9降至¥66.5（↓8.8%），低价款占比提升可能是退货率下降的原因之一（低价商品退货意愿更低）。</p>
-
-<h4>品类表现</h4>
-<p>流行饰品/眼镜/服配仍为主导，本周GMV ¥52,807（占比92.7%），环比+10.3%。黄金/珠宝/翡翠/玉石类目GMV从¥9,315降至¥4,132（<span class="highlight">↓55.6%</span>），销量从55单降至28单。高客单价品类流失严重，需排查是否因引流策略调整导致。</p>
-
-<h4>单品表现</h4>
+<h4>⭐ 单品情况</h4>
 <p>TOP1 HYSC0556-E 去退GMV ¥2,333（46单，UV 1,843），TOP2 HYSC0573-E ¥2,196（15单，客单价¥146）。TOP15合计去退GMV ¥20,398。EMSXYJ018走量款60单但客单价仅¥31，与高单价款形成两极分化。</p>
 
-<h4>本周重点</h4>
-<p>1. 退货率从23.4%降至18.1%，<span class="good">↓5.3pp</span>，持续监控维持<br>
-2. 流量+23.5%但转化率下降，优化落地页和商品主图<br>
-3. 黄金珠宝类目GMV腰斩（↓55.6%），排查引流和类目曝光问题<br>
-4. 件单价下降8.8%，引力投放¥420仅1天（5.16），需扩大投放频次</p>
+<h4>📋 本周工作重点</h4>
+<p>1. 持续关注引力投放效果（社区任务待达人返稿）；<br>
+2. 新品上架跟进。<br>
+3. 爆款单品得物推拉升流量；</p>
 
-<h4>下周跟进</h4>
-<p>1. 优化高流量日（周五六）转化路径，目标转化率回到1.5%以上<br>
-2. 针对性推广黄金/珠宝类目高客单价商品，恢复类目GMV<br>
-3. 增加引力投放频次（本周仅5.16一天），提升投放ROI<br>
-4. 关注件单价趋势，平衡走量款和利润款结构</p>
+<h4>🔜 下周重点跟进</h4>
+<p>1. 丰富产品线，优化产品货盘</p>
 </div>
 </div>
 
@@ -338,12 +615,12 @@ window.addEventListener('load', function(){
     setTimeout(function(){
         try{
             var ctx2=document.getElementById('chart2').getContext('2d');
-            var colors=['#ff6b6b','#51cf66','#3d7eff','#ffa94d'];
-            var keys=['木作手串','菩提根手串','黑曜石手串','水晶手串'];
-            var md={"\u6728\u4f5c\u624b\u4e32": [46.58, 41.73, 35.1, 34.09, 41.16, 36.52, 32.86, 32.7, 38.52, 54.44, 44.89, 44.86, 45.64, 45.6, 61.41, 77.16, 90.21], "\u83e9\u63d0\u6839\u624b\u4e32": [32.46, 30.37, 25.3, 26.14, 31.02, 27.61, 26.97, 24.16, 28.58, 40.22, 30.75, 29.35, 28.75, 31.36, 37.96, 48.01, 56.6], "\u9ed1\u66dc\u77f3\u624b\u4e32": [93.0, 84.49, 80.66, 87.46, 116.41, 113.06, 116.35, 124.49, 159.86, 230.19, 216.42, 222.25, 230.62, 275.69, 421.12, 514.17, 580.42], "\u6c34\u6676\u624b\u4e32": [31.18, 31.51, 31.85, 30.02, 34.79, 37.55, 41.32, 40.2, 41.82, 49.55, 41.02, 44.24, 40.95, 44.65, 57.17, 63.65, 73.77]};
+            var colors=["#ff6b6b", "#51cf66", "#3d7eff", "#ffa94d", "#ae5eff", "#20c997"];
+            var keys=["\u6728\u4f5c\u624b\u4e32", "\u83e9\u63d0\u6839\u624b\u4e32", "\u9ed1\u66dc\u77f3\u624b\u4e32", "\u6c34\u6676\u624b\u4e32", "\u548c\u7530\u7389\u9879\u94fe", "\u8db3\u94f6\u9879\u94fe"];
+            var md={"\u6728\u4f5c\u624b\u4e32": [46.58, 41.73, 35.1, 34.09, 41.16, 36.52, 32.86, 32.7, 38.52, 54.44, 44.89, 44.86, 45.64, 45.6, 61.41, 77.16, 90.21], "\u83e9\u63d0\u6839\u624b\u4e32": [32.46, 30.37, 25.3, 26.14, 31.02, 27.61, 26.97, 24.16, 28.58, 40.22, 30.75, 29.35, 28.75, 31.36, 37.96, 48.01, 56.6], "\u9ed1\u66dc\u77f3\u624b\u4e32": [93.0, 84.49, 80.66, 87.46, 116.41, 113.06, 116.35, 124.49, 159.86, 230.19, 216.42, 222.25, 230.62, 275.69, 421.12, 514.17, 580.42], "\u6c34\u6676\u624b\u4e32": [31.18, 31.51, 31.85, 30.02, 34.79, 37.55, 41.32, 40.2, 41.82, 49.55, 41.02, 44.24, 40.95, 44.65, 57.17, 63.65, 73.77], "\u548c\u7530\u7389\u9879\u94fe": [97.86, 105.72, 116.69, 126.21, 202.4, 271.07, 278.51, 208.07, 167.88, 189.22, 88.54, 73.1, 74.94, 76.45, 108.76, 123.78, 122.03], "\u8db3\u94f6\u9879\u94fe": [48.72, 47.17, 41.65, 45.66, 60.49, 63.96, 61.23, 57.78, 58.31, 80.73, 62.63, 60.87, 65.14, 70.6, 114.77, 139.49, 144.07]};
             var ds=[];
             for(var i=0;i<keys.length;i++){
-                ds.push({label:keys[i],data:md[keys[i]],borderColor:colors[i],backgroundColor:'transparent',borderWidth:2,tension:0.3,pointRadius:2});
+                ds.push({label:keys[i],data:md[keys[i]],borderColor:colors[i],backgroundColor:'transparent',borderWidth:2,tension:0.3,pointRadius:1});
             }
             new Chart(ctx2,{
                 type:'line',
@@ -351,7 +628,7 @@ window.addEventListener('load', function(){
                 options:{
                     responsive:true,maintainAspectRatio:false,
                     interaction:{mode:'index',intersect:false},
-                    plugins:{legend:{labels:{color:'#aaa',font:{size:11}}}},
+                    plugins:{legend:{labels:{color:'#aaa',font:{size:10},boxWidth:12}}},
                     scales:{
                         x:{ticks:{color:'#888',font:{size:10},maxRotation:45}},
                         y:{title:{display:true,text:'成交指数(万元)',color:'#888'},ticks:{color:'#888'}}
