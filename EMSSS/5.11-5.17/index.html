@@ -19,8 +19,10 @@ body{background:#0f1117;color:#e4e6eb;font-family:-apple-system,BlinkMacSystemFo
 .section{background:#1a1d27;border-radius:12px;padding:20px;margin-bottom:20px}
 .section h2{font-size:17px;color:#3d7eff;margin-bottom:16px;border-left:3px solid #3d7eff;padding-left:10px}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.chart-box{background:#252836;border-radius:8px;padding:16px}
-.chart-box h3{font-size:13px;color:#aaa;margin-bottom:10px}
+.chart-box{background:#252836;border-radius:8px;padding:12px}
+.chart-box h3{font-size:13px;color:#aaa;margin-bottom:8px}
+.chart-wrap{position:relative;height:220px;width:100%}
+.chart-wrap canvas{width:100%!important;height:100%!important}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:8px 10px;text-align:right;border-bottom:1px solid #2a2d3a}
 th{background:#252836;color:#aaa;font-weight:500;position:sticky;top:0;white-space:nowrap}
@@ -54,8 +56,8 @@ tr:hover{background:#2a2d3a}
 <div class="section">
 <h2>一、趋势图</h2>
 <div class="chart-row">
-<div class="chart-box"><h3>店铺核心指标趋势 (5.1-5.17)</h3><canvas id="chart1" height="300"></canvas></div>
-<div class="chart-box"><h3>大盘子类目成交指数 (万元)</h3><canvas id="chart2" height="300"></canvas></div>
+<div class="chart-box"><h3>店铺核心指标趋势 (5.1-5.17)</h3><div class="chart-wrap"><canvas id="chart1"></canvas></div></div>
+<div class="chart-box"><h3>大盘子类目成交指数 (万元)</h3><div class="chart-wrap"><canvas id="chart2"></canvas></div></div>
 </div>
 </div>
 
