@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>蓄势 · 周度运营看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0f1117; color:#e2e8f0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; padding:20px; }
+.container { max-width:1400px; margin:0 auto; }
+.header { text-align:center; padding:24px 0 16px; border-bottom:1px solid #1e293b; margin-bottom:20px; }
+.header h1 { font-size:24px; color:#f1f5f9; }
+.header .sub { color:#64748b; font-size:13px; margin-top:4px; }
+
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.kpi { background:#1a1d27; border-radius:10px; padding:16px 20px; border:1px solid #1e293b; text-align:center; }
+.kpi .label { font-size:12px; color:#64748b; }
+.kpi .value { font-size:26px; font-weight:700; margin:6px 0; }
+.kpi .change { font-size:12px; }
+.kpi .down { color:#ef4444; } .kpi .up { color:#22c55e; }
+
+.chart-box { background:#1a1d27; border-radius:10px; padding:20px; border:1px solid #1e293b; margin-bottom:20px; }
+.chart-box h3 { font-size:15px; color:#94a3b8; margin-bottom:16px; }
+.chart-inner { height:340px; position:relative; }
+
+.table-box { background:#1a1d27; border-radius:10px; padding:20px; border:1px solid #1e293b; margin-bottom:20px; overflow-x:auto; }
+.table-box h3 { font-size:15px; color:#94a3b8; margin-bottom:12px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 10px; color:#64748b; font-weight:600; border-bottom:2px solid #1e293b; white-space:nowrap; font-size:12px; }
+td { padding:8px 10px; border-bottom:1px solid #111827; }
+tr:hover td { background:rgba(255,255,255,0.03); }
+.summary-row td { font-weight:700; border-top:2px solid #334155; background:#151820; }
+
+.green { color:#22c55e; } .red { color:#ef4444; } .yellow { color:#f59e0b; }
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:600; }
+.badge-casio { background:rgba(59,130,246,0.2); color:#3b82f6; }
+.badge-vickit { background:rgba(168,85,247,0.2); color:#a855f7; }
+
+.wow-up { color:#22c55e; } .wow-down { color:#ef4444; }
+
+.note-box { background:#1a1d27; border-radius:10px; padding:24px; border:1px solid #1e293b; margin-bottom:20px; line-height:1.8; font-size:14px; }
+.note-box h3 { font-size:16px; color:#f1f5f9; margin-bottom:12px; }
+.note-box p { color:#94a3b8; margin-bottom:8px; }
+.note-box ul { padding-left:20px; color:#94a3b8; }
+.note-box li { margin-bottom:4px; }
+
+.footer { text-align:center; padding:16px; color:#475569; font-size:11px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <h1>蓄势 · 周度运营看板</h1>
+    <div class="sub">2026.05.17 - 2026.05.23 | CASIO/卡西欧 + Vickit | 数据源：飞书云文档</div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-row">
+    <div class="kpi">
+        <div class="label">总支付GMV</div>
+        <div class="value">¥51K</div>
+        <div class="change down">↓34.7% vs 上周</div>
+    </div>
+    <div class="kpi">
+        <div class="label">去退GMV</div>
+        <div class="value">¥31K</div>
+        <div class="change down">↓31.4%</div>
+    </div>
+    <div class="kpi">
+        <div class="label">退货率</div>
+        <div class="value">38.3%</div>
+        <div class="change up">↓3.0pp vs 41.3%</div>
+    </div>
+    <div class="kpi">
+        <div class="label">支付单量 / UV</div>
+        <div class="value">89 / 52K</div>
+        <div class="change down">↓16% vs 上周106单</div>
+    </div>
+</div>
+
+<!-- 模块一: 趋势图 -->
+<div class="chart-box">
+    <h3>一、核心指标趋势</h3>
+    <div class="chart-inner"><canvas id="chart1"></canvas></div>
+</div>
+
+<!-- 模块二: 逐日明细 -->
+<div class="table-box">
+    <h3>二、逐日运营明细</h3>
+    <table>
+        <thead><tr>
+            <th>日期</th><th>总支付GMV</th><th>去退GMV</th><th>退货率</th>
+            <th>支付单量</th><th>UV</th><th>动销商品数</th><th>引力花费</th>
+        </tr></thead>
+        <tbody>
+<tr>
+        <td>05-17</td>
+        <td>¥8,917</td><td>¥3,285</td>
+        <td style="color:#ef4444">63.2%</td>
+        <td>13</td><td>10,910</td><td>9</td>
+        <td>¥292</td>
+    </tr><tr>
+        <td>05-18</td>
+        <td>¥8,954</td><td>¥6,351</td>
+        <td style="color:#f59e0b">29.1%</td>
+        <td>16</td><td>7,526</td><td>12</td>
+        <td>¥2,311</td>
+    </tr><tr>
+        <td>05-19</td>
+        <td>¥7,115</td><td>¥5,287</td>
+        <td style="color:#f59e0b">25.7%</td>
+        <td>15</td><td>7,829</td><td>6</td>
+        <td>¥592</td>
+    </tr><tr>
+        <td>05-20</td>
+        <td>¥5,137</td><td>¥3,260</td>
+        <td style="color:#ef4444">36.5%</td>
+        <td>13</td><td>8,265</td><td>9</td>
+        <td>¥702</td>
+    </tr><tr>
+        <td>05-21</td>
+        <td>¥5,050</td><td>¥3,583</td>
+        <td style="color:#f59e0b">29.0%</td>
+        <td>10</td><td>8,658</td><td>8</td>
+        <td>¥980</td>
+    </tr><tr>
+        <td>05-22</td>
+        <td>¥5,640</td><td>¥3,843</td>
+        <td style="color:#ef4444">31.9%</td>
+        <td>10</td><td>9,016</td><td>9</td>
+        <td>¥374</td>
+    </tr><tr>
+        <td>05-23</td>
+        <td>¥10,308</td><td>¥5,941</td>
+        <td style="color:#ef4444">42.4%</td>
+        <td>12</td><td>0</td><td>9</td>
+        <td>¥257</td>
+    </tr><tr class="summary-row">
+        <td><strong>本周合计</strong></td>
+        <td><strong>¥51,121</strong></td><td><strong>¥31,550</strong></td>
+        <td style="color:#ef4444"><strong>38.3%</strong></td>
+        <td><strong>89</strong></td><td><strong>52,204</strong></td><td><strong>36</strong></td>
+        <td><strong>¥5,510</strong></td>
+    </tr>
+</tbody></table></div><div class="table-box">
+    <h3>三、周环比对比</h3>
+    <table><thead><tr>
+        <th>指标</th><th>本周</th><th>上周</th><th>环比</th>
+    </tr></thead><tbody><tr><td>总支付GMV</td><td>51121</td><td>78304</td><td class="wow-down">-34.7%</td></tr><tr><td>去退GMV</td><td>31550</td><td>45959</td><td class="wow-down">-31.4%</td></tr><tr><td>支付单量</td><td>89</td><td>106</td><td class="wow-down">-16.0%</td></tr><tr><td>UV</td><td>52204</td><td>53472</td><td class="wow-down">-2.4%</td></tr><tr><td>动销商品数</td><td>36</td><td>41</td><td class="wow-down">-12.2%</td></tr><tr><td>引力花费</td><td>5509.9</td><td>5392.8</td><td class="wow-up">+2.2%</td></tr><tr><td>退货率</td><td>38.3%</td><td>41.3%</td><td class="">-3.0pp</td></tr></tbody></table></div><div class="table-box">
+    <h3>四、品类对比（本周 vs 上周）</h3>
+    <table><thead><tr>
+        <th>品牌</th><th>类目</th><th>本周GMV</th><th>本周单量</th><th>上周GMV</th><th>上周单量</th>
+    </tr></thead><tbody><tr><td><span class="badge badge-casio">CASIO</span></td><td>日韩表</td><td>¥14,266</td><td>18</td><td>—</td><td>—</td></tr>
+<tr><td><span class="badge badge-vickit">Vickit</span></td><td>国表</td><td>¥11,718</td><td>41</td><td>—</td><td>—</td></tr></tbody></table></div><div class="table-box">
+    <h3>五、本周单品支付款式 — 按GMV排序</h3>
+    <table><thead><tr>
+        <th>#</th><th>货号</th><th>品牌</th><th>UV</th><th>单量</th><th>去退GMV</th><th>占比</th><th>单价</th><th>引力发布量</th>
+    </tr></thead><tbody><tr>
+        <td>1</td><td>VICKIT-爵士银</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>2,377</td><td>8</td><td>¥5,495</td><td>17.4%</td><td>¥687</td><td>3</td>
+    </tr><tr>
+        <td>2</td><td>GA-2100-1A1（Watch3-改装-霜银沙暗粉红）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>1,197</td><td>1</td><td>¥2,977</td><td>9.4%</td><td>¥2,977</td><td>4</td>
+    </tr><tr>
+        <td>3</td><td>GA-2100-1A1（Watch3-改装-冰刃系列）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>630</td><td>4</td><td>¥2,698</td><td>8.6%</td><td>¥674</td><td>0</td>
+    </tr><tr>
+        <td>4</td><td>VICKIT-蔷薇铠</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>10,411</td><td>19</td><td>¥1,635</td><td>5.2%</td><td>¥86</td><td>0</td>
+    </tr><tr>
+        <td>5</td><td>Vickit-一体化钢壳钢带系列</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>1,248</td><td>6</td><td>¥1,545</td><td>4.9%</td><td>¥258</td><td>0</td>
+    </tr><tr>
+        <td>6</td><td>GA-2100-1A1（Watch3-改装-抛光黑钢黑玫金）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>40</td><td>1</td><td>¥1,489</td><td>4.7%</td><td>¥1,489</td><td>0</td>
+    </tr><tr>
+        <td>7</td><td>GA-2100-7A7（Watch3-改装-抛光银白）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>614</td><td>2</td><td>¥1,399</td><td>4.4%</td><td>¥700</td><td>2</td>
+    </tr><tr>
+        <td>8</td><td>GA-2100FR-3A（Watch3-改装-抛光黑钢圣耀）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>341</td><td>1</td><td>¥1,399</td><td>4.4%</td><td>¥1,399</td><td>0</td>
+    </tr><tr>
+        <td>9</td><td>VICKIT-玫锻赤玺</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>384</td><td>2</td><td>¥1,399</td><td>4.4%</td><td>¥700</td><td>0</td>
+    </tr><tr>
+        <td>10</td><td>GA-2100GB-1A（Watch3-改装-霜金钢满金）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>1,271</td><td>1</td><td>¥1,399</td><td>4.4%</td><td>¥1,399</td><td>1</td>
+    </tr><tr>
+        <td>11</td><td>GA-2100-4A（Watch3-改装-玫金珊瑚红）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>198</td><td>0</td><td>¥1,389</td><td>4.4%</td><td>-</td><td>0</td>
+    </tr><tr>
+        <td>12</td><td>VICKIT-Vickit时尚银轮</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>937</td><td>1</td><td>¥999</td><td>3.2%</td><td>¥999</td><td>0</td>
+    </tr><tr>
+        <td>13</td><td>W-218H-1A（Watch3-改装-落霞黑方块）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>1,366</td><td>1</td><td>¥798</td><td>2.5%</td><td>¥798</td><td>0</td>
+    </tr><tr>
+        <td>14</td><td>A159WA-N1D（Watch3-改装-暗紫银小方块）</td>
+        <td><span class="badge badge-casio">CASIO</span></td>
+        <td>522</td><td>7</td><td>¥718</td><td>2.3%</td><td>¥103</td><td>1</td>
+    </tr><tr>
+        <td>15</td><td>VICKIT-甜心多巴胺彩壳坠</td>
+        <td><span class="badge badge-vickit">Vickit</span></td>
+        <td>2,308</td><td>5</td><td>¥645</td><td>2.0%</td><td>¥129</td><td>0</td>
+    </tr></tbody></table></div><div class="note-box">
+    <h3>六、运营总结</h3>
+    <p><strong>📊 整体表现：</strong>本周总支付GMV ¥51K（↓34.7%），去退GMV ¥31K。UV 52K基本持平（↓2.4%），但单量从106单降至89单，转化率明显下滑。退货率从41.3%降至38.3%（↓3.0pp），有所改善。</p>
+    <p><strong>📦 品类表现：</strong>Vickit（国表）贡献主要GMV（¥11,718），其中爵士银（¥5,495）为本周期单品冠军。CASIO改装表以GA-2100系列为主力，霜银沙暗粉红、冰刃系列表现稳定。</p>
+    <p><strong>⚠️ 核心问题：</strong>VICKIT-蔷薇铠 UV高达10,411但GMV仅¥1,635（19单），客单价极低（¥86），需评估是否值得继续投流。</p>
+    <p><strong>⭐ 单品亮点：</strong>TOP1爵士银8单¥5,495，客单价¥686，ROI健康。</p>
+    <p><strong>📋 下周工作重点：</strong></p>
+    <ul>
+        <li>排查GMV下降原因——UV持平但单量降16%，可能是主图/商详/定价问题</li>
+        <li>蔷薇铠需优化——高流量低转化，建议优化主图或调整定价策略</li>
+        <li>引力投放效率——本周花费¥5,510（+2.2%），但GMV降34%，需评估ROI</li>
+    </ul>
+    <p style="margin-top:12px;color:#475569;font-size:12px;">⚠️ 大盘数据仅覆盖5/1-5/10，本周无大盘指数可对比。5/23商详访客数据暂缺（UV=0）。</p>
+</div><div class="footer">蓄势 · 周度运营看板 | 数据源：飞书云文档 · 蓄势数据源收集表 | 自动生成</div></div><script>
+window.addEventListener('load',function(){
+    setTimeout(function(){
+        try{
+            new Chart(document.getElementById('chart1'),{
+                type:'bar',
+                data:{
+                    labels:["05-17", "05-18", "05-19", "05-20", "05-21", "05-22", "05-23"],
+                    datasets:[
+                        {label:'总支付GMV',data:[8917, 8954, 7115, 5137, 5050, 5640, 10308],backgroundColor:'#3b82f6',borderRadius:4,yAxisID:'y'},
+                        {label:'去退GMV',data:[3285, 6351, 5287, 3260, 3583, 3843, 5941],backgroundColor:'#8b5cf6',borderRadius:4,yAxisID:'y'},
+                        {label:'支付单量',data:[13, 16, 15, 13, 10, 10, 12],type:'line',borderColor:'#22c55e',tension:0.3,yAxisID:'y1',pointRadius:4},
+                        {label:'UV(百)',data:[109, 75, 78, 82, 86, 90, 0],type:'line',borderColor:'#f59e0b',borderDash:[4,4],tension:0.3,yAxisID:'y1',pointRadius:3}
+                    ]
+                },
+                options:{
+                    responsive:true,maintainAspectRatio:false,
+                    plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:16}}},
+                    scales:{
+                        y:{position:'left',ticks:{color:'#94a3b8',callback:v=>'¥'+(v/1000).toFixed(0)+'K'},grid:{color:'#1e293b'}},
+                        y1:{position:'right',ticks:{color:'#94a3b8'},grid:{display:false}},
+                        x:{ticks:{color:'#94a3b8'},grid:{display:false}}
+                    }
+                }
+            });
+        }catch(e){console.error(e)}
+    },200);
+});
+</script></body></html>
