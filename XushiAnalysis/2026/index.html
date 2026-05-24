@@ -137,7 +137,7 @@ td.num{text-align:right}
 <h2>📢 模块七：社区投放任务数据（按匹配货号汇总）</h2>
 <div class="filters">
 <label>任务月份：</label><select id="m7-month" onchange="updateM7()"><option value="all">全部</option></select>
-<label>动态发布日期：</label><select id="m7-pub" onchange="updateM7()"><option value="all">全部</option></select>
+<label>发布月份：</label><select id="m7-pub" onchange="updateM7()"><option value="all">全部</option></select>
 <button onclick="updateM7()">筛选</button>
 </div>
 <div class="table-scroll" style="max-height:500px" id="m7-table"></div>
@@ -364,12 +364,11 @@ function buildM7Table(data){
     });
     html+='</table>';return html;
 }
-function updateM7(){
-    const mon=document.getElementById('m7-month').value;
-    const pub=document.getElementById('m7-pub').value;
+function updateM7(){const mon=document.getElementById('m7-month').value;
+    const pubMon=document.getElementById('m7-pub').value;
     let filtered=TASK_RAW;
-    if(mon!=='all')filtered=filtered.filter(t=>t.month_str===mon);
-    if(pub!=='all')filtered=filtered.filter(t=>t.publish_date===pub);
+    if(mon!=='all')filtered=filtered.filter(function(t){return t.month_str===mon;});
+    if(pubMon!=='all'){var vd=window._pubDatesByMonth[pubMon]||[];filtered=filtered.filter(function(t){return vd.indexOf(t.publish_date)>=0;});}
     // Aggregate
     const agg={};
     filtered.forEach(t=>{
@@ -380,11 +379,11 @@ function updateM7(){
     const result=Object.entries(agg).map(([g,d])=>({goods:g,...d})).sort((a,b)=>b.total_amount-a.total_amount);
     document.getElementById('m7-table').innerHTML=buildM7Table(result);
 }
-function initM7(){
-    const ms=document.getElementById('m7-month');
-    TASK_MONTHS.forEach(m=>{const o=document.createElement('option');o.value=m;o.text=m;ms.appendChild(o);});
-    const ps=document.getElementById('m7-pub');
-    TASK_PUB_DATES.forEach(d=>{const o=document.createElement('option');o.value=d;o.text=d;ps.appendChild(o);});
+function initM7(){const ms=document.getElementById('m7-month');
+    TASK_MONTHS.forEach(function(m){var p=m.split('-');var label=p[0]+'年'+parseInt(p[1])+'月';var o=document.createElement('option');o.value=m;o.text=label;ms.appendChild(o);});
+    const ps=document.getElementById('m7-pub');var pm=[...new Set(TASK_PUB_DATES.map(function(d){return d.substring(0,7);}))].sort();
+    pm.forEach(function(m){var p=m.split('-');var label=p[0]+'年'+parseInt(p[1])+'月';var o=document.createElement('option');o.value=m;o.text=label;ps.appendChild(o);});
+    window._pubDatesByMonth={};TASK_PUB_DATES.forEach(function(d){var m=d.substring(0,7);if(!window._pubDatesByMonth[m])window._pubDatesByMonth[m]=[];window._pubDatesByMonth[m].push(d);});
 }
 
 // ─── M8 (split brand) ───
