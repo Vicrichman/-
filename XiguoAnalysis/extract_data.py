@@ -16,8 +16,8 @@ import json
 import sys
 
 EXCEL_PATH = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
-START_DATE = "2026-01-01"
-END_DATE = "2026-05-14"
+START_DATE = "2025-05-01"
+END_DATE = "2026-05-25"
 BRANDS = ["CASIO/卡西欧", "COACH/蔻驰"]
 BRAND_SHORT = {"CASIO/卡西欧": "卡西欧", "COACH/蔻驰": "蔻驰"}
 
@@ -135,6 +135,7 @@ name_col = 5
 brand_col = 8
 amount_col = 11
 qty_col = 10
+huohao_col = 6  # 货号
 
 VALID_STATUSES = ["交易成功", "待发货", "待收货", "待买家收货", "待平台发货", "待卖家发货", "待平台收货"]
 
@@ -383,32 +384,38 @@ for brand in BRAND_SHORT.values():
     push_monthly_out[brand] = {m: round(v, 2) for m, v in sorted(push_monthly[brand].items())}
 
 # ============================================================
-# 6. 社区投放数据 - 按月汇总
+# 6. 社区投放任务 - 按月汇总
 # ============================================================
-print("6. Extracting 社区投放数据...", file=sys.stderr)
-ws = wb["社区投放数据"]
-# Headers: 主任务ID, 子任务ID, 货号(spu_id), 任务类型, 达人昵称, 达人uid, 子任务金额, 动态发布时间...
+print("6. Extracting 社区投放任务...", file=sys.stderr)
+ws = wb["社区投放任务"]
+# Headers: 任务月份, 父任务ID, 子任务ID, 任务名称, 任务发布时间, 任务推广形式, 任务模式, 任务状态,
+#   任务完成时间, 任务金额, 实际任务金额, 合作达人, 达人uid, ... 匹配货号(29)
 comm_header = {}
-for c in range(1, min(30, ws.max_column + 1)):
+for c in range(1, min(35, ws.max_column + 1)):
     h = ws.cell(1, c).value
     if h: comm_header[str(h).strip()] = c
 
-spu_id_col_comm = 3  # 货号(spu_id)
-amount_col_comm = 7   # 子任务金额
-time_col_comm = 8     # 动态发布时间
+# Find columns
+task_month_col = comm_header.get("任务月份", 1)
+match_goods_col = comm_header.get("匹配货号", 29)
+amount_col_comm = comm_header.get("实际任务金额", 11)
+time_col_comm = comm_header.get("动态发布时间", 19)
+status_col = comm_header.get("任务状态", 8)
+
+print(f"  Comm cols: month={task_month_col}, match_goods={match_goods_col}, amount={amount_col_comm}, time={time_col_comm}, status={status_col}", file=sys.stderr)
 
 comm_monthly = defaultdict(lambda: defaultdict(lambda: {"cost": 0.0, "tasks": 0}))
 comm_processed = 0
 for r in range(2, ws.max_row + 1):
-    spu_ids = ws.cell(r, spu_id_col_comm).value
+    match_goods = ws.cell(r, match_goods_col).value
     amount_str = ws.cell(r, amount_col_comm).value
     dt = ws.cell(r, time_col_comm).value
     date_str = excel_to_date(dt)
     
-    if not (spu_ids and amount_str and date_str and in_range(date_str)):
+    if not (match_goods and amount_str and date_str and in_range(date_str)):
         continue
     
-    # Parse amount (could be "¥200元" or 200)
+    # Parse amount
     try:
         if isinstance(amount_str, str):
             amount_str = amount_str.replace("¥", "").replace("元", "").replace(",", "").strip()
@@ -416,23 +423,23 @@ for r in range(2, ws.max_row + 1):
     except:
         continue
     
-    # Parse SPU IDs (could be "29249125,25213007,...")
-    spu_list = str(spu_ids).split(",")
-    
-    month = date_to_month(date_str)
+    # Match brand from goods name keywords
+    goods_list = str(match_goods).split(",")
     brands_for_task = set()
-    for sid in spu_list:
-        try:
-            b = spu_brand.get(int(sid.strip()))
-            if b:
-                brands_for_task.add(b)
-        except:
-            pass
+    for g in goods_list:
+        g = g.strip()
+        # CASIO keywords
+        if any(kw in g for kw in ['CASIO', '卡西欧', 'GA-', 'W-', 'F-', 'A1', 'AE-', 'WS-', 'DW-', 'LTP']):
+            brands_for_task.add('卡西欧')
+        # COACH keywords
+        elif any(kw in g for kw in ['COACH', '蔻驰', 'Coach']):
+            brands_for_task.add('蔻驰')
     
     if not brands_for_task:
         continue
     
-    # Split cost evenly among brands if multiple brands in one task
+    # Split cost evenly among brands
+    month = date_to_month(date_str)
     per_brand = amount / len(brands_for_task)
     for b in brands_for_task:
         comm_monthly[b][month]["cost"] += per_brand
@@ -452,7 +459,108 @@ for brand in BRAND_SHORT.values():
         }
 
 # ============================================================
-# 7. Build output
+# 6b. 社区投放任务 - 按货号明细（新增模块七数据）
+# ============================================================
+print("6b. Extracting 社区投放任务-货号明细...", file=sys.stderr)
+comm_tasks = []
+
+for r in range(2, ws.max_row + 1):
+    # 任务月份 (col 1) - may be Excel serial or datetime
+    task_month_val = ws.cell(r, 1).value
+    task_month = excel_to_date(task_month_val)
+    if task_month:
+        task_month = task_month[:7]  # YYYY-MM
+    
+    # 动态发布时间 (col 19)
+    pub_date_val = ws.cell(r, 19).value
+    pub_date = excel_to_date(pub_date_val)
+    
+    # 实际任务金额 (col 11)
+    amount_val = ws.cell(r, 11).value
+    if amount_val is None:
+        continue
+    try:
+        if isinstance(amount_val, str):
+            amount_val = amount_val.replace("¥", "").replace("元", "").replace(",", "").strip()
+        amount = float(amount_val)
+    except:
+        continue
+    
+    # 曝光 (col 21), 阅读数 (col 22), 商详访问 (col 24)
+    def safe_int_comm(v):
+        if v is None:
+            return 0
+        if isinstance(v, (int, float)):
+            return int(v)
+        s = str(v).strip().replace(",", "")
+        if s == "暂无" or s == "":
+            return 0
+        try:
+            return int(float(s))
+        except:
+            return 0
+    
+    exposure = safe_int_comm(ws.cell(r, 21).value)
+    reads = safe_int_comm(ws.cell(r, 22).value)
+    visits = safe_int_comm(ws.cell(r, 24).value)
+    
+    # 匹配货号1 (col 29) and 匹配货号2 (col 30)
+    match_goods_1 = ws.cell(r, 29).value
+    match_goods_2 = ws.cell(r, 30).value
+    
+    all_goods = []
+    if match_goods_1:
+        for g in str(match_goods_1).split(","):
+            g = g.strip()
+            if g and g != "暂无" and g != "无":
+                all_goods.append(g)
+    if match_goods_2:
+        for g in str(match_goods_2).split(","):
+            g = g.strip()
+            if g and g != "暂无" and g != "无":
+                all_goods.append(g)
+    
+    if not all_goods:
+        continue
+    
+    # Determine brand per goods item
+    for goods in all_goods:
+        brand = None
+        if any(kw in goods for kw in ['CASIO', '卡西欧', 'GA-', 'W-', 'F-', 'A1', 'AE-', 'WS-', 'DW-', 'LTP']):
+            brand = '卡西欧'
+        elif any(kw in goods for kw in ['COACH', '蔻驰', 'Coach']):
+            brand = '蔻驰'
+        
+        if not brand:
+            continue
+        
+        # Split amount evenly among goods in this task
+        per_amount = round(amount / len(all_goods), 2)
+        
+        comm_tasks.append({
+            "brand": brand,
+            "huohao": goods,
+            "month": task_month or "",
+            "pub_date": pub_date or "",
+            "amount": per_amount,
+            "exposure": exposure,
+            "reads": reads,
+            "visits": visits
+        })
+
+print(f"  Comm task records (by huohao): {len(comm_tasks)}", file=sys.stderr)
+# Show sample
+sample_brands = {}
+for t in comm_tasks:
+    b = t["brand"]
+    if b not in sample_brands:
+        sample_brands[b] = 0
+    sample_brands[b] += 1
+for b, c in sample_brands.items():
+    print(f"    {b}: {c} records", file=sys.stderr)
+
+# ============================================================
+# 7. Build output (supplemental fields added separately)
 # ============================================================
 months_list = sorted(set(
     list(orders_monthly_out.get("卡西欧", {}).keys()) +
@@ -472,7 +580,8 @@ output = {
     "market_bag": market_data_bag,
     "market_monthly_bag_avg": market_monthly_bag_avg,
     "push_monthly": push_monthly_out,
-    "comm_monthly": comm_monthly_out
+    "comm_monthly": comm_monthly_out,
+    "comm_tasks": comm_tasks
 }
 
 # Write as data.js

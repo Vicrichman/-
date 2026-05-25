@@ -41,10 +41,13 @@ renderM4();
 renderM5();
 // ===== 模块六: 月度品牌占比 =====
 renderM6();
-// ===== 模块七: 营销效率 =====
+// ===== 模块七: 社区投放任务明细 =====
+initM7();
 renderM7();
-// ===== 模块八: 运营诊断 =====
+// ===== 模块八: 营销效率 =====
 renderM8();
+// ===== 模块九: 运营诊断 =====
+renderM9();
 
 }); // end window.load
 
@@ -244,9 +247,49 @@ c6Chart=new Chart(document.getElementById("c6"),{type:"bar",data:{labels:ML,data
 }
 
 // ================================================================
-// 模块七: 营销效率
+// 模块七: 社区投放任务明细（按货号汇总，支持日期+月份双筛选）
 // ================================================================
+function initM7(){
+  var tasks = D.comm_tasks || [];
+  var months = [];
+  tasks.forEach(function(t){ if(t.month && months.indexOf(t.month)<0) months.push(t.month); });
+  months.sort();
+  var sel = document.getElementById("m7-month");
+  months.forEach(function(m){ var o=document.createElement("option"); o.value=m; o.textContent=m; sel.appendChild(o); });
+}
 function renderM7(){
+  var brand = document.getElementById("m7-brand").value;
+  var ds = document.getElementById("m7-ds").value;
+  var de = document.getElementById("m7-de").value;
+  var month = document.getElementById("m7-month").value;
+  var tasks = (D.comm_tasks||[]).filter(function(t){return t.brand===brand;});
+  if(month) tasks = tasks.filter(function(t){return t.month===month;});
+  if(ds) tasks = tasks.filter(function(t){return t.pub_date&&t.pub_date>=ds;});
+  if(de) tasks = tasks.filter(function(t){return t.pub_date&&t.pub_date<=de;});
+  var agg={};
+  tasks.forEach(function(t){
+    var hh=t.huohao; if(!agg[hh]) agg[hh]={huohao:hh,tasks:0,amount:0,exposure:0,reads:0,visits:0};
+    agg[hh].tasks+=1; agg[hh].amount+=t.amount; agg[hh].exposure+=t.exposure; agg[hh].reads+=t.reads; agg[hh].visits+=t.visits;
+  });
+  var list=Object.values(agg).sort(function(a,b){return b.amount-a.amount;});
+  var el=document.getElementById("m7-tbl").getElementsByTagName("tbody")[0];
+  if(list.length===0){el.innerHTML='<tr><td colspan="9" style="color:#94a3b8;text-align:center;padding:20px">暂无数据</td></tr>';return;}
+  var rows=list.map(function(item,i){
+    var cpe=item.exposure>0?(item.amount/item.exposure).toFixed(2):"—";
+    var cpv=item.visits>0?(item.amount/item.visits).toFixed(2):"—";
+    return'<tr><td style="color:#94a3b8">'+(i+1)+'</td><td>'+item.huohao+'</td><td style="text-align:right">'+item.tasks+'</td><td style="text-align:right">¥'+item.amount.toLocaleString()+'</td><td style="text-align:right">'+item.exposure.toLocaleString()+'</td><td style="text-align:right">'+item.reads.toLocaleString()+'</td><td style="text-align:right">'+item.visits.toLocaleString()+'</td><td style="text-align:right">'+cpe+'</td><td style="text-align:right">'+cpv+'</td></tr>';
+  });
+  el.innerHTML=rows.join("");
+}
+function resetM7(){
+  document.getElementById("m7-ds").value=""; document.getElementById("m7-de").value="";
+  document.getElementById("m7-month").value=""; renderM7();
+}
+
+// ================================================================
+// 模块八: 营销效率
+// ================================================================
+function renderM8(){
 var co=gm("卡西欧","orders"),cho=gm("蔻驰","orders");
 MO.forEach(function(m,i){pc.push(D.push_monthly["卡西欧"]?D.push_monthly["卡西欧"][m]||0:0);pch.push(D.push_monthly["蔻驰"]?D.push_monthly["蔻驰"][m]||0:0);cc2.push(D.comm_monthly["卡西欧"]&&D.comm_monthly["卡西欧"][m]?D.comm_monthly["卡西欧"][m].cost||0:0);});
 MO.forEach(function(m,i){mc.push(pc[i]+cc2[i]);});
@@ -270,9 +313,9 @@ mt.appendChild(tr);});
 }
 
 // ================================================================
-// 模块八: 动态运营诊断与建议（详细版）
+// 模块九: 动态运营诊断与建议（详细版）
 // ================================================================
-function renderM8(){
+function renderM9(){
 var el=document.getElementById("mod8");if(!el)return;
 
 var totalGMV_C=gm("卡西欧","gmv").reduce(function(a,b){return a+b},0);

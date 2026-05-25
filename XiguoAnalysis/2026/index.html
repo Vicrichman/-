@@ -136,9 +136,32 @@ tr:hover{background:rgba(255,255,255,0.03)}
   <div class="chart-wrap"><canvas id="c6"></canvas></div>
 </div>
 
-<!-- 模块七: 营销费用效率（原模块四） -->
+<!-- 模块七: 社区投放任务明细（新增） -->
 <div class="card">
-  <h2>💰 模块七 · 营销费用效率对比</h2>
+  <h2>📢 模块七 · 社区投放任务明细</h2>
+  <div class="fb">
+    <label>品牌:</label>
+    <select id="m7-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
+    <label>发布日:</label>
+    <input type="date" id="m7-ds"><span style="color:#94a3b8">—</span><input type="date" id="m7-de">
+    <label>任务月:</label>
+    <select id="m7-month"><option value="">全部月份</option></select>
+    <button onclick="renderM7()">筛选</button>
+    <button onclick="resetM7()" style="background:#2d3148">重置</button>
+  </div>
+  <div style="overflow-x:auto">
+    <table id="m7-tbl"><thead><tr>
+      <th>#</th><th>货号</th><th style="text-align:right">任务数</th>
+      <th style="text-align:right">实际金额</th><th style="text-align:right">曝光</th>
+      <th style="text-align:right">阅读</th><th style="text-align:right">商详访问</th>
+      <th style="text-align:right">CPE(¥)</th><th style="text-align:right">CPV(¥)</th>
+    </tr></thead><tbody></tbody></table>
+  </div>
+</div>
+
+<!-- 模块八: 营销费用效率（原模块七） -->
+<div class="card">
+  <h2>💰 模块八 · 营销费用效率对比</h2>
   <div style="display:flex;gap:20px;flex-wrap:wrap">
     <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7a"></canvas></div>
     <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7b"></canvas></div>
@@ -146,9 +169,9 @@ tr:hover{background:rgba(255,255,255,0.03)}
   <table style="margin-top:16px"><thead><tr><th>月份</th><th>卡西欧·营销费</th><th>获客成本</th><th>ROI</th><th>蔻驰·营销费</th><th>获客成本</th><th>ROI</th></tr></thead><tbody id="tb-mkt"></tbody></table>
 </div>
 
-<!-- 模块八: 运营诊断（原模块五） -->
+<!-- 模块九: 运营诊断（原模块八） -->
 <div class="card">
-  <h2>📋 模块八 · 运营诊断与建议</h2>
+  <h2>📋 模块九 · 运营诊断与建议</h2>
   <div id="mod8"></div>
 </div>
 
@@ -165,8 +188,8 @@ tr:hover{background:rgba(255,255,255,0.03)}
   </div>
 </div>
 
-<script src="data.js?v=5"></script>
+<script src="data.js?v=6"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>
