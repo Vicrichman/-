@@ -140,6 +140,7 @@ VALID_STATUSES = ["交易成功", "待发货", "待收货", "待买家收货", "
 
 orders_monthly = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders": 0}))
 orders_by_spu = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders": 0}))
+orders_by_huohao = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders": 0}))  # 按货号汇总
 
 processed = 0
 for r in range(2, ws.max_row + 1):
@@ -171,6 +172,11 @@ for r in range(2, ws.max_row + 1):
     orders_by_spu[b][spu_key]["gmv"] += gmv
     orders_by_spu[b][spu_key]["orders"] += 1
     orders_by_spu[b][spu_key]["spuid"] = int(spuid)
+    
+    # 按货号汇总
+    hh = str(ws.cell(r, huohao_col).value).strip() if ws.cell(r, huohao_col).value else spu_key
+    orders_by_huohao[b][hh]["gmv"] += gmv
+    orders_by_huohao[b][hh]["orders"] += 1
     
     processed += 1
 
