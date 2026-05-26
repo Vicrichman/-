@@ -80,7 +80,11 @@ var ds=document.getElementById("m2-ds").value||DR.start;
 var de=document.getElementById("m2-de").value||DR.end;
 var daily=D.uv_daily_by_brand[brand]||[];
 daily=daily.filter(function(d){return d.date>=ds&&d.date<=de});
-if(daily.length===0){document.getElementById("c2").parentElement.innerHTML='<div style="text-align:center;color:#94a3b8;padding:60px">暂无数据</div>';return;}
+if(daily.length===0){
+  var parent=document.getElementById("c2").parentElement;
+  parent.innerHTML='<canvas id="c2"></canvas><div style="text-align:center;color:#94a3b8;padding:60px">暂无数据</div>';
+  return;
+}
 var lbs=daily.map(function(d){return d.date.slice(5)});
 var uv=daily.map(function(d){return d.uv});
 var gmv=daily.map(function(d){return d.gmv/10000});
@@ -119,7 +123,8 @@ function tbl(arr,type,container){
   if(arr.length===0){el.innerHTML='<div style="color:#94a3b8;font-size:12px;text-align:center;padding:20px">暂无数据</div>';return;}
   var rows=arr.map(function(item,i){
     var full=item.spu.replace(/"/g,"&quot;");
-    var nm=item.spu.length>25?item.spu.slice(0,25)+"...":item.spu;
+    var displayName=brand==="蔻驰"?(item.huohao||item.spu):item.spu;
+    var nm=displayName.length>25?displayName.slice(0,25)+"...":displayName;
     var v=type==="uv"?item.uv.toLocaleString():type==="gmv"?"¥"+item.gmv.toLocaleString():item.orders+"单";
     return'<tr><td style="color:#94a3b8;width:24px">'+(i+1)+'</td><td><span class="slnk" data-brand="'+brand+'" data-spu="'+full+'">'+nm+'</span></td><td style="text-align:right">'+v+'</td></tr>';
   });
