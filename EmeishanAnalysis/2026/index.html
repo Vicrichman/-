@@ -89,6 +89,8 @@ tr:hover{background:#1e2130}
     <input type="text" id="m2-end" style="width:120px" placeholder="结束">
     <label>类目：</label>
     <select id="m2-cat" style="min-width:150px"><option value="">全部</option></select>
+    <label>大盘：</label>
+    <select id="m2-mkt" style="min-width:130px"><option value="">无</option></select>
     <button class="btn btn-sm" onclick="renderM2()">刷新</button>
   </div>
   <canvas id="m2Chart" height="280"></canvas>
@@ -169,20 +171,20 @@ tr:hover{background:#1e2130}
   </div>
 </div>
 
-<!-- ====== Module 6: Marketing Efficiency ====== -->
-<h2>💰 六、营销费用效率分析</h2>
+<!-- ====== Module 6: Dewu Push Analysis ====== -->
+<h2>💰 六、得物推投放分析</h2>
 <div class="card">
   <div class="row">
     <div class="col">
-      <h3>月度营销费用构成</h3>
-      <canvas id="m6costChart" height="260"></canvas>
+      <h3>每日消耗 & ROI趋势</h3>
+      <canvas id="m6pushChart" height="260"></canvas>
     </div>
     <div class="col">
-      <h3>获客成本 & ROI</h3>
-      <canvas id="m6roiChart" height="260"></canvas>
+      <h3>月度投放效率概览</h3>
+      <canvas id="m6effChart" height="260"></canvas>
     </div>
   </div>
-  <div class="tbl-wrap" style="max-height:300px;margin-top:14px"><table><thead><tr><th>月份</th><th>得物推消耗</th><th>社区投放</th><th>营销总费用</th><th class="num">成交订单</th><th class="num">订单获客成本</th><th class="num">GMV</th><th class="num">ROI</th></tr></thead><tbody id="m6-body"></tbody></table></div>
+  <div class="tbl-wrap" style="max-height:300px;margin-top:14px"><table><thead><tr><th>月份</th><th class="num">消耗</th><th class="num">直接GMV</th><th class="num">引导GMV</th><th class="num">总GMV</th><th class="num">直接ROI</th><th class="num">综合ROI</th><th class="num">成交订单</th><th class="num">单均成本</th></tr></thead><tbody id="m6-body"></tbody></table></div>
 </div>
 
 <!-- ====== Module 7: Operational Analysis ====== -->
@@ -197,7 +199,7 @@ const DR = D.dr || {s: MONTHS[0]+"-01", e: MONTHS[MONTHS.length-1]+"-01"};
 const ALL_MONTHS = MONTHS;
 const TOP_CATS = D.topCategories || [];
 
-let m1Chart=null, m2Chart=null, m5Chart=null, m5rChart=null, m6cChart=null, m6rChart=null, popChart=null;
+let m1Chart=null, m2Chart=null, m5Chart=null, m5rChart=null, m6pChart=null, m6eChart=null, popChart=null;
 let popupSpu = null;
 
 // ============ HELPERS ============
@@ -227,6 +229,12 @@ window.addEventListener('load',function(){
   populateCatSelects();
   // Populate M1 market selector
   populateM1Selectors();
+  // Populate M2 market selector
+  (function(){
+    const sel = document.getElementById('m2-mkt');
+    const mktCats = Object.keys(D.market||{});
+    sel.innerHTML = '<option value="">无</option>' + mktCats.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+  })();
 
   // Initial renders
   renderM1();
@@ -319,6 +327,7 @@ function renderM2(){
   const s = document.getElementById('m2-start').value || DR.s;
   const e = document.getElementById('m2-end').value || DR.e;
   const cat = document.getElementById('m2-cat').value;
+  const mktName = document.getElementById('m2-mkt').value;
 
   let days = D.uv_daily.filter(d => d.date >= s && d.date <= e);
   const labels = days.map(d => d.date.substring(5)); // "MM-DD"
@@ -327,26 +336,41 @@ function renderM2(){
   const gmvData = days.map(d => Math.round(d.gmv));
   const ordData = days.map(d => d.orders);
 
+  const datasets = [
+    {label:'UV',data:uvData,type:'line',borderColor:'#a0b0ff',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y',order:1},
+    {label:'GMV',data:gmvData,type:'bar',backgroundColor:'#4caf8499',borderColor:'#4caf84',yAxisID:'y1',order:2},
+    {label:'订单数',data:ordData,type:'bar',backgroundColor:'#f0a06099',borderColor:'#f0a060',yAxisID:'y2',order:3}
+  ];
+
+  // Add market line if selected
+  if(mktName && D.market[mktName]){
+    const mktArr = D.market[mktName];
+    const mktMap = {}; mktArr.forEach(x => {mktMap[x.date] = x.value});
+    const mktData = labels.map(l => {
+      const idx = days.findIndex(d => d.date.substring(5) === l);
+      return idx >= 0 ? (mktMap[days[idx].date] || null) : null;
+    });
+    datasets.push({label:mktName+'大盘',data:mktData,type:'line',borderColor:'#f59e0b',backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],tension:.3,yAxisID:'y3',order:0,spanGaps:true});
+  }
+
   if(m2Chart) m2Chart.destroy();
   const ctx = document.getElementById('m2Chart').getContext('2d');
   m2Chart = new Chart(ctx,{
     type:'bar',
-    data:{labels,datasets:[
-      {label:'UV',data:uvData,type:'line',borderColor:'#a0b0ff',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y',order:1},
-      {label:'GMV',data:gmvData,type:'bar',backgroundColor:'#4caf8499',borderColor:'#4caf84',yAxisID:'y1',order:2},
-      {label:'订单数',data:ordData,type:'bar',backgroundColor:'#f0a06099',borderColor:'#f0a060',yAxisID:'y2',order:3}
-    ]},
+    data:{labels,datasets},
     options:{
       responsive:true,
       plugins:{tooltip:{callbacks:{label:function(ctx){
         if(ctx.datasetIndex===0) return 'UV: '+fmt(ctx.raw);
         if(ctx.datasetIndex===1) return 'GMV: ¥'+fmt(ctx.raw);
-        return '订单: '+fmt(ctx.raw);
+        if(ctx.datasetIndex===2) return '订单: '+fmt(ctx.raw);
+        return ctx.dataset.label+': '+fmt(ctx.raw);
       }}}},
       scales:{
         y:{type:'linear',position:'left',title:{display:true,text:'UV'},grid:{color:'#2a2d3a'},ticks:{color:'#a0b0ff'}},
         y1:{type:'linear',position:'right',title:{display:true,text:'GMV'},grid:{drawOnChartArea:false},ticks:{color:'#4caf84',callback:v=>'¥'+fmt(v/1000,0)+'k'}},
         y2:{type:'linear',position:'right',title:{display:true,text:'订单'},grid:{drawOnChartArea:false},ticks:{color:'#f0a060'}},
+        y3:{type:'linear',position:'right',title:{display:true,text:'大盘(万元)'},grid:{display:false},ticks:{color:'#f59e0b'}},
         x:{grid:{color:'#2a2d3a'}}
       }
     }
@@ -557,85 +581,98 @@ function renderM5(){
   });
 }
 
-// ============ MODULE 6: Marketing Efficiency ============
+// ============ MODULE 6: Dewu Push Analysis ============
 function renderM6(){
-  const colors = ['#6c8cff','#f0a060'];
-
-  // Cost composition chart
   const labels = ALL_MONTHS;
-  const pushData = ALL_MONTHS.map(m => D.push_monthly[m]||0);
-  const commData = ALL_MONTHS.map(m => (D.comm_monthly[m]||{}).cost||0);
+  const colors = ['#3b82f6','#34d399','#f59e0b'];
 
-  if(m6cChart) m6cChart.destroy();
-  const ctx6c = document.getElementById('m6costChart').getContext('2d');
-  m6cChart = new Chart(ctx6c,{
+  // Chart 1: Daily push consume + ROI
+  const pd = D.push_daily || {};
+  const allPdDates = Object.keys(pd).sort();
+  const pdLabels = allPdDates.map(d => d.substring(5));
+  const consumeData = allPdDates.map(d => pd[d].consume||0);
+  const totalGmvData = allPdDates.map(d => (pd[d].direct||0)+(pd[d].guide||0));
+  const roiData = allPdDates.map(d => {
+    const c = pd[d].consume||0;
+    return c>0 ? Math.round(((pd[d].direct||0)+(pd[d].guide||0))/c*100)/100 : 0;
+  });
+
+  if(m6pChart) m6pChart.destroy();
+  const ctx6p = document.getElementById('m6pushChart').getContext('2d');
+  m6pChart = new Chart(ctx6p,{
     type:'bar',
-    data:{labels,datasets:[
-      {label:'得物推消耗',data:pushData,backgroundColor:colors[0]+'99',borderColor:colors[0]},
-      {label:'社区投放',data:commData,backgroundColor:colors[1]+'99',borderColor:colors[1]}
+    data:{labels:pdLabels,datasets:[
+      {label:'消耗(元)',data:consumeData,type:'bar',backgroundColor:colors[0]+'99',borderColor:colors[0],yAxisID:'y',order:2},
+      {label:'总GMV',data:totalGmvData,type:'line',backgroundColor:'transparent',borderColor:colors[1],borderWidth:2,tension:.3,yAxisID:'y',order:1},
+      {label:'ROI',data:roiData,type:'line',backgroundColor:'transparent',borderColor:colors[2],borderWidth:2,borderDash:[4,3],tension:.3,yAxisID:'y1',order:0}
     ]},
     options:{
       responsive:true,
-      plugins:{tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': ¥'+fmt(ctx.raw,0)}}}},
+      plugins:{title:{display:true,text:'每日得物推投放趋势',color:'#e0e0e0',font:{size:12}},tooltip:{callbacks:{label:function(ctx){
+        if(ctx.datasetIndex===2) return 'ROI: '+fmt(ctx.raw,1);
+        return ctx.dataset.label+': ¥'+fmt(ctx.raw,0);
+      }}}},
       scales:{
-        x:{stacked:true,grid:{color:'#2a2d3a'}},
-        y:{stacked:true,title:{display:true,text:'费用 (元)'},ticks:{callback:v=>'¥'+fmt(v,0)},grid:{color:'#2a2d3a'}}
+        y:{type:'linear',position:'left',title:{display:true,text:'金额(元)'},grid:{color:'#2a2d3a'},ticks:{color:'#e0e0e0',callback:v=>'¥'+fmt(v,0)}},
+        y1:{type:'linear',position:'right',title:{display:true,text:'ROI'},grid:{drawOnChartArea:false},ticks:{color:colors[2]}},
+        x:{grid:{color:'#2a2d3a'},ticks:{color:'#e0e0e0',maxTicksLimit:15}}
       }
     }
   });
 
-  // ROI & CAC chart
-  const cacData = ALL_MONTHS.map(m => {
-    const cost = (D.push_monthly[m]||0) + ((D.comm_monthly[m]||{}).cost||0);
-    const orders = (D.orders_monthly[m]||{}).o||1;
-    return Math.round(cost/orders*100)/100;
+  // Chart 2: Monthly efficiency overview
+  const pushM = labels.map(m => D.push_monthly[m]||0);
+  const pushDGmv = labels.map(m => {
+    const dd = Object.entries(pd).filter(([d])=>d.startsWith(m));
+    return dd.reduce((s,[,v])=>s+(v.direct||0),0);
   });
-  const roiData = ALL_MONTHS.map(m => {
-    const cost = (D.push_monthly[m]||0) + ((D.comm_monthly[m]||{}).cost||0);
-    const gmv = (D.orders_monthly[m]||{}).gmv||0;
-    return cost>0 ? Math.round(gmv/cost*100)/100 : 0;
+  const pushGGmv = labels.map(m => {
+    const dd = Object.entries(pd).filter(([d])=>d.startsWith(m));
+    return dd.reduce((s,[,v])=>s+(v.guide||0),0);
   });
+  const pushROI = labels.map((m,i) => pushM[i]>0 ? Math.round((pushDGmv[i]+pushGGmv[i])/pushM[i]*100)/100 : 0);
 
-  if(m6rChart) m6rChart.destroy();
-  const ctx6r = document.getElementById('m6roiChart').getContext('2d');
-  m6rChart = new Chart(ctx6r,{
+  if(m6eChart) m6eChart.destroy();
+  const ctx6e = document.getElementById('m6effChart').getContext('2d');
+  m6eChart = new Chart(ctx6e,{
     type:'bar',
     data:{labels,datasets:[
-      {label:'获客成本(元/单)',data:cacData,type:'bar',backgroundColor:'#e060a099',borderColor:'#e060a0',yAxisID:'y'},
-      {label:'ROI',data:roiData,type:'line',borderColor:'#4caf84',backgroundColor:'transparent',borderWidth:2,tension:.3,yAxisID:'y1'}
+      {label:'消耗',data:pushM,backgroundColor:'#3b82f699',borderColor:'#3b82f6',yAxisID:'y',order:3},
+      {label:'直接GMV',data:pushDGmv,backgroundColor:'#34d39999',borderColor:'#34d399',yAxisID:'y',order:2},
+      {label:'引导GMV',data:pushGGmv,backgroundColor:'#f59e0b99',borderColor:'#f59e0b',yAxisID:'y',order:1},
+      {label:'ROI',data:pushROI,type:'line',backgroundColor:'transparent',borderColor:'#f87171',borderWidth:2,tension:.3,yAxisID:'y1',order:0}
     ]},
     options:{
       responsive:true,
-      plugins:{tooltip:{callbacks:{label:function(ctx){
-        if(ctx.datasetIndex===0) return '获客成本: ¥'+fmt(ctx.raw,1);
-        return 'ROI: '+fmt(ctx.raw,1);
-      }}}},
+      plugins:{title:{display:true,text:'月度得物推效率',color:'#e0e0e0',font:{size:12}}},
       scales:{
-        y:{type:'linear',position:'left',title:{display:true,text:'获客成本 (元)'},grid:{color:'#2a2d3a'},ticks:{color:'#e060a0'}},
-        y1:{type:'linear',position:'right',title:{display:true,text:'ROI'},grid:{drawOnChartArea:false},ticks:{color:'#4caf84'}},
+        y:{stacked:false,title:{display:true,text:'金额(元)'},grid:{color:'#2a2d3a'},ticks:{callback:v=>'¥'+fmt(v,0)}},
+        y1:{position:'right',title:{display:true,text:'ROI'},grid:{drawOnChartArea:false},ticks:{color:'#f87171'}},
         x:{grid:{color:'#2a2d3a'}}
       }
     }
   });
 
   // Summary table
-  document.getElementById('m6-body').innerHTML = ALL_MONTHS.map(m => {
-    const push = D.push_monthly[m]||0;
-    const comm = (D.comm_monthly[m]||{}).cost||0;
-    const totalCost = push + comm;
-    const orders = (D.orders_monthly[m]||{}).o||0;
-    const gmv = (D.orders_monthly[m]||{}).gmv||0;
-    const cac = orders>0 ? Math.round(totalCost/orders*100)/100 : 0;
-    const roi = totalCost>0 ? Math.round(gmv/totalCost*100)/100 : 0;
+  document.getElementById('m6-body').innerHTML = labels.map((m,i) => {
+    const consume = pushM[i];
+    const dGmv = pushDGmv[i];
+    const gGmv = pushGGmv[i];
+    const totalG = dGmv + gGmv;
+    const dROI = consume>0 ? Math.round(dGmv/consume*100)/100 : 0;
+    const sROI = consume>0 ? Math.round(totalG/consume*100)/100 : 0;
+    const ords = (D.orders_monthly[m]||{}).o||0;
+    const cpc = ords>0 ? Math.round(consume/ords*100)/100 : 0;
     return `<tr>
       <td>${m}</td>
-      <td class="num">¥${fmt(push,0)}</td>
-      <td class="num">¥${fmt(comm,0)}</td>
-      <td class="num">¥${fmt(totalCost,0)}</td>
-      <td class="num">${fmt(orders)}</td>
-      <td class="num">¥${fmt(cac,1)}</td>
-      <td class="num">¥${fmt(gmv,0)}</td>
-      <td class="num">${fmt(roi,1)}</td>
+      <td class="num">¥${fmt(consume,0)}</td>
+      <td class="num">¥${fmt(dGmv,0)}</td>
+      <td class="num">¥${fmt(gGmv,0)}</td>
+      <td class="num">¥${fmt(totalG,0)}</td>
+      <td class="num ${dROI>=2?'green':'red'}">${fmt(dROI,1)}</td>
+      <td class="num ${sROI>=2?'green':'red'}">${fmt(sROI,1)}</td>
+      <td class="num">${fmt(ords)}</td>
+      <td class="num">¥${fmt(cpc,1)}</td>
     </tr>`;
   }).join('');
 }
