@@ -7,7 +7,7 @@ from collections import defaultdict
 import json, re, sys, os, time
 
 EXCEL = "/mnt/e/Obsidian本地仓库/09-数据源/峨眉山数据源收集表.xlsx"
-START = "2025-05-01"; END = "2026-05-15"; BRAND = "峨眉山"
+START = "2025-05-01"; END = "2026-05-26"; BRAND = "峨眉山"
 OUT = "/home/Vic/dewu-reports/EmeishanAnalysis/2026/data.js"
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 
@@ -155,9 +155,8 @@ print(f"  {len(pm)} months ({time.time()-t0:.1f}s)", flush=True)
 
 # ── 5. 社区投放 ──
 print("5. 社区投放...", flush=True)
-dt=pd.read_excel(EXCEL, sheet_name='社区投放任务', usecols=['任务月份','子任务ID','任务状态','任务发布时间','任务金额'])
-dc=pd.read_excel(EXCEL, sheet_name='社区投放', usecols=['子任务ID','任务实际金额'])
-print(f"  Task:{len(dt)} Comm:{len(dc)} ({time.time()-t0:.1f}s)", flush=True)
+dt=pd.read_excel(EXCEL, sheet_name='社区投放任务', usecols=['任务月份','子任务ID','任务状态','任务发布时间','任务金额','任务实际金额'])
+print(f"  Task:{len(dt)} ({time.time()-t0:.1f}s)", flush=True)
 
 EXCL={"关闭","待发货","待收货","待发布","待支付"}
 ti={}
@@ -169,10 +168,15 @@ for _,r in dt.iterrows():
     if not m:
         d=td(r['任务发布时间'])
         if d: m=dm(d)
-    amt_s=str(r['任务金额']).strip() if pd.notna(r['任务金额']) else "0"
-    amt_s=amt_s.replace("元","").replace("¥","").replace(",","").strip()
-    try: amt=float(amt_s)
-    except: amt=0
+    # 优先取任务实际金额，fallback 任务金额
+    actual=cn(r['任务实际金额']) if pd.notna(r['任务实际金额']) else 0
+    if actual>0:
+        amt=actual
+    else:
+        amt_s=str(r['任务金额']).strip() if pd.notna(r['任务金额']) else "0"
+        amt_s=amt_s.replace("元","").replace("¥","").replace(",","").strip()
+        try: amt=float(amt_s)
+        except: amt=0
     if sid and m: ti[sid]={"m":m,"amt":amt}
 
 cm=defaultdict(lambda: {"c":0,"t":0})
