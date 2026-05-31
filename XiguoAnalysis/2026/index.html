@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>喜过跨品牌运营分析看板</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="data.js?v=2"></script>
+<script src="data.js?v=3"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0f1117; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; }
@@ -34,6 +34,7 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 .alert-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 12px; }
 .alert-table th { text-align: left; padding: 8px 10px; color: #94a3b8; border-bottom: 1px solid #2d3348; background: #0f1117; position: sticky; top: 0; }
 .alert-table td { padding: 8px 10px; border-bottom: 1px solid #1a1d2e; }
+.alert-table tfoot td { font-weight: bold; color: #60a5fa; border-top: 2px solid #2d3348; background: #151822; }
 .alert-row { background: rgba(248,113,113,0.08); }
 .delta-up { color: #f87171; font-weight: bold; }
 .delta-down { color: #34d399; font-weight: bold; }
@@ -43,10 +44,6 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 .roi-high { color: #34d399; font-weight: bold; }
 .roi-mid { color: #f59e0b; }
 .roi-low { color: #f87171; }
-.analysis-box { background: #0f1117; border-radius: 8px; padding: 16px; margin-top: 16px; line-height: 1.7; font-size: 13px; border: 1px solid #2d3348; }
-.analysis-box h4 { color: #60a5fa; margin-bottom: 8px; }
-.analysis-box ul { padding-left: 20px; }
-.analysis-box li { margin-bottom: 4px; color: #c0c0c0; }
 .no-data { color: #94a3b8; text-align: center; padding: 40px; font-size: 14px; }
 </style>
 </head>
@@ -119,12 +116,18 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
   <table class="alert-table">
     <thead><tr><th>匹配货号</th><th>动态发布数量</th><th>实际任务金额(¥)</th><th>曝光</th><th>阅读数</th><th>商详访问</th><th>互动数</th></tr></thead>
     <tbody id="m4-body"></tbody>
+    <tfoot id="m4-foot"></tfoot>
   </table>
 </div>
 
 <!-- ====== MODULE 5 ====== -->
 <div class="module">
   <h2>🚀 模块五：得物推投放分析</h2>
+  <div class="filters">
+    <label>日期筛选</label>
+    <input type="date" id="m5-start" value=""><span style="color:#94a3b8">至</span><input type="date" id="m5-end" value="">
+    <button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;">筛选</button>
+  </div>
   <table class="alert-table">
     <thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead>
     <tbody id="m5-body"></tbody>
@@ -134,7 +137,7 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 <script>
 let m1Chart = null, m3Mode = '7d';
 
-function fmt(n, d=0) { return Number(n||0).toLocaleString('zh-CN',{maximumFractionDigits:d}); }
+function fmt(n, d) { d=d||0; return Number(n||0).toLocaleString('zh-CN',{maximumFractionDigits:d}); }
 function fmtMoney(n) { return '¥'+fmt(n,0); }
 
 // ============ MODULE 1 ============
@@ -180,64 +183,88 @@ function updateM1() {
   filtered = filtered.filter(function(r) {
     if (isMonthly) {
       var rm = r.date_str.substring(0,7);
-      return rm >= mFrom && rm <= mTo && brands.indexOf(r.brand)>=0;
+      if (rm < mFrom || rm > mTo) return false;
     } else {
-      if (d1 && r.date_str < d1) return false;
-      if (d2 && r.date_str > d2) return false;
-      return brands.indexOf(r.brand)>=0;
+      if (mFrom === 'all' && mTo === 'all') {
+        if (d1 && r.date_str < d1) return false;
+        if (d2 && r.date_str > d2) return false;
+      }
     }
+    if (!goodsFilter && brands.indexOf(r.brand) < 0) return false;
+    return true;
   });
-
-  var labels, groupFn, labelFn;
-  if (isMonthly && mFrom !== 'all' && mTo !== 'all') {
-    var months = [];
-    var m = mFrom;
-    while (m <= mTo) { months.push(m); var parts=m.split('-'); var y=parseInt(parts[0]), mo=parseInt(parts[1]); mo++; if(mo>12){y++;mo=1;} m=y+'-'+(mo<10?'0'+mo:mo); }
-    labels = months.map(function(x){return x.replace('-','年')+'月';});
-    groupFn = function(r){return r.date_str.substring(0,7);};
-    labelFn = function(x){return x;};
-  } else {
-    labels = ALL_DATES.filter(function(d){return (!d1||d>=d1)&&(!d2||d<=d2);});
-    groupFn = function(r){return r.date_str;};
-    labelFn = function(x){return x.substring(5);};
-  }
-
-  var brandColors = {'卡西欧':'#3b82f6','蔻驰':'#f59e0b'};
-  var datasets = [];
-  brands.forEach(function(brand) {
-    var brandData = {};
-    labels.forEach(function(l){brandData[l]={GMV:0,UV:0,orders:0};});
-    filtered.filter(function(r){return r.brand===brand;}).forEach(function(r){
-      var key = groupFn(r);
-      if (brandData[key]) { brandData[key].GMV += r.GMV; brandData[key].UV += r.UV; brandData[key].orders += r.orders; }
-    });
-    var clr = brandColors[brand] || '#94a3b8';
-    datasets.push({label:brand+' GMV', yAxisID:'y', type:'bar', data:labels.map(function(l){return brandData[l].GMV;}), backgroundColor:clr+'44', borderColor:clr, borderWidth:1});
-    datasets.push({label:brand+' UV', yAxisID:'y1', type:'line', data:labels.map(function(l){return brandData[l].UV;}), borderColor:clr, borderDash:[5,5], pointRadius:0, tension:0.3});
+  
+  var byDate = {};
+  filtered.forEach(function(r) {
+    var key = isMonthly ? r.date_str.substring(0,7) : r.date_str;
+    if (!byDate[key]) byDate[key] = {gmv:0,uv:0,orders:0};
+    byDate[key].gmv += r.GMV||0;
+    byDate[key].uv += r.UV||0;
+    byDate[key].orders += r.orders||0;
   });
-
-  // 大盘指数
-  var mktLabels = labels.map(labelFn);
-  var mktData = labels.map(function(l){var orig=l;if(isMonthly){var parts=l.split('年');var mth=parts[1].replace('月','');var yr=parts[0];orig=yr+'-'+mth+'-01';} var sum=0,cnt=0; Object.keys(MARKET_MAP).forEach(function(d){if(d.substring(0,7)===orig.substring(0,7)){sum+=MARKET_MAP[d];cnt++;}}); return cnt>0?sum/cnt:null;});
-  datasets.push({label:'大盘指数(日韩表)', yAxisID:'y2', type:'line', data:mktData, borderColor:'#a78bfa', borderDash:[5,5], pointRadius:0, tension:0.3, spanGaps:true});
-
-  if (m1Chart) m1Chart.destroy();
+  
+  var dates = Object.keys(byDate).sort();
+  var gmv = dates.map(function(d){return byDate[d].gmv;});
+  var uv = dates.map(function(d){return byDate[d].uv;});
+  var orders = dates.map(function(d){return byDate[d].orders;});
+  
+  // Market index
+  var marketData = dates.map(function(d) {
+    if (isMonthly) {
+      var vals = Object.keys(MARKET_MAP).filter(function(k){return k.substring(0,7)===d;}).map(function(k){return MARKET_MAP[k];});
+      return vals.length>0 ? +(vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1) : null;
+    }
+    return MARKET_MAP[d] || null;
+  });
+  
+  if (m1Chart) { m1Chart.destroy(); m1Chart=null; }
+  var existing = Chart.getChart('m1-chart');
+  if (existing) existing.destroy();
   var ctx = document.getElementById('m1-chart').getContext('2d');
+  
+  var datasets = [
+    { label:'GMV(¥)', data:gmv, type:'bar', backgroundColor:'rgba(59,130,246,0.6)', borderColor:'#3b82f6', borderWidth:1, yAxisID:'y', order:3 },
+    { label:'UV', data:uv, type:'line', borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', tension:0.3, yAxisID:'y1', pointRadius:1, order:2 },
+  ];
+  var hasMarket = marketData.some(function(v){return v!==null;});
+  if (hasMarket) {
+    datasets.push({ label:'大盘指数(日韩表·万元)', data:marketData, type:'line', borderColor:'#a78bfa', borderDash:[5,5], tension:0.3, yAxisID:'y2', pointRadius:3, spanGaps:true, order:1, borderWidth:1.5 });
+  }
+  
   m1Chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: labels.map(labelFn) },
+    data: { labels: dates, datasets: datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8 } },
-        tooltip: { callbacks: { label: function(ctx){var v=ctx.raw;return ctx.dataset.label+': '+(ctx.dataset.type==='bar'?fmtMoney(v):ctx.dataset.yAxisID==='y2'?fmt(v,1):fmt(v));} } } },
+      interaction: { mode:'index', intersect:false },
+      plugins: { 
+        legend: { labels:{color:'#94a3b8',usePointStyle:true} },
+        tooltip: { callbacks: { afterBody: function(tc) { var i=tc[0].dataIndex; return ['订单数: '+fmt(orders[i])]; } } }
+      },
       scales: {
-        y: { position: 'left', title: { text: 'GMV(¥)', color: '#94a3b8' }, ticks: { color: '#94a3b8', callback: function(v){return v>=10000?(v/10000).toFixed(1)+'万':v;} }, grid: { color: '#1e2235' } },
-        y1: { position: 'right', title: { text: 'UV', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false } },
-        y2: { position: 'right', title: { text: '大盘(万元)', color: '#a78bfa' }, ticks: { color: '#a78bfa' }, grid: { drawOnChartArea: false } }
+        x: { ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,
+          callback:function(v){var s=String(v);return isMonthly?s.substring(0,4)+'年'+s.substring(5,7)+'月':s.substring(5);}} },
+        y: { type:'linear', position:'left', title:{display:true,text:'GMV(¥)',color:'#3b82f6'}, ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}} },
+        y1: { type:'linear', position:'right', title:{display:true,text:'UV',color:'#f59e0b'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false} },
+        y2: { type:'linear', position:'right', title:{display:true,text:'大盘(万元)',color:'#a78bfa'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true },
       }
     },
-    plugins: [{ id: 'datasets', beforeUpdate: function(chart){chart.data.datasets=datasets;} }]
+    plugins: [{
+      id: 'orderLabels',
+      afterDraw: function(chart) {
+        var ctx2 = chart.ctx;
+        var meta = chart.getDatasetMeta(0);
+        var yScale = chart.scales.y;
+        meta.data.forEach(function(bar, i) {
+          if (orders[i] <= 0) return;
+          var x = bar.x, y = bar.y < yScale.getPixelForValue(0) ? bar.y + 4 : yScale.getPixelForValue(0) - 12;
+          ctx2.save();
+          ctx2.fillStyle = '#94a3b8'; ctx2.font = '10px sans-serif'; ctx2.textAlign = 'center';
+          ctx2.fillText(orders[i], x, y);
+          ctx2.restore();
+        });
+      }
+    }]
   });
 }
 
@@ -316,8 +343,8 @@ function renderM3() {
   } else {
     rows = data.map(function(r) {
       var delta = r.delta || 0;
-      var cls = delta > 5 ? 'delta-up' : (delta < -5 ? 'delta-down' : '');
-      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+(r.hist_rate||0).toFixed(1)+'%</td><td>'+(r.recent_rate||0).toFixed(1)+'%</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
+      var cls = delta > 3 ? 'delta-up' : (delta < -3 ? 'delta-down' : '');
+      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
     });
   }
 
@@ -355,32 +382,89 @@ function updateM4() {
     agg[g].inter += r['互动数'];
   });
 
-  var rows = Object.entries(agg).sort(function(a,b){return b[1].amount - a[1].amount;}).map(function(e) {
+  var entries = Object.entries(agg).sort(function(a,b){return b[1].amount - a[1].amount;});
+  var rows = entries.map(function(e) {
     var v = e[1];
     return '<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>';
   });
 
   document.getElementById('m4-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+  
+  // Summary row
+  var tot = {count:0,amount:0,exp:0,reads:0,visits:0,inter:0};
+  filtered.forEach(function(r) {
+    tot.count += r['动态发布数量'];
+    tot.amount += r['实际任务金额'];
+    tot.exp += r['曝光'];
+    tot.reads += r['阅读数'];
+    tot.visits += r['商详访问'];
+    tot.inter += r['互动数'];
+  });
+  document.getElementById('m4-foot').innerHTML = '<tr><td><b>📊 合计 ('+entries.length+'个货号)</b></td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>';
 }
 
 // ============ MODULE 5 ============
 function initM5() {
-  var rows = DETUI_AGG.map(function(r) {
-    var roi = r['综合ROI'];
-    var cls = roi >= 2 ? 'roi-high' : (roi >= 1 ? 'roi-mid' : 'roi-low');
-    var advice = roi >= 2 ? '🔥 加投' : (roi >= 1 ? '✅ 保持' : (roi >= 0.5 ? '⚠️ 观察' : '⛔ 暂停'));
-    return '<tr><td>'+r['货号']+'</td><td>'+fmtMoney(r['总消耗'])+'</td><td>'+fmtMoney(r['总支付金额'])+'</td><td>'+r['总支付单量']+'</td><td class="'+cls+'">'+roi.toFixed(1)+'</td><td>'+fmtMoney(r['订单成本'])+'</td><td>'+advice+'</td></tr>';
+  var dates = PUSH_RAW.map(function(r){return r.date_str;}).filter(function(d){return d;}).sort();
+  if (dates.length) {
+    document.getElementById('m5-start').value = dates[0];
+    document.getElementById('m5-end').value = dates[dates.length-1];
+  }
+  updateM5();
+}
+
+function updateM5() {
+  var d1 = document.getElementById('m5-start').value;
+  var d2 = document.getElementById('m5-end').value;
+
+  var agg = {};
+  PUSH_RAW.forEach(function(r) {
+    if (d1 && r.date_str < d1) return;
+    if (d2 && r.date_str > d2) return;
+    var g = r['货号'];
+    if (!agg[g]) agg[g] = {cost:0,direct_orders:0,direct_gmv:0,indirect_orders:0,indirect_gmv:0};
+    agg[g].cost += r['消耗'];
+    agg[g].direct_orders += r['直接支付单量'];
+    agg[g].direct_gmv += r['直接支付金额'];
+    agg[g].indirect_orders += r['引导支付单量'];
+    agg[g].indirect_gmv += r['引导支付金额'];
   });
+
+  var items = [];
+  Object.entries(agg).forEach(function(e) {
+    var v = e[1];
+    var totalGMV = v.direct_gmv + v.indirect_gmv;
+    var totalOrders = v.direct_orders + v.indirect_orders;
+    var roi = v.cost > 0 ? totalGMV / v.cost : 0;
+    var orderCost = totalOrders > 0 ? v.cost / totalOrders : 0;
+    items.push({goods: e[0], cost: v.cost, gmv: totalGMV, orders: totalOrders, roi: roi, oc: orderCost});
+  });
+  items.sort(function(a,b){return b.roi - a.roi;});
+
+  var rows = items.map(function(r) {
+    var cls = r.roi >= 2 ? 'roi-high' : (r.roi >= 1 ? 'roi-mid' : 'roi-low');
+    var advice;
+    if (r.roi >= 3) advice = '🔥 加大投放';
+    else if (r.roi >= 2) advice = '🔥 持续加投';
+    else if (r.roi >= 1) advice = '✅ 保持投放';
+    else if (r.roi >= 0.5) advice = '⚠️ 观察优化';
+    else if (r.roi > 0) advice = '⛔ 建议暂停';
+    else advice = '⛔ 无转化';
+    return '<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+advice+'</td></tr>';
+  });
+
   document.getElementById('m5-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
 }
 
 // ============ INIT ============
 window.addEventListener('load', function() {
-  try { initM1(); } catch(e) { console.error('M1:', e); }
-  try { initM2(); } catch(e) { console.error('M2:', e); }
-  try { renderM3(); } catch(e) { console.error('M3:', e); }
-  try { initM4(); } catch(e) { console.error('M4:', e); }
-  try { initM5(); } catch(e) { console.error('M5:', e); }
+  setTimeout(function() {
+    try { initM1(); } catch(e) { console.error('M1:', e); }
+    try { initM2(); } catch(e) { console.error('M2:', e); }
+    try { renderM3(); } catch(e) { console.error('M3:', e); }
+    try { initM4(); } catch(e) { console.error('M4:', e); }
+    try { initM5(); } catch(e) { console.error('M5:', e); }
+  }, 200);
 });
 </script>
 </body>
