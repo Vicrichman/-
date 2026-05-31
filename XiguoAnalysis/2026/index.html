@@ -2,194 +2,386 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>喜过 · 运营分析看板</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>喜过跨品牌运营分析看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="data.js?v=2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:20px 24px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.header h1{font-size:24px;font-weight:700}
-.header .date{color:#94a3b8;font-size:14px}
-.card{background:#1a1d2e;border-radius:12px;padding:20px;margin-bottom:20px}
-.card h2{font-size:16px;font-weight:600;margin-bottom:16px}
-.chart-wrap{position:relative;height:360px}
-.chart-wrap-sm{position:relative;height:300px}
-.kpi-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
-.kpi{flex:1;min-width:160px;background:#1a1d2e;border-radius:12px;padding:16px;text-align:center}
-.kpi .val{font-size:28px;font-weight:700;margin:4px 0}
-.kpi .label{font-size:12px;color:#94a3b8}
-.kpi.c .val{color:#f59e0b}
-.kpi.h .val{color:#a78bfa}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;padding:10px 12px;border-bottom:1px solid #2d3148;color:#94a3b8;font-weight:500}
-td{padding:8px 12px;border-bottom:1px solid #1e2235}
-tr:hover{background:rgba(255,255,255,0.03)}
-.slnk{color:#a78bfa;cursor:pointer;max-width:400px;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.slnk:hover{text-decoration:underline;color:#c4b5fd}
-.fb{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.fb label{font-size:13px;color:#94a3b8}
-.fb input,.fb select{background:#0f1117;border:1px solid #2d3148;border-radius:6px;color:#e2e8f0;padding:6px 12px;font-size:13px}
-.fb button{background:#a78bfa;border:none;color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px}
-.fb button:hover{background:#8b5cf6}
-.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
-.tg{background:rgba(34,197,94,0.15);color:#22c55e}
-.tr{background:rgba(239,68,68,0.15);color:#ef4444}
-.ty{background:rgba(245,158,11,0.15);color:#f59e0b}
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center}
-.mc{background:#1a1d2e;border-radius:12px;padding:24px;max-width:900px;width:95%;max-height:90vh;overflow-y:auto}
-.mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.mclose{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer}
-.mclose:hover{color:#e2e8f0}
-.three-col{display:flex;gap:16px;flex-wrap:wrap}
-.three-col>div{flex:1;min-width:280px}
-.anomaly-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:768px){.anomaly-grid{grid-template-columns:1fr}}
-.anomaly-item{background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3148}
-.anomaly-item .spu{font-weight:600;font-size:13px;color:#a78bfa}
-.anomaly-item .stat{font-size:12px;color:#94a3b8;margin-top:4px}
-.anomaly-item .change{font-weight:600}
-.anomaly-item .up{color:#22c55e}
-.anomaly-item .down{color:#ef4444}
-.analysis h3{font-size:14px;margin:16px 0 8px}
-.analysis p,.analysis li,.analysis div{font-size:13px;line-height:1.7}
-.st{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-.st td{padding:6px 10px;vertical-align:top}
-.st td:first-child{width:36px;text-align:center}
-@media(max-width:768px){.header{flex-direction:column;align-items:flex-start;gap:8px}}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0f1117; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; }
+h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #2d3348; padding-bottom: 8px; }
+.module { background: #1a1d2e; border-radius: 10px; padding: 20px; margin-bottom: 20px; border: 1px solid #2d3348; overflow: hidden; }
+.module::after { content: ''; display: table; clear: both; }
+.filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filters label { font-size: 13px; color: #94a3b8; }
+.filters select, .filters input { background: #0f1117; color: #e0e0e0; border: 1px solid #2d3348; border-radius: 6px; padding: 6px 10px; font-size: 13px; }
+.filters select { min-width: 120px; }
+.filters input[type="text"] { min-width: 200px; }
+.chart-wrap { position: relative; height: 420px; }
+.card .goods-name { max-width: none; overflow: visible; white-space: normal; word-break: break-all; display: block; line-height: 1.3; font-size: 11px; }
+.card td { padding: 4px 6px; border-bottom: 1px solid #1a1d2e; vertical-align: top; }
+.cards { display: flex; gap: 12px; }
+.card { flex: 1; background: #0f1117; border-radius: 8px; padding: 12px; border: 1px solid #2d3348; min-width: 0; overflow: hidden; }
+.card h3 { color: #60a5fa; font-size: 13px; margin-bottom: 8px; }
+.card table { width: 100%; font-size: 11px; border-collapse: collapse; table-layout: fixed; }
+.card th:nth-child(1) { width: 28px; }
+.card th:nth-child(2) { width: auto; }
+.card th:nth-child(3) { width: 70px; text-align: right; }
+.card td:nth-child(3) { text-align: right; }
+.card th { text-align: left; padding: 6px 8px; color: #94a3b8; border-bottom: 1px solid #2d3348; position: sticky; top: 0; background: #0f1117; }
+.scroll { max-height: 420px; overflow-y: auto; }
+.card .rank { color: #94a3b8; width: 24px; }
+.alert-table { width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 12px; }
+.alert-table th { text-align: left; padding: 8px 10px; color: #94a3b8; border-bottom: 1px solid #2d3348; background: #0f1117; position: sticky; top: 0; }
+.alert-table td { padding: 8px 10px; border-bottom: 1px solid #1a1d2e; }
+.alert-row { background: rgba(248,113,113,0.08); }
+.delta-up { color: #f87171; font-weight: bold; }
+.delta-down { color: #34d399; font-weight: bold; }
+.btn-group { display: flex; gap: 8px; margin-bottom: 12px; }
+.btn-group button { background: #0f1117; color: #94a3b8; border: 1px solid #2d3348; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.btn-group button.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.roi-high { color: #34d399; font-weight: bold; }
+.roi-mid { color: #f59e0b; }
+.roi-low { color: #f87171; }
+.analysis-box { background: #0f1117; border-radius: 8px; padding: 16px; margin-top: 16px; line-height: 1.7; font-size: 13px; border: 1px solid #2d3348; }
+.analysis-box h4 { color: #60a5fa; margin-bottom: 8px; }
+.analysis-box ul { padding-left: 20px; }
+.analysis-box li { margin-bottom: 4px; color: #c0c0c0; }
+.no-data { color: #94a3b8; text-align: center; padding: 40px; font-size: 14px; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div>
-    <h1>喜过 · 运营分析看板</h1>
-    <div class="date">2026.01.01 — 2026.05.14 | 卡西欧 vs 蔻驰</div>
+<h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px;">📊 喜过跨品牌运营分析看板</h1>
+
+<!-- ====== MODULE 1 ====== -->
+<div class="module">
+  <h2>📈 模块一：GMV / UV / 订单数 趋势</h2>
+  <div class="filters">
+    <label>起始月份</label>
+    <select id="m1-month-from"><option value="all">全部</option></select>
+    <label>终止月份</label>
+    <select id="m1-month-to"><option value="all">全部</option></select>
+    <label>日期范围</label>
+    <input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end">
+    <label>品牌</label>
+    <select id="m1-brand" multiple style="min-width:160px;height:52px;"></select>
+    <label>货号搜索</label>
+    <input type="text" id="m1-goods" placeholder="输入货号...">
+  </div>
+  <div class="chart-wrap"><canvas id="m1-chart"></canvas></div>
+</div>
+
+<!-- ====== MODULE 2 ====== -->
+<div class="module">
+  <h2>🏆 模块二：TOP20 排行</h2>
+  <div class="filters">
+    <label>日期筛选</label>
+    <input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end">
+    <label>品牌</label>
+    <select id="m2-brand" multiple style="min-width:160px;height:52px;"></select>
+    <button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;">刷新</button>
+  </div>
+  <div class="cards">
+    <div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div>
+    <div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div>
+    <div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div>
   </div>
 </div>
 
-<!-- KPI -->
-<div class="kpi-row">
-  <div class="kpi c"><div class="label">卡西欧 · 交易GMV</div><div class="val" id="kv-cgmv">—</div></div>
-  <div class="kpi c"><div class="label">卡西欧 · 有效订单</div><div class="val" id="kv-co">—</div></div>
-  <div class="kpi h"><div class="label">蔻驰 · 交易GMV</div><div class="val" id="kv-chgmv">—</div></div>
-  <div class="kpi h"><div class="label">蔻驰 · 有效订单</div><div class="val" id="kv-cho">—</div></div>
-</div>
-
-<!-- 模块一: 品牌月度趋势 -->
-<div class="card">
-  <h2>📈 模块一 · 品牌月度趋势</h2>
-  <div class="chart-wrap"><canvas id="c1"></canvas></div>
-</div>
-
-<!-- 模块二: 商详访客日常趋势 -->
-<div class="card">
-  <h2>📊 模块二 · 商详访客日常趋势</h2>
-  <div class="fb">
-    <label>品牌:</label>
-    <select id="m2-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
-    <label>日期:</label>
-    <input type="date" id="m2-ds"><span style="color:#94a3b8">—</span><input type="date" id="m2-de">
-    <button onclick="renderM2()">筛选</button>
+<!-- ====== MODULE 3 ====== -->
+<div class="module">
+  <h2>⚠️ 模块三：退货率异常警示</h2>
+  <div class="btn-group">
+    <button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button>
+    <button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button>
+    <button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button>
   </div>
-  <div class="chart-wrap"><canvas id="c2"></canvas></div>
-</div>
-
-<!-- 模块三: 三栏TOP20 -->
-<div class="card">
-  <h2>🏆 模块三 · 款式TOP20排行</h2>
-  <div class="fb">
-    <label>品牌:</label>
-    <select id="m3-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
-    <label>日期:</label>
-    <input type="date" id="m3-ds"><span style="color:#94a3b8">—</span><input type="date" id="m3-de">
-    <button onclick="renderM3()">筛选</button>
+  <div class="scroll" style="max-height:360px;">
+    <table class="alert-table">
+      <thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead>
+      <tbody id="m3-body"></tbody>
+    </table>
   </div>
-  <div class="three-col">
-    <div><h3 style="color:#60a5fa;font-size:14px;margin-bottom:8px">🔹 商详访客UV TOP20</h3><div id="m3-uv-tbl"></div></div>
-    <div><h3 style="color:#22c55e;font-size:14px;margin-bottom:8px">🟢 支付订单量 TOP20</h3><div id="m3-ord-tbl"></div></div>
-    <div><h3 style="color:#f59e0b;font-size:14px;margin-bottom:8px">🟡 支付GMV TOP20</h3><div id="m3-gmv-tbl"></div></div>
+  <div id="m3-nodata" class="no-data" style="display:none;">✅ 未检测到退货率异常款式</div>
+</div>
+
+<!-- ====== MODULE 4 ====== -->
+<div class="module">
+  <h2>📢 模块四：社区投放任务分析</h2>
+  <div class="filters">
+    <label>任务月份</label>
+    <select id="m4-task-month"><option value="all">全部</option></select>
+    <label>发布月份</label>
+    <select id="m4-pub-month"><option value="all">全部</option></select>
+    <button onclick="updateM4()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;">筛选</button>
   </div>
+  <table class="alert-table">
+    <thead><tr><th>匹配货号</th><th>动态发布数量</th><th>实际任务金额(¥)</th><th>曝光</th><th>阅读数</th><th>商详访问</th><th>互动数</th></tr></thead>
+    <tbody id="m4-body"></tbody>
+  </table>
 </div>
 
-<!-- 模块四: 近三日异动款式 -->
-<div class="card">
-  <h2>⚠️ 模块四 · 近三日异动款式</h2>
-  <div class="anomaly-grid" id="m4-grid"></div>
+<!-- ====== MODULE 5 ====== -->
+<div class="module">
+  <h2>🚀 模块五：得物推投放分析</h2>
+  <table class="alert-table">
+    <thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead>
+    <tbody id="m5-body"></tbody>
+  </table>
 </div>
 
-<!-- 模块五: 货号销售排行（原模块二） -->
-<div class="card">
-  <h2>🔍 模块五 · 货号销售排行</h2>
-  <div class="fb">
-    <label>品牌:</label>
-    <select id="m5-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
-    <label>日期:</label>
-    <input type="date" id="m5-ds"><span style="color:#94a3b8">—</span><input type="date" id="m5-de">
-    <button onclick="renderM5()">筛选</button>
-  </div>
-  <div id="m5-tbl"></div>
-</div>
+<script>
+let m1Chart = null, m3Mode = '7d';
 
-<!-- 模块六: 月度品牌销售占比（原模块三） -->
-<div class="card">
-  <h2>🥧 模块六 · 月度品牌销售占比</h2>
-  <div class="chart-wrap"><canvas id="c6"></canvas></div>
-</div>
+function fmt(n, d=0) { return Number(n||0).toLocaleString('zh-CN',{maximumFractionDigits:d}); }
+function fmtMoney(n) { return '¥'+fmt(n,0); }
 
-<!-- 模块七: 社区投放任务明细（新增） -->
-<div class="card">
-  <h2>📢 模块七 · 社区投放任务明细</h2>
-  <div class="fb">
-    <label>品牌:</label>
-    <select id="m7-brand"><option value="卡西欧">卡西欧</option><option value="蔻驰">蔻驰</option></select>
-    <label>发布日:</label>
-    <input type="date" id="m7-ds"><span style="color:#94a3b8">—</span><input type="date" id="m7-de">
-    <label>任务月:</label>
-    <select id="m7-month"><option value="">全部月份</option></select>
-    <button onclick="renderM7()">筛选</button>
-    <button onclick="resetM7()" style="background:#2d3148">重置</button>
-  </div>
-  <div style="overflow-x:auto">
-    <table id="m7-tbl"><thead><tr>
-      <th>#</th><th>货号</th><th style="text-align:right">任务数</th>
-      <th style="text-align:right">实际金额</th><th style="text-align:right">曝光</th>
-      <th style="text-align:right">阅读</th><th style="text-align:right">商详访问</th>
-      <th style="text-align:right">CPE(¥)</th><th style="text-align:right">CPV(¥)</th>
-    </tr></thead><tbody></tbody></table>
-  </div>
-</div>
+// ============ MODULE 1 ============
+function initM1() {
+  var fromSel = document.getElementById('m1-month-from');
+  var toSel = document.getElementById('m1-month-to');
+  ALL_MONTHS.forEach(function(m) {
+    var txt = m.replace('-','年')+'月';
+    var o1=document.createElement('option'); o1.value=m; o1.textContent=txt; fromSel.appendChild(o1);
+    var o2=document.createElement('option'); o2.value=m; o2.textContent=txt; toSel.appendChild(o2);
+  });
+  if (ALL_MONTHS.length >= 3) { fromSel.value = ALL_MONTHS[ALL_MONTHS.length-3]; toSel.value = ALL_MONTHS[ALL_MONTHS.length-1]; }
+  
+  var brandSel = document.getElementById('m1-brand');
+  ALL_BRANDS.forEach(function(b) { var o=document.createElement('option'); o.value=b; o.textContent=b; o.selected=true; brandSel.appendChild(o); });
+  
+  document.getElementById('m1-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-90)] || ALL_DATES[0];
+  document.getElementById('m1-end').value = ALL_DATES[ALL_DATES.length-1];
+  
+  [fromSel, toSel, brandSel, document.getElementById('m1-start'), document.getElementById('m1-end'), document.getElementById('m1-goods')]
+    .forEach(function(el) { el.addEventListener('change', updateM1); });
+  document.getElementById('m1-goods').addEventListener('input', updateM1);
+  updateM1();
+}
 
-<!-- 模块八: 营销费用效率（原模块七） -->
-<div class="card">
-  <h2>💰 模块八 · 营销费用效率对比</h2>
-  <div style="display:flex;gap:20px;flex-wrap:wrap">
-    <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7a"></canvas></div>
-    <div class="chart-wrap-sm" style="flex:1;min-width:350px"><canvas id="c7b"></canvas></div>
-  </div>
-  <table style="margin-top:16px"><thead><tr><th>月份</th><th>卡西欧·营销费</th><th>获客成本</th><th>ROI</th><th>蔻驰·营销费</th><th>获客成本</th><th>ROI</th></tr></thead><tbody id="tb-mkt"></tbody></table>
-</div>
+function updateM1() {
+  var mFrom = document.getElementById('m1-month-from').value;
+  var mTo = document.getElementById('m1-month-to').value;
+  var isMonthly = (mFrom !== 'all' && mTo !== 'all');
+  var d1 = isMonthly ? '' : document.getElementById('m1-start').value;
+  var d2 = isMonthly ? '' : document.getElementById('m1-end').value;
+  var brandOpts = document.getElementById('m1-brand').selectedOptions;
+  var brands = Array.from(brandOpts).map(function(o){return o.value;});
+  var goodsFilter = document.getElementById('m1-goods').value.trim().toUpperCase();
+  
+  var filtered;
+  if (goodsFilter) {
+    filtered = DAILY_GOODS.filter(function(r) { return r['商品货号'] && r['商品货号'].toUpperCase().indexOf(goodsFilter)>=0; });
+  } else {
+    filtered = DAILY_BRAND;
+  }
+  
+  filtered = filtered.filter(function(r) {
+    if (isMonthly) {
+      var rm = r.date_str.substring(0,7);
+      return rm >= mFrom && rm <= mTo && brands.indexOf(r.brand)>=0;
+    } else {
+      if (d1 && r.date_str < d1) return false;
+      if (d2 && r.date_str > d2) return false;
+      return brands.indexOf(r.brand)>=0;
+    }
+  });
 
-<!-- 模块九: 运营诊断（原模块八） -->
-<div class="card">
-  <h2>📋 模块九 · 运营诊断与建议</h2>
-  <div id="mod8"></div>
-</div>
+  var labels, groupFn, labelFn;
+  if (isMonthly && mFrom !== 'all' && mTo !== 'all') {
+    var months = [];
+    var m = mFrom;
+    while (m <= mTo) { months.push(m); var parts=m.split('-'); var y=parseInt(parts[0]), mo=parseInt(parts[1]); mo++; if(mo>12){y++;mo=1;} m=y+'-'+(mo<10?'0'+mo:mo); }
+    labels = months.map(function(x){return x.replace('-','年')+'月';});
+    groupFn = function(r){return r.date_str.substring(0,7);};
+    labelFn = function(x){return x;};
+  } else {
+    labels = ALL_DATES.filter(function(d){return (!d1||d>=d1)&&(!d2||d<=d2);});
+    groupFn = function(r){return r.date_str;};
+    labelFn = function(x){return x.substring(5);};
+  }
 
-<!-- 单品弹窗 -->
-<div class="modal" id="md">
-  <div class="mc">
-    <div class="mh"><h3 id="md-t" style="font-size:15px"></h3><button class="mclose" onclick="closeMd()">&times;</button></div>
-    <div class="fb">
-      <label>日期:</label><input type="date" id="md-ds"><span style="color:#94a3b8">—</span><input type="date" id="md-de">
-      <button onclick="renderSpu()">筛选</button>
-    </div>
-    <div class="chart-wrap-sm"><canvas id="sc"></canvas></div>
-    <table style="margin-top:12px"><thead><tr><th>月份</th><th style="text-align:right">UV</th><th style="text-align:right">支付订单</th><th style="text-align:right">支付金额</th></tr></thead><tbody id="stb"></tbody></table>
-  </div>
-</div>
+  var brandColors = {'卡西欧':'#3b82f6','蔻驰':'#f59e0b'};
+  var datasets = [];
+  brands.forEach(function(brand) {
+    var brandData = {};
+    labels.forEach(function(l){brandData[l]={GMV:0,UV:0,orders:0};});
+    filtered.filter(function(r){return r.brand===brand;}).forEach(function(r){
+      var key = groupFn(r);
+      if (brandData[key]) { brandData[key].GMV += r.GMV; brandData[key].UV += r.UV; brandData[key].orders += r.orders; }
+    });
+    var clr = brandColors[brand] || '#94a3b8';
+    datasets.push({label:brand+' GMV', yAxisID:'y', type:'bar', data:labels.map(function(l){return brandData[l].GMV;}), backgroundColor:clr+'44', borderColor:clr, borderWidth:1});
+    datasets.push({label:brand+' UV', yAxisID:'y1', type:'line', data:labels.map(function(l){return brandData[l].UV;}), borderColor:clr, borderDash:[5,5], pointRadius:0, tension:0.3});
+  });
 
-<script src="data.js?v=9"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="app.js?v=9"></script>
+  // 大盘指数
+  var mktLabels = labels.map(labelFn);
+  var mktData = labels.map(function(l){var orig=l;if(isMonthly){var parts=l.split('年');var mth=parts[1].replace('月','');var yr=parts[0];orig=yr+'-'+mth+'-01';} var sum=0,cnt=0; Object.keys(MARKET_MAP).forEach(function(d){if(d.substring(0,7)===orig.substring(0,7)){sum+=MARKET_MAP[d];cnt++;}}); return cnt>0?sum/cnt:null;});
+  datasets.push({label:'大盘指数(日韩表)', yAxisID:'y2', type:'line', data:mktData, borderColor:'#a78bfa', borderDash:[5,5], pointRadius:0, tension:0.3, spanGaps:true});
+
+  if (m1Chart) m1Chart.destroy();
+  var ctx = document.getElementById('m1-chart').getContext('2d');
+  m1Chart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: labels.map(labelFn) },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { color: '#94a3b8', usePointStyle: true, boxWidth: 8 } },
+        tooltip: { callbacks: { label: function(ctx){var v=ctx.raw;return ctx.dataset.label+': '+(ctx.dataset.type==='bar'?fmtMoney(v):ctx.dataset.yAxisID==='y2'?fmt(v,1):fmt(v));} } } },
+      scales: {
+        y: { position: 'left', title: { text: 'GMV(¥)', color: '#94a3b8' }, ticks: { color: '#94a3b8', callback: function(v){return v>=10000?(v/10000).toFixed(1)+'万':v;} }, grid: { color: '#1e2235' } },
+        y1: { position: 'right', title: { text: 'UV', color: '#94a3b8' }, ticks: { color: '#94a3b8' }, grid: { drawOnChartArea: false } },
+        y2: { position: 'right', title: { text: '大盘(万元)', color: '#a78bfa' }, ticks: { color: '#a78bfa' }, grid: { drawOnChartArea: false } }
+      }
+    },
+    plugins: [{ id: 'datasets', beforeUpdate: function(chart){chart.data.datasets=datasets;} }]
+  });
+}
+
+// ============ MODULE 2 ============
+function initM2() {
+  document.getElementById('m2-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-30)] || ALL_DATES[0];
+  document.getElementById('m2-end').value = ALL_DATES[ALL_DATES.length-1];
+  var brandSel = document.getElementById('m2-brand');
+  ALL_BRANDS.forEach(function(b) { var o=document.createElement('option'); o.value=b; o.textContent=b; o.selected=true; brandSel.appendChild(o); });
+  updateM2();
+}
+
+function updateM2() {
+  var d1 = document.getElementById('m2-start').value;
+  var d2 = document.getElementById('m2-end').value;
+  var brandOpts = document.getElementById('m2-brand').selectedOptions;
+  var brands = Array.from(brandOpts).map(function(o){return o.value;});
+
+  var agg = {};
+  DAILY_GOODS.forEach(function(r) {
+    if (r.date_str < d1 || r.date_str > d2) return;
+    if (brands.indexOf(r.brand) < 0) return;
+    var g = r['商品货号'];
+    if (!agg[g]) agg[g] = {UV:0,GMV:0,orders:0};
+    agg[g].UV += r.UV;
+    agg[g].GMV += r.GMV;
+    agg[g].orders += r.orders;
+  });
+
+  var arr = Object.entries(agg).map(function(e){return {goods:e[0],UV:e[1].UV,GMV:e[1].GMV,orders:e[1].orders};});
+  var topUV = arr.slice().sort(function(a,b){return b.UV-a.UV;}).slice(0,20);
+  var topGMV = arr.slice().sort(function(a,b){return b.GMV-a.GMV;}).slice(0,20);
+  var topOrders = arr.slice().sort(function(a,b){return b.orders-a.orders;}).slice(0,20);
+
+  function renderTbl(rows, valKey, fmtFn) {
+    if (!rows.length) return '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+    return rows.map(function(r,i){return '<tr><td class="rank">'+(i+1)+'</td><td class="goods-name">'+r.goods+'</td><td>'+fmtFn(r[valKey])+'</td></tr>';}).join('');
+  }
+
+  document.getElementById('m2-uv').innerHTML = renderTbl(topUV, 'UV', fmt);
+  document.getElementById('m2-gmv').innerHTML = renderTbl(topGMV, 'GMV', fmtMoney);
+  document.getElementById('m2-orders').innerHTML = renderTbl(topOrders, 'orders', fmt);
+}
+
+// ============ MODULE 3 ============
+function switchM3(mode) {
+  m3Mode = mode;
+  ['7d','30d','all'].forEach(function(m) {
+    var btn = document.getElementById('m3-btn-'+m);
+    btn.className = m===mode ? 'active' : '';
+  });
+  renderM3();
+}
+
+function renderM3() {
+  var data;
+  if (m3Mode === '7d') data = ANOMALY_7D;
+  else if (m3Mode === '30d') data = ANOMALY_30D;
+  else data = GOODS_RATE;
+
+  var body = document.getElementById('m3-body');
+  var nodata = document.getElementById('m3-nodata');
+
+  if (!data || !data.length) {
+    body.innerHTML = '';
+    nodata.style.display = 'block';
+    return;
+  }
+  nodata.style.display = 'none';
+
+  var rows;
+  if (m3Mode === 'all') {
+    rows = data.map(function(r) {
+      return '<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>';
+    });
+  } else {
+    rows = data.map(function(r) {
+      var delta = r.delta || 0;
+      var cls = delta > 5 ? 'delta-up' : (delta < -5 ? 'delta-down' : '');
+      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+(r.hist_rate||0).toFixed(1)+'%</td><td>'+(r.recent_rate||0).toFixed(1)+'%</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
+    });
+  }
+
+  body.innerHTML = rows.join('');
+}
+
+// ============ MODULE 4 ============
+function initM4() {
+  var sel1 = document.getElementById('m4-task-month');
+  var sel2 = document.getElementById('m4-pub-month');
+  TASK_MONTHS.forEach(function(m) { var o=document.createElement('option'); o.value=m; o.textContent=m.replace('-','年')+'月'; sel1.appendChild(o); });
+  PUB_MONTHS.forEach(function(m) { var o=document.createElement('option'); o.value=m; o.textContent=m.replace('-','年')+'月'; sel2.appendChild(o); });
+  updateM4();
+}
+
+function updateM4() {
+  var taskM = document.getElementById('m4-task-month').value;
+  var pubM = document.getElementById('m4-pub-month').value;
+
+  var filtered = TASK_RAW.filter(function(r) {
+    if (taskM !== 'all' && r.task_month !== taskM) return false;
+    if (pubM !== 'all' && r.pub_month !== pubM) return false;
+    return true;
+  });
+
+  var agg = {};
+  filtered.forEach(function(r) {
+    var g = r['匹配货号'];
+    if (!agg[g]) agg[g] = { count: 0, amount: 0, exp: 0, reads: 0, visits: 0, inter: 0 };
+    agg[g].count += r['动态发布数量'];
+    agg[g].amount += r['实际任务金额'];
+    agg[g].exp += r['曝光'];
+    agg[g].reads += r['阅读数'];
+    agg[g].visits += r['商详访问'];
+    agg[g].inter += r['互动数'];
+  });
+
+  var rows = Object.entries(agg).sort(function(a,b){return b[1].amount - a[1].amount;}).map(function(e) {
+    var v = e[1];
+    return '<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>';
+  });
+
+  document.getElementById('m4-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+}
+
+// ============ MODULE 5 ============
+function initM5() {
+  var rows = DETUI_AGG.map(function(r) {
+    var roi = r['综合ROI'];
+    var cls = roi >= 2 ? 'roi-high' : (roi >= 1 ? 'roi-mid' : 'roi-low');
+    var advice = roi >= 2 ? '🔥 加投' : (roi >= 1 ? '✅ 保持' : (roi >= 0.5 ? '⚠️ 观察' : '⛔ 暂停'));
+    return '<tr><td>'+r['货号']+'</td><td>'+fmtMoney(r['总消耗'])+'</td><td>'+fmtMoney(r['总支付金额'])+'</td><td>'+r['总支付单量']+'</td><td class="'+cls+'">'+roi.toFixed(1)+'</td><td>'+fmtMoney(r['订单成本'])+'</td><td>'+advice+'</td></tr>';
+  });
+  document.getElementById('m5-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+}
+
+// ============ INIT ============
+window.addEventListener('load', function() {
+  try { initM1(); } catch(e) { console.error('M1:', e); }
+  try { initM2(); } catch(e) { console.error('M2:', e); }
+  try { renderM3(); } catch(e) { console.error('M3:', e); }
+  try { initM4(); } catch(e) { console.error('M4:', e); }
+  try { initM5(); } catch(e) { console.error('M5:', e); }
+});
+</script>
 </body>
 </html>
