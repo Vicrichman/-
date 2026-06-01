@@ -285,13 +285,14 @@ function updateM1(){
   var im=mf!=='all'&&mt!=='all';
   var d1=im?'':document.getElementById('m1-start').value,d2=im?'':document.getElementById('m1-end').value;
   var gf=document.getElementById('m1-goods').value.trim().toUpperCase();
-  var fd=gf?DAILY_GOODS.filter(function(r){return r['商品货号']&&r['商品货号'].toUpperCase().indexOf(gf)>=0}):DAILY_BRAND;
-  if(im)fd=fd.filter(function(r){return r.date_str>=mf+'-01'&&r.date_str<=mt+'-31'});
-  else if(d1&&d2)fd=fd.filter(function(r){return r.date_str>=d1&&r.date_str<=d2});
+  var raw=gf?DAILY_GOODS.filter(function(r){return r['商品货号']&&r['商品货号'].toUpperCase().indexOf(gf)>=0}):DAILY_BRAND;
+  if(im)raw=raw.filter(function(r){return r.date_str>=mf+'-01'&&r.date_str<=mt+'-31'});
+  else if(d1&&d2)raw=raw.filter(function(r){return r.date_str>=d1&&r.date_str<=d2});
   var dates=[],gmv=[],uv=[],orders=[];
-  if(gf){var agg={};fd.forEach(function(r){if(!agg[r.date_str])agg[r.date_str]={GMV:0,UV:0,orders:0};agg[r.date_str].GMV+=r.GMV;agg[r.date_str].UV+=r.UV;agg[r.date_str].orders+=r.orders});var ks=Object.keys(agg).sort();ks.forEach(function(d){dates.push(d);gmv.push(agg[d].GMV);uv.push(agg[d].UV);orders.push(agg[d].orders)})}
-  else fd.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
-  var mkt=dates.map(function(d){return MARKET_MAP[d]||null});
+  if(im){var mo={};raw.forEach(function(r){var m=r.date_str.substr(0,7);if(!mo[m])mo[m]={GMV:0,UV:0,orders:0};mo[m].GMV+=r.GMV;mo[m].UV+=r.UV;mo[m].orders+=r.orders});var ks=Object.keys(mo).sort();ks.forEach(function(m){dates.push(m);gmv.push(mo[m].GMV);uv.push(mo[m].UV);orders.push(mo[m].orders)})}
+  else if(gf){var agg={};raw.forEach(function(r){if(!agg[r.date_str])agg[r.date_str]={GMV:0,UV:0,orders:0};agg[r.date_str].GMV+=r.GMV;agg[r.date_str].UV+=r.UV;agg[r.date_str].orders+=r.orders});var ks2=Object.keys(agg).sort();ks2.forEach(function(d){dates.push(d);gmv.push(agg[d].GMV);uv.push(agg[d].UV);orders.push(agg[d].orders)})}
+  else raw.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
+  var mkt;if(im){mkt=dates.map(function(m){var sum=0,cnt=0;for(var d in MARKET_MAP){if(d.substr(0,7)===m){sum+=MARKET_MAP[d];cnt++}}return cnt?sum/cnt:null})}else{mkt=dates.map(function(d){return MARKET_MAP[d]||null})}
   if(m1Chart)m1Chart.destroy();
   m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
     {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.6)',borderColor:'#60a5fa',borderWidth:1,maxBarThickness:16,yAxisID:'y'},
