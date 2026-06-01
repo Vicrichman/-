@@ -183,21 +183,15 @@ print(f"   {len(TASK_RAW)} items")
 # 5. 得物推
 # ============================================================
 print("🚀 [5/6] 得物推...")
-hp = pd.read_excel(SRC, sheet_name='货盘表', engine='calamine')
-hp = hp[['SPU_ID','得物货号']].copy(); hp.columns=['spu_id','goods']
-spu2goods={}
-for _,r in hp.iterrows():
-    sid=ss(r['spu_id']); g=ss(r['goods'])
-    if sid and g: spu2goods[sid]=g
-
 push = pd.read_excel(SRC, sheet_name='得物推数据', engine='calamine')
-push = push[['时间','商品ID','消耗(元)','直接支付单量(单)','直接支付金额(元)','引导支付单量(单)','引导支付金额(元)']].copy()
-push.columns = ['date_raw','gid','cost','do2','dgmv','io2','igmv']
+# 直接用子表最后一列「货号」，不再通过货盘表映射
+push = push[['时间','商品ID','消耗(元)','直接支付单量(单)','直接支付金额(元)','引导支付单量(单)','引导支付金额(元)','货号']].copy()
+push.columns = ['date_raw','gid','cost','do2','dgmv','io2','igmv','goods']
+push['goods'] = push['goods'].apply(ss)  # 直接用子表货号列
 push['date_str'] = push['date_raw'].apply(nd); push = push.dropna(subset=['date_str'])
 for c in ['cost','dgmv','igmv']: push[c]=push[c].apply(cn)
 push['do2']=push['do2'].apply(lambda x:int(cn(x)))
 push['io2']=push['io2'].apply(lambda x:int(cn(x)))
-push['goods']=push['gid'].apply(lambda x:spu2goods.get(ss(x),ss(x)))
 
 PUSH_RAW=[]
 for _,r in push.iterrows():
@@ -300,11 +294,11 @@ function updateM1(){
   var mkt=dates.map(function(d){return MARKET_MAP[d]||null});
   if(m1Chart)m1Chart.destroy();
   m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
-    {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.5)',borderColor:'#60a5fa',borderWidth:1,yAxisID:'y'},
+    {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.6)',borderColor:'#60a5fa',borderWidth:1,maxBarThickness:16,yAxisID:'y'},
     {label:'UV',type:'line',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
     {label:'订单',type:'line',data:orders,borderColor:'#f59e0b',yAxisID:'y1',tension:0.3,pointRadius:0},
     {label:'大盘日韩表指数(万元)',type:'line',data:mkt,borderColor:'#f87171',yAxisID:'y',tension:0.3,pointRadius:0,borderDash:[5,5]}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}}}})
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',beginAtZero:true,ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}}}})
 }
 
 function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2()}
