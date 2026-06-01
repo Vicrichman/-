@@ -9,296 +9,103 @@
 <div class="module"><h2>📢 模块四：社区投放任务分析</h2><div class="filters"><label>任务月份</label><select id="m4-task-month"><option value="all">全部</option></select><label>发布月份</label><select id="m4-pub-month"><option value="all">全部</option></select><button onclick="updateM4()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>匹配货号</th><th>动态发布数量</th><th>实际任务金额(¥)</th><th>曝光</th><th>阅读数</th><th>商详访问</th><th>互动数</th></tr></thead><tbody id="m4-body"></tbody><tfoot id="m4-foot"></tfoot></table></div>
 <div class="module"><h2>🚀 模块五：得物推投放分析</h2><div class="filters"><label>日期筛选</label><input type="date" id="m5-start"><span style="color:#94a3b8">至</span><input type="date" id="m5-end"><button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead><tbody id="m5-body"></tbody></table></div>
 <script>
-// Global data variables - loaded asynchronously
-var DAILY_BRAND, DAILY_GOODS, ALL_DATES, ALL_BRANDS, ALL_GOODS, ALL_MONTHS;
-var MARKET_MAP, ANOMALY_7D, ANOMALY_30D, GOODS_RATE;
-var TASK_RAW, TASK_MONTHS, PUB_MONTHS, DETUI_AGG, PUSH_RAW;
+var DAILY_BRAND,DAILY_GOODS,ALL_DATES,ALL_BRANDS,ALL_GOODS,ALL_MONTHS;
+var MARKET_MAP,ANOMALY_7D,ANOMALY_30D,GOODS_RATE;
+var TASK_RAW,TASK_MONTHS,PUB_MONTHS,DETUI_AGG,PUSH_RAW;
+var m1Chart=null,m3Mode='7d';
 
-var m1Chart = null, m3Mode = '7d';
-var DATA_DIR = 'data/';
+function fmt(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString()}
+function fmtMoney(n){return n>=10000?'¥'+(n/10000).toFixed(1)+'w':'¥'+n.toLocaleString()}
 
-function fmt(n) { return n >= 10000 ? (n/10000).toFixed(1)+'w' : n.toLocaleString(); }
-function fmtMoney(n) { return n >= 10000 ? '¥'+(n/10000).toFixed(1)+'w' : '¥'+n.toLocaleString(); }
-
-// Load all data files
-async function loadAll() {
-  var vars = ['DAILY_BRAND','DAILY_GOODS','ALL_DATES','ALL_BRANDS','ALL_GOODS','ALL_MONTHS',
-    'MARKET_MAP','ANOMALY_7D','ANOMALY_30D','GOODS_RATE',
-    'TASK_RAW','TASK_MONTHS','PUB_MONTHS','DETUI_AGG','PUSH_RAW'];
-  
-  var promises = vars.map(function(name) {
-    return fetch(DATA_DIR + name + '.json').then(function(r) { return r.json(); }).then(function(data) {
-      window[name] = data;
-      return name;
-    }).catch(function(e) { console.error('Failed to load', name, e); });
-  });
-  
-  await Promise.all(promises);
-  document.getElementById('loader').style.display = 'none';
+async function loadAll(){
+  var vars=['DAILY_BRAND','DAILY_GOODS','ALL_DATES','ALL_BRANDS','ALL_GOODS','ALL_MONTHS','MARKET_MAP','ANOMALY_7D','ANOMALY_30D','GOODS_RATE','TASK_RAW','TASK_MONTHS','PUB_MONTHS','DETUI_AGG','PUSH_RAW'];
+  var ps=vars.map(function(n){return fetch('data/'+n+'.json').then(function(r){return r.json()}).then(function(d){window[n]=d})});
+  await Promise.all(ps);
+  document.getElementById('loader').style.display='none';
 }
 
-// ============ MODULE 1 ============
-function initM1() {
-  var fromSel = document.getElementById('m1-month-from');
-  var toSel = document.getElementById('m1-month-to');
-  ALL_MONTHS.forEach(function(m) {
-    var txt = m.replace('-','年')+'月';
-    var o1=document.createElement('option'); o1.value=m; o1.textContent=txt; fromSel.appendChild(o1);
-    var o2=document.createElement('option'); o2.value=m; o2.textContent=txt; toSel.appendChild(o2);
-  });
-  if (ALL_MONTHS.length >= 3) { fromSel.value = ALL_MONTHS[ALL_MONTHS.length-3]; toSel.value = ALL_MONTHS[ALL_MONTHS.length-1]; }
-  
-  document.getElementById('m1-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-90)] || ALL_DATES[0];
-  document.getElementById('m1-end').value = ALL_DATES[ALL_DATES.length-1];
-  
-  [fromSel, toSel, document.getElementById('m1-start'), document.getElementById('m1-end'), document.getElementById('m1-goods')]
-    .forEach(function(el) { el.addEventListener('change', updateM1); });
-  document.getElementById('m1-goods').addEventListener('input', updateM1);
-  updateM1();
+function initM1(){
+  var fs=document.getElementById('m1-month-from'),ts=document.getElementById('m1-month-to');
+  ALL_MONTHS.forEach(function(m){var t=m.replace('-','年')+'月';var o=document.createElement('option');o.value=m;o.textContent=t;fs.appendChild(o);o=document.createElement('option');o.value=m;o.textContent=t;ts.appendChild(o)});
+  if(ALL_MONTHS.length>=3){fs.value=ALL_MONTHS[ALL_MONTHS.length-3];ts.value=ALL_MONTHS[ALL_MONTHS.length-1]}
+  document.getElementById('m1-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-90)]||ALL_DATES[0];
+  document.getElementById('m1-end').value=ALL_DATES[ALL_DATES.length-1];
+  [fs,ts,document.getElementById('m1-start'),document.getElementById('m1-end'),document.getElementById('m1-goods')].forEach(function(el){el.addEventListener('change',updateM1)});
+  document.getElementById('m1-goods').addEventListener('input',updateM1);
+  updateM1()
 }
 
-function updateM1() {
-  var mFrom = document.getElementById('m1-month-from').value;
-  var mTo = document.getElementById('m1-month-to').value;
-  var isMonthly = (mFrom !== 'all' && mTo !== 'all');
-  var d1 = isMonthly ? '' : document.getElementById('m1-start').value;
-  var d2 = isMonthly ? '' : document.getElementById('m1-end').value;
-  var goodsFilter = document.getElementById('m1-goods').value.trim().toUpperCase();
-  
-  var filtered;
-  if (goodsFilter) {
-    filtered = DAILY_GOODS.filter(function(r) { return r['商品货号'] && r['商品货号'].toUpperCase().indexOf(goodsFilter)>=0; });
-  } else {
-    filtered = DAILY_BRAND;
-  }
-  
-  if (isMonthly) {
-    filtered = filtered.filter(function(r) { return r.date_str >= mFrom+'-01' && r.date_str <= mTo+'-31'; });
-  } else if (d1 && d2) {
-    filtered = filtered.filter(function(r) { return r.date_str >= d1 && r.date_str <= d2; });
-  }
-  
-  var dates = []; var gmv=[], uv=[], orders=[];
-  if (goodsFilter) {
-    var agg = {};
-    filtered.forEach(function(r) {
-      if (!agg[r.date_str]) agg[r.date_str] = {GMV:0,UV:0,orders:0};
-      agg[r.date_str].GMV += r.GMV; agg[r.date_str].UV += r.UV; agg[r.date_str].orders += r.orders;
-    });
-    var keys = Object.keys(agg).sort();
-    keys.forEach(function(d) { dates.push(d); gmv.push(agg[d].GMV); uv.push(agg[d].UV); orders.push(agg[d].orders); });
-  } else {
-    filtered.forEach(function(r) { dates.push(r.date_str); gmv.push(r.GMV); uv.push(r.UV); orders.push(r.orders); });
-  }
-  
-  var market = dates.map(function(d) { return MARKET_MAP[d] || null; });
-  
-  if (m1Chart) m1Chart.destroy();
-  var ctx = document.getElementById('m1-chart').getContext('2d');
-  m1Chart = new Chart(ctx, {
-    type: 'bar', data: { labels: dates, datasets: [
-      { label:'GMV(元)', data:gmv, backgroundColor:'rgba(96,165,250,0.5)', borderColor:'#60a5fa', borderWidth:1, yAxisID:'y' },
-      { label:'UV', type:'line', data:uv, borderColor:'#34d399', yAxisID:'y1', tension:0.3, pointRadius:0 },
-      { label:'订单', type:'line', data:orders, borderColor:'#f59e0b', yAxisID:'y1', tension:0.3, pointRadius:0 },
-      { label:'大盘日韩表指数(万元)', type:'line', data:market, borderColor:'#f87171', yAxisID:'y', tension:0.3, pointRadius:0, borderDash:[5,5] }
-    ]},
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},
-      scales:{
-        x:{ticks:{color:'#64748b',maxTicksLimit:15}},
-        y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v;}}},
-        y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}
-      }
-    }
-  });
+function updateM1(){
+  var mf=document.getElementById('m1-month-from').value,mt=document.getElementById('m1-month-to').value;
+  var im=mf!=='all'&&mt!=='all';
+  var d1=im?'':document.getElementById('m1-start').value,d2=im?'':document.getElementById('m1-end').value;
+  var gf=document.getElementById('m1-goods').value.trim().toUpperCase();
+  var fd=gf?DAILY_GOODS.filter(function(r){return r['商品货号']&&r['商品货号'].toUpperCase().indexOf(gf)>=0}):DAILY_BRAND;
+  if(im)fd=fd.filter(function(r){return r.date_str>=mf+'-01'&&r.date_str<=mt+'-31'});
+  else if(d1&&d2)fd=fd.filter(function(r){return r.date_str>=d1&&r.date_str<=d2});
+  var dates=[],gmv=[],uv=[],orders=[];
+  if(gf){var agg={};fd.forEach(function(r){if(!agg[r.date_str])agg[r.date_str]={GMV:0,UV:0,orders:0};agg[r.date_str].GMV+=r.GMV;agg[r.date_str].UV+=r.UV;agg[r.date_str].orders+=r.orders});var ks=Object.keys(agg).sort();ks.forEach(function(d){dates.push(d);gmv.push(agg[d].GMV);uv.push(agg[d].UV);orders.push(agg[d].orders)})}
+  else fd.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
+  var mkt=dates.map(function(d){return MARKET_MAP[d]||null});
+  if(m1Chart)m1Chart.destroy();
+  m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
+    {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.5)',borderColor:'#60a5fa',borderWidth:1,yAxisID:'y'},
+    {label:'UV',type:'line',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'订单',type:'line',data:orders,borderColor:'#f59e0b',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'大盘日韩表指数(万元)',type:'line',data:mkt,borderColor:'#f87171',yAxisID:'y',tension:0.3,pointRadius:0,borderDash:[5,5]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}}}})
 }
 
-// ============ MODULE 2 ============
-function initM2() {
-  document.getElementById('m2-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-30)] || ALL_DATES[0];
-  document.getElementById('m2-end').value = ALL_DATES[ALL_DATES.length-1];
-  updateM2();
+function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2()}
+function updateM2(){
+  var d1=document.getElementById('m2-start').value,d2=document.getElementById('m2-end').value;
+  var agg={};DAILY_GOODS.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['商品货号'];if(!agg[g])agg[g]={UV:0,GMV:0,orders:0};agg[g].UV+=r.UV;agg[g].GMV+=r.GMV;agg[g].orders+=r.orders});
+  var arr=Object.entries(agg).map(function(e){return{goods:e[0],UV:e[1].UV,GMV:e[1].GMV,orders:e[1].orders}});
+  var tu=arr.slice().sort(function(a,b){return b.UV-a.UV}).slice(0,20);
+  var tg=arr.slice().sort(function(a,b){return b.GMV-a.GMV}).slice(0,20);
+  var to=arr.slice().sort(function(a,b){return b.orders-a.orders}).slice(0,20);
+  function rt(rs,vk,ff){return rs.length?rs.map(function(r,i){return'<tr><td class="rank">'+(i+1)+'</td><td class="goods-name">'+r.goods+'</td><td>'+ff(r[vk])+'</td></tr>'}).join(''):'<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>'}
+  document.getElementById('m2-uv').innerHTML=rt(tu,'UV',fmt);
+  document.getElementById('m2-gmv').innerHTML=rt(tg,'GMV',fmtMoney);
+  document.getElementById('m2-orders').innerHTML=rt(to,'orders',fmt)
 }
 
-function updateM2() {
-  var d1 = document.getElementById('m2-start').value;
-  var d2 = document.getElementById('m2-end').value;
-
-  var agg = {};
-  DAILY_GOODS.forEach(function(r) {
-    if (r.date_str < d1 || r.date_str > d2) return;
-    var g = r['商品货号'];
-    if (!agg[g]) agg[g] = {UV:0,GMV:0,orders:0};
-    agg[g].UV += r.UV;
-    agg[g].GMV += r.GMV;
-    agg[g].orders += r.orders;
-  });
-
-  var arr = Object.entries(agg).map(function(e){return {goods:e[0],UV:e[1].UV,GMV:e[1].GMV,orders:e[1].orders};});
-  var topUV = arr.slice().sort(function(a,b){return b.UV-a.UV;}).slice(0,20);
-  var topGMV = arr.slice().sort(function(a,b){return b.GMV-a.GMV;}).slice(0,20);
-  var topOrders = arr.slice().sort(function(a,b){return b.orders-a.orders;}).slice(0,20);
-
-  function renderTbl(rows, valKey, fmtFn) {
-    if (!rows.length) return '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
-    return rows.map(function(r,i){return '<tr><td class="rank">'+(i+1)+'</td><td class="goods-name">'+r.goods+'</td><td>'+fmtFn(r[valKey])+'</td></tr>';}).join('');
-  }
-
-  document.getElementById('m2-uv').innerHTML = renderTbl(topUV, 'UV', fmt);
-  document.getElementById('m2-gmv').innerHTML = renderTbl(topGMV, 'GMV', fmtMoney);
-  document.getElementById('m2-orders').innerHTML = renderTbl(topOrders, 'orders', fmt);
+function switchM3(m){m3Mode=m;['7d','30d','all'].forEach(function(x){var b=document.getElementById('m3-btn-'+x);if(b)b.className=x===m?'active':''});renderM3()}
+function renderM3(){
+  var d=m3Mode==='7d'?ANOMALY_7D:m3Mode==='30d'?ANOMALY_30D:GOODS_RATE;
+  var b=document.getElementById('m3-body'),nd=document.getElementById('m3-nodata');
+  if(!d||!d.length){b.innerHTML='';nd.style.display='block';return}
+  nd.style.display='none';
+  var rs=m3Mode==='all'?d.map(function(r){return'<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>'}):d.map(function(r){var dt=r.delta||0,c=dt>3?'delta-up':(dt<-3?'delta-down':'');return'<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+c+'">'+(dt>0?'+':'')+dt.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>'});
+  b.innerHTML=rs.join('')
 }
 
-// ============ MODULE 3 ============
-function switchM3(mode) {
-  m3Mode = mode;
-  ['7d','30d','all'].forEach(function(m) {
-    var btn = document.getElementById('m3-btn-'+m);
-    if (btn) btn.className = m===mode ? 'active' : '';
-  });
-  renderM3();
+function initM4(){var s1=document.getElementById('m4-task-month'),s2=document.getElementById('m4-pub-month');TASK_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s1.appendChild(o)});PUB_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s2.appendChild(o)});updateM4()}
+function updateM4(){
+  var tm=document.getElementById('m4-task-month').value,pm=document.getElementById('m4-pub-month').value;
+  var fd=TASK_RAW.filter(function(r){if(tm!=='all'&&r.task_month!==tm)return false;if(pm!=='all'&&r.pub_month!==pm)return false;return true});
+  var agg={};fd.forEach(function(r){var g=r['匹配货号'];if(!agg[g])agg[g]={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};agg[g].count+=r['动态发布数量'];agg[g].amount+=r['实际任务金额'];agg[g].exp+=r['曝光'];agg[g].reads+=r['阅读数'];agg[g].visits+=r['商详访问'];agg[g].inter+=r['互动数']});
+  var es=Object.entries(agg).sort(function(a,b){return b[1].amount-a[1].amount});
+  var rs=es.map(function(e){var v=e[1];return'<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>'});
+  document.getElementById('m4-body').innerHTML=rs.length?rs.join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+  var tot={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};fd.forEach(function(r){tot.count+=r['动态发布数量'];tot.amount+=r['实际任务金额'];tot.exp+=r['曝光'];tot.reads+=r['阅读数'];tot.visits+=r['商详访问'];tot.inter+=r['互动数']});
+  document.getElementById('m4-foot').innerHTML='<tr style="background:#1e2435;font-weight:bold"><td>📊 合计 ('+es.length+'货号)</td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>'
 }
 
-function renderM3() {
-  var data;
-  if (m3Mode === '7d') data = ANOMALY_7D;
-  else if (m3Mode === '30d') data = ANOMALY_30D;
-  else data = GOODS_RATE;
-
-  var body = document.getElementById('m3-body');
-  var nodata = document.getElementById('m3-nodata');
-
-  if (!data || !data.length) {
-    body.innerHTML = '';
-    nodata.style.display = 'block';
-    return;
-  }
-  nodata.style.display = 'none';
-
-  var rows;
-  if (m3Mode === 'all') {
-    rows = data.map(function(r) {
-      return '<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>';
-    });
-  } else {
-    rows = data.map(function(r) {
-      var delta = r.delta || 0;
-      var cls = delta > 3 ? 'delta-up' : (delta < -3 ? 'delta-down' : '');
-      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
-    });
-  }
-  body.innerHTML = rows.join('');
+function initM5(){document.getElementById('m5-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m5-end').value=ALL_DATES[ALL_DATES.length-1];updateM5()}
+function updateM5(){
+  var d1=document.getElementById('m5-start').value,d2=document.getElementById('m5-end').value;
+  var agg={};PUSH_RAW.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['货号'];if(!agg[g])agg[g]={cost:0,do:0,dg:0,io:0,ig:0};agg[g].cost+=r['消耗'];agg[g].do+=r['直接支付单量'];agg[g].dg+=r['直接支付金额'];agg[g].io+=r['引导支付单量'];agg[g].ig+=r['引导支付金额']});
+  var as=Object.entries(agg).map(function(e){var v=e[1],tg=v.dg+v.ig,to=v.do+v.io;return{goods:e[0],cost:v.cost,gmv:tg,orders:to,roi:v.cost>0?tg/v.cost:0,oc:to>0?v.cost/to:0}}).sort(function(a,b){return b.cost-a.cost});
+  var rs=as.map(function(r){var c=r.roi>=5?'roi-high':(r.roi>=2?'roi-mid':'roi-low'),a=r.roi>=5?'🔥 高效投放':r.roi>=3?'✅ 良好':r.roi>=1?'⚠️ 关注':r.orders>0?'🔻 低ROI':'⛔ 无转化';return'<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+c+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>'}).join('');
+  document.getElementById('m5-body').innerHTML=rs
 }
 
-// ============ MODULE 4 ============
-function initM4() {
-  var sel1 = document.getElementById('m4-task-month');
-  var sel2 = document.getElementById('m4-pub-month');
-  TASK_MONTHS.forEach(function(m) { var o=document.createElement('option'); o.value=m; o.textContent=m.replace('-','年')+'月'; sel1.appendChild(o); });
-  PUB_MONTHS.forEach(function(m) { var o=document.createElement('option'); o.value=m; o.textContent=m.replace('-','年')+'月'; sel2.appendChild(o); });
-  updateM4();
-}
-
-function updateM4() {
-  var taskM = document.getElementById('m4-task-month').value;
-  var pubM = document.getElementById('m4-pub-month').value;
-
-  var filtered = TASK_RAW.filter(function(r) {
-    if (taskM !== 'all' && r.task_month !== taskM) return false;
-    if (pubM !== 'all' && r.pub_month !== pubM) return false;
-    return true;
-  });
-
-  var agg = {};
-  filtered.forEach(function(r) {
-    var g = r['匹配货号'];
-    if (!agg[g]) agg[g] = { count: 0, amount: 0, exp: 0, reads: 0, visits: 0, inter: 0 };
-    agg[g].count += r['动态发布数量'];
-    agg[g].amount += r['实际任务金额'];
-    agg[g].exp += r['曝光'];
-    agg[g].reads += r['阅读数'];
-    agg[g].visits += r['商详访问'];
-    agg[g].inter += r['互动数'];
-  });
-
-  var entries = Object.entries(agg).sort(function(a,b){return b[1].amount - a[1].amount;});
-  var rows = entries.map(function(e) {
-    var v = e[1];
-    return '<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>';
-  });
-
-  document.getElementById('m4-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
-  
-  var tot = {count:0,amount:0,exp:0,reads:0,visits:0,inter:0};
-  filtered.forEach(function(r) {
-    tot.count += r['动态发布数量'];
-    tot.amount += r['实际任务金额'];
-    tot.exp += r['曝光'];
-    tot.reads += r['阅读数'];
-    tot.visits += r['商详访问'];
-    tot.inter += r['互动数'];
-  });
-  document.getElementById('m4-foot').innerHTML = '<tr style="background:#1e2435;font-weight:bold"><td>📊 合计 ('+entries.length+'货号)</td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>';
-}
-
-// ============ MODULE 5 ============
-function initM5() {
-  document.getElementById('m5-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-30)] || ALL_DATES[0];
-  document.getElementById('m5-end').value = ALL_DATES[ALL_DATES.length-1];
-  updateM5();
-}
-
-function updateM5() {
-  var d1 = document.getElementById('m5-start').value;
-  var d2 = document.getElementById('m5-end').value;
-
-  var agg = {};
-  PUSH_RAW.forEach(function(r) {
-    if (r.date_str < d1 || r.date_str > d2) return;
-    var g = r['货号'];
-    if (!agg[g]) agg[g] = {cost:0, do:0, dg:0, io:0, ig:0};
-    agg[g].cost += r['消耗'];
-    agg[g].do += r['直接支付单量'];
-    agg[g].dg += r['直接支付金额'];
-    agg[g].io += r['引导支付单量'];
-    agg[g].ig += r['引导支付金额'];
-  });
-
-  var arr = Object.entries(agg).map(function(e) {
-    var v = e[1];
-    var tg = v.dg + v.ig;
-    var to = v.do + v.io;
-    var roi = v.cost > 0 ? tg / v.cost : 0;
-    var oc = to > 0 ? v.cost / to : 0;
-    return {goods:e[0], cost:v.cost, gmv:tg, orders:to, roi:roi, oc:oc};
-  }).sort(function(a,b){return b.cost - a.cost;});
-
-  var rows = arr.map(function(r) {
-    var cls = r.roi >= 5 ? 'roi-high' : (r.roi >= 2 ? 'roi-mid' : 'roi-low');
-    var advice;
-    if (r.roi >= 5) advice = '🔥 高效投放';
-    else if (r.roi >= 3) advice = '✅ 良好';
-    else if (r.roi >= 1) advice = '⚠️ 关注';
-    else if (r.orders > 0) advice = '🔻 低ROI';
-    else advice = '⛔ 无转化';
-    return '<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+advice+'</td></tr>';
-  }).join('');
-
-  document.getElementById('m5-body').innerHTML = rows;
-}
-
-// ============ INIT ============
-window.addEventListener('load', function() {
-  loadAll().then(function() {
-    try { initM1(); } catch(e) { console.error('M1:', e); }
-    try { initM2(); } catch(e) { console.error('M2:', e); }
-    try { renderM3(); } catch(e) { console.error('M3:', e); }
-    try { initM4(); } catch(e) { console.error('M4:', e); }
-    try { initM5(); } catch(e) { console.error('M5:', e); }
-  }).catch(function(e) { 
-    document.getElementById('loader').textContent = '❌ 数据加载失败，请刷新重试';
-    console.error('Load error:', e);
-  });
-});
+window.addEventListener('load',function(){loadAll().then(function(){
+  try{initM1()}catch(e){console.error('M1:',e)}
+  try{initM2()}catch(e){console.error('M2:',e)}
+  try{renderM3()}catch(e){console.error('M3:',e)}
+  try{initM4()}catch(e){console.error('M4:',e)}
+  try{initM5()}catch(e){console.error('M5:',e)}
+}).catch(function(e){document.getElementById('loader').textContent='❌ 数据加载失败，请刷新重试';console.error(e)})});
 </script></body></html>
