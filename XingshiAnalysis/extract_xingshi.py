@@ -299,11 +299,11 @@ function updateM1(){
   else fd.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
   var mkt=dates.map(function(d){return MARKET_MAP[d]||null});
   if(m1Chart)m1Chart.destroy();
-  m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'line',data:{labels:dates,datasets:[
-    {label:'GMV(元)',data:gmv,borderColor:'#60a5fa',yAxisID:'y',tension:0.3,pointRadius:0},
-    {label:'UV',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
-    {label:'订单',data:orders,borderColor:'#f59e0b',yAxisID:'y1',tension:0.3,pointRadius:0},
-    {label:'大盘日韩表指数(万元)',data:mkt,borderColor:'#f87171',yAxisID:'y',tension:0.3,pointRadius:0,borderDash:[5,5]}
+  m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
+    {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.5)',borderColor:'#60a5fa',borderWidth:1,yAxisID:'y'},
+    {label:'UV',type:'line',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'订单',type:'line',data:orders,borderColor:'#f59e0b',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'大盘日韩表指数(万元)',type:'line',data:mkt,borderColor:'#f87171',yAxisID:'y',tension:0.3,pointRadius:0,borderDash:[5,5]}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}}}})
 }
 
