@@ -221,62 +221,152 @@ for g,v in da.items():
 print(f"   PUSH_RAW:{len(PUSH_RAW)} DETUI_AGG:{len(DETUI_AGG)}")
 
 # ============================================================
-# 6. 生成 HTML
+# 6. 保存JSON数据 + 生成HTML（fetch模式，避免46MB单行导致浏览器崩溃）
 # ============================================================
-print("🖨️  [6/6] 生成HTML...")
+print("💾 [6/6] 保存JSON数据...")
 
-jsc = f"""
-const DAILY_BRAND = {json.dumps(DAILY_BRAND, ensure_ascii=False)};
-const DAILY_GOODS = {json.dumps(DAILY_GOODS, ensure_ascii=False)};
-const ALL_DATES = {json.dumps(ALL_DATES, ensure_ascii=False)};
-const ALL_BRANDS = {json.dumps([BRAND], ensure_ascii=False)};
-const ALL_GOODS = {json.dumps(ALL_GOODS, ensure_ascii=False)};
-const ALL_MONTHS = {json.dumps(ALL_MONTHS, ensure_ascii=False)};
-const MARKET_MAP = {json.dumps(MARKET_MAP, ensure_ascii=False)};
-const ANOMALY_7D = {json.dumps(ANOMALY_7D, ensure_ascii=False)};
-const ANOMALY_30D = {json.dumps(ANOMALY_30D, ensure_ascii=False)};
-const GOODS_RATE = {json.dumps(GOODS_RATE, ensure_ascii=False)};
-const TASK_RAW = {json.dumps(TASK_RAW, ensure_ascii=False)};
-const TASK_MONTHS = {json.dumps(TASK_MONTHS, ensure_ascii=False)};
-const PUB_MONTHS = {json.dumps(PUB_MONTHS, ensure_ascii=False)};
-const DETUI_AGG = {json.dumps(DETUI_AGG, ensure_ascii=False)};
-const PUSH_RAW = {json.dumps(PUSH_RAW, ensure_ascii=False)};
-"""
+DATA_DIR = os.path.join(os.path.dirname(OUT_FILE), 'data')
+os.makedirs(DATA_DIR, exist_ok=True)
 
-# Read template from existing MeilanAnalysis HTML
-meilan_html = '/home/Vic/dewu-reports/MeilanAnalysis/2026/index.html'
-with open(meilan_html, 'r', encoding='utf-8') as f:
-    template = f.read()
+data_files = {
+    'DAILY_BRAND': DAILY_BRAND, 'DAILY_GOODS': DAILY_GOODS,
+    'ALL_DATES': ALL_DATES, 'ALL_BRANDS': [BRAND],
+    'ALL_GOODS': ALL_GOODS, 'ALL_MONTHS': ALL_MONTHS,
+    'MARKET_MAP': MARKET_MAP,
+    'ANOMALY_7D': ANOMALY_7D, 'ANOMALY_30D': ANOMALY_30D,
+    'GOODS_RATE': GOODS_RATE,
+    'TASK_RAW': TASK_RAW, 'TASK_MONTHS': TASK_MONTHS,
+    'PUB_MONTHS': PUB_MONTHS,
+    'DETUI_AGG': DETUI_AGG, 'PUSH_RAW': PUSH_RAW,
+}
 
-# Extract the <script>...</script> block and replace data
-# The MeilanAnalysis has data consts then JS functions
-# We need to replace the data part but keep the JS logic
+for name, data in data_files.items():
+    path = os.path.join(DATA_DIR, f'{name}.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False)
+    kb = os.path.getsize(path) / 1024
+    count = len(data) if isinstance(data, (list, dict)) else 1
+    print(f"   {name}: {count} items, {kb:.0f}KB")
 
-# Find where data ends and JS logic begins
-# Pattern: after the last data const, before "let m1Chart"
-split_marker = '\nlet m1Chart'
-js_start = template.index(split_marker)
-html_head = template[:js_start]
+# HTML template with fetch-based loading
+HTML = r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>醒狮运营分析看板</title><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script><style>
+*{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}.module{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}.filters label{font-size:13px;color:#94a3b8}.filters select,.filters input{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}.chart-wrap{position:relative;height:420px}.card .goods-name{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}.card td{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}.cards{display:flex;gap:12px}.card{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}.card h3{color:#60a5fa;font-size:13px;margin-bottom:8px}.card table{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}.card th:nth-child(1){width:28px}.card th:nth-child(2){width:auto}.card th:nth-child(3){width:70px;text-align:right}.card td:nth-child(3){text-align:right}.card th{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}.scroll{max-height:420px;overflow-y:auto}.card .rank{color:#94a3b8;width:24px}.alert-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}.alert-table th{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}.alert-table td{padding:8px 10px;border-bottom:1px solid #1a1d2e}.alert-row{background:rgba(248,113,113,0.08)}.delta-up{color:#f87171;font-weight:bold}.btn-group{display:flex;gap:8px;margin-bottom:12px}.btn-group button{padding:6px 16px;border-radius:6px;cursor:pointer;background:#0f1117;color:#94a3b8;border:1px solid #2d3348}.btn-group button.active{background:#3b82f6;color:#fff;border-color:#3b82f6}.roi-high{color:#22c55e;font-weight:bold}.roi-mid{color:#f59e0b}.roi-low{color:#f87171}.no-data{text-align:center;color:#94a3b8;padding:20px}.loading{text-align:center;color:#94a3b8;padding:40px;font-size:14px}.spinner{display:inline-block;width:20px;height:20px;border:2px solid #2d3348;border-top:2px solid #60a5fa;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle}@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body>
+<h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 醒狮运营分析看板</h1>
+<div class="loading" id="loader"><span class="spinner"></span>数据加载中...</div>
+<div class="module"><h2>📈 模块一：GMV / UV / 订单数 趋势</h2><div class="filters"><label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select><label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select><label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end"><label>货号搜索</label><input type="text" id="m1-goods" placeholder="输入货号..."></div><div class="chart-wrap"><canvas id="m1-chart"></canvas></div></div>
+<div class="module"><h2>🏆 模块二：TOP20 排行</h2><div class="filters"><label>日期筛选</label><input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end"><button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">刷新</button></div><div class="cards"><div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div><div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div><div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div></div></div>
+<div class="module"><h2>⚠️ 模块三：退货率异常警示</h2><div class="btn-group"><button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button><button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button><button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button></div><div class="scroll" style="max-height:360px"><table class="alert-table"><thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead><tbody id="m3-body"></tbody></table></div><div id="m3-nodata" class="no-data" style="display:none">✅ 未检测到退货率异常款式</div></div>
+<div class="module"><h2>📢 模块四：社区投放任务分析</h2><div class="filters"><label>任务月份</label><select id="m4-task-month"><option value="all">全部</option></select><label>发布月份</label><select id="m4-pub-month"><option value="all">全部</option></select><button onclick="updateM4()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>匹配货号</th><th>动态发布数量</th><th>实际任务金额(¥)</th><th>曝光</th><th>阅读数</th><th>商详访问</th><th>互动数</th></tr></thead><tbody id="m4-body"></tbody><tfoot id="m4-foot"></tfoot></table></div>
+<div class="module"><h2>🚀 模块五：得物推投放分析</h2><div class="filters"><label>日期筛选</label><input type="date" id="m5-start"><span style="color:#94a3b8">至</span><input type="date" id="m5-end"><button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead><tbody id="m5-body"></tbody></table></div>
+<script>
+var DAILY_BRAND,DAILY_GOODS,ALL_DATES,ALL_BRANDS,ALL_GOODS,ALL_MONTHS;
+var MARKET_MAP,ANOMALY_7D,ANOMALY_30D,GOODS_RATE;
+var TASK_RAW,TASK_MONTHS,PUB_MONTHS,DETUI_AGG,PUSH_RAW;
+var m1Chart=null,m3Mode='7d';
 
-# Find where data consts start: after "<script>"
-script_start = template.index('<script>')
-html_prefix = template[:script_start+8]  # <script>
-# Data section starts right after <script>
+function fmt(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString()}
+function fmtMoney(n){return n>=10000?'¥'+(n/10000).toFixed(1)+'w':'¥'+n.toLocaleString()}
 
-# Build final
-final = html_prefix + jsc + split_marker + template[js_start:]
+async function loadAll(){
+  var vars=['DAILY_BRAND','DAILY_GOODS','ALL_DATES','ALL_BRANDS','ALL_GOODS','ALL_MONTHS','MARKET_MAP','ANOMALY_7D','ANOMALY_30D','GOODS_RATE','TASK_RAW','TASK_MONTHS','PUB_MONTHS','DETUI_AGG','PUSH_RAW'];
+  var ps=vars.map(function(n){return fetch('data/'+n+'.json').then(function(r){return r.json()}).then(function(d){window[n]=d})});
+  await Promise.all(ps);
+  document.getElementById('loader').style.display='none';
+}
 
-# Also need to replace title from 美兰 to 醒狮
-final = final.replace('美兰运营分析看板', '醒狮运营分析看板')
-final = final.replace('<h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 美兰运营分析看板</h1>',
-                      '<h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 醒狮运营分析看板</h1>')
+function initM1(){
+  var fs=document.getElementById('m1-month-from'),ts=document.getElementById('m1-month-to');
+  ALL_MONTHS.forEach(function(m){var t=m.replace('-','年')+'月';var o=document.createElement('option');o.value=m;o.textContent=t;fs.appendChild(o);o=document.createElement('option');o.value=m;o.textContent=t;ts.appendChild(o)});
+  if(ALL_MONTHS.length>=3){fs.value=ALL_MONTHS[ALL_MONTHS.length-3];ts.value=ALL_MONTHS[ALL_MONTHS.length-1]}
+  document.getElementById('m1-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-90)]||ALL_DATES[0];
+  document.getElementById('m1-end').value=ALL_DATES[ALL_DATES.length-1];
+  [fs,ts,document.getElementById('m1-start'),document.getElementById('m1-end'),document.getElementById('m1-goods')].forEach(function(el){el.addEventListener('change',updateM1)});
+  document.getElementById('m1-goods').addEventListener('input',updateM1);
+  updateM1()
+}
+
+function updateM1(){
+  var mf=document.getElementById('m1-month-from').value,mt=document.getElementById('m1-month-to').value;
+  var im=mf!=='all'&&mt!=='all';
+  var d1=im?'':document.getElementById('m1-start').value,d2=im?'':document.getElementById('m1-end').value;
+  var gf=document.getElementById('m1-goods').value.trim().toUpperCase();
+  var fd=gf?DAILY_GOODS.filter(function(r){return r['商品货号']&&r['商品货号'].toUpperCase().indexOf(gf)>=0}):DAILY_BRAND;
+  if(im)fd=fd.filter(function(r){return r.date_str>=mf+'-01'&&r.date_str<=mt+'-31'});
+  else if(d1&&d2)fd=fd.filter(function(r){return r.date_str>=d1&&r.date_str<=d2});
+  var dates=[],gmv=[],uv=[],orders=[];
+  if(gf){var agg={};fd.forEach(function(r){if(!agg[r.date_str])agg[r.date_str]={GMV:0,UV:0,orders:0};agg[r.date_str].GMV+=r.GMV;agg[r.date_str].UV+=r.UV;agg[r.date_str].orders+=r.orders});var ks=Object.keys(agg).sort();ks.forEach(function(d){dates.push(d);gmv.push(agg[d].GMV);uv.push(agg[d].UV);orders.push(agg[d].orders)})}
+  else fd.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
+  var mkt=dates.map(function(d){return MARKET_MAP[d]||null});
+  if(m1Chart)m1Chart.destroy();
+  m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'line',data:{labels:dates,datasets:[
+    {label:'GMV(元)',data:gmv,borderColor:'#60a5fa',yAxisID:'y',tension:0.3,pointRadius:0},
+    {label:'UV',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'订单',data:orders,borderColor:'#f59e0b',yAxisID:'y1',tension:0.3,pointRadius:0},
+    {label:'大盘日韩表指数(万元)',data:mkt,borderColor:'#f87171',yAxisID:'y',tension:0.3,pointRadius:0,borderDash:[5,5]}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',ticks:{color:'#34d399'},grid:{drawOnChartArea:false}}}}})
+}
+
+function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2()}
+function updateM2(){
+  var d1=document.getElementById('m2-start').value,d2=document.getElementById('m2-end').value;
+  var agg={};DAILY_GOODS.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['商品货号'];if(!agg[g])agg[g]={UV:0,GMV:0,orders:0};agg[g].UV+=r.UV;agg[g].GMV+=r.GMV;agg[g].orders+=r.orders});
+  var arr=Object.entries(agg).map(function(e){return{goods:e[0],UV:e[1].UV,GMV:e[1].GMV,orders:e[1].orders}});
+  var tu=arr.slice().sort(function(a,b){return b.UV-a.UV}).slice(0,20);
+  var tg=arr.slice().sort(function(a,b){return b.GMV-a.GMV}).slice(0,20);
+  var to=arr.slice().sort(function(a,b){return b.orders-a.orders}).slice(0,20);
+  function rt(rs,vk,ff){return rs.length?rs.map(function(r,i){return'<tr><td class="rank">'+(i+1)+'</td><td class="goods-name">'+r.goods+'</td><td>'+ff(r[vk])+'</td></tr>'}).join(''):'<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>'}
+  document.getElementById('m2-uv').innerHTML=rt(tu,'UV',fmt);
+  document.getElementById('m2-gmv').innerHTML=rt(tg,'GMV',fmtMoney);
+  document.getElementById('m2-orders').innerHTML=rt(to,'orders',fmt)
+}
+
+function switchM3(m){m3Mode=m;['7d','30d','all'].forEach(function(x){var b=document.getElementById('m3-btn-'+x);if(b)b.className=x===m?'active':''});renderM3()}
+function renderM3(){
+  var d=m3Mode==='7d'?ANOMALY_7D:m3Mode==='30d'?ANOMALY_30D:GOODS_RATE;
+  var b=document.getElementById('m3-body'),nd=document.getElementById('m3-nodata');
+  if(!d||!d.length){b.innerHTML='';nd.style.display='block';return}
+  nd.style.display='none';
+  var rs=m3Mode==='all'?d.map(function(r){return'<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>'}):d.map(function(r){var dt=r.delta||0,c=dt>3?'delta-up':(dt<-3?'delta-down':'');return'<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+c+'">'+(dt>0?'+':'')+dt.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>'});
+  b.innerHTML=rs.join('')
+}
+
+function initM4(){var s1=document.getElementById('m4-task-month'),s2=document.getElementById('m4-pub-month');TASK_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s1.appendChild(o)});PUB_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s2.appendChild(o)});updateM4()}
+function updateM4(){
+  var tm=document.getElementById('m4-task-month').value,pm=document.getElementById('m4-pub-month').value;
+  var fd=TASK_RAW.filter(function(r){if(tm!=='all'&&r.task_month!==tm)return false;if(pm!=='all'&&r.pub_month!==pm)return false;return true});
+  var agg={};fd.forEach(function(r){var g=r['匹配货号'];if(!agg[g])agg[g]={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};agg[g].count+=r['动态发布数量'];agg[g].amount+=r['实际任务金额'];agg[g].exp+=r['曝光'];agg[g].reads+=r['阅读数'];agg[g].visits+=r['商详访问'];agg[g].inter+=r['互动数']});
+  var es=Object.entries(agg).sort(function(a,b){return b[1].amount-a[1].amount});
+  var rs=es.map(function(e){var v=e[1];return'<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>'});
+  document.getElementById('m4-body').innerHTML=rs.length?rs.join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+  var tot={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};fd.forEach(function(r){tot.count+=r['动态发布数量'];tot.amount+=r['实际任务金额'];tot.exp+=r['曝光'];tot.reads+=r['阅读数'];tot.visits+=r['商详访问'];tot.inter+=r['互动数']});
+  document.getElementById('m4-foot').innerHTML='<tr style="background:#1e2435;font-weight:bold"><td>📊 合计 ('+es.length+'货号)</td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>'
+}
+
+function initM5(){document.getElementById('m5-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m5-end').value=ALL_DATES[ALL_DATES.length-1];updateM5()}
+function updateM5(){
+  var d1=document.getElementById('m5-start').value,d2=document.getElementById('m5-end').value;
+  var agg={};PUSH_RAW.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['货号'];if(!agg[g])agg[g]={cost:0,do:0,dg:0,io:0,ig:0};agg[g].cost+=r['消耗'];agg[g].do+=r['直接支付单量'];agg[g].dg+=r['直接支付金额'];agg[g].io+=r['引导支付单量'];agg[g].ig+=r['引导支付金额']});
+  var as=Object.entries(agg).map(function(e){var v=e[1],tg=v.dg+v.ig,to=v.do+v.io;return{goods:e[0],cost:v.cost,gmv:tg,orders:to,roi:v.cost>0?tg/v.cost:0,oc:to>0?v.cost/to:0}}).sort(function(a,b){return b.cost-a.cost});
+  var rs=as.map(function(r){var c=r.roi>=5?'roi-high':(r.roi>=2?'roi-mid':'roi-low'),a=r.roi>=5?'🔥 高效投放':r.roi>=3?'✅ 良好':r.roi>=1?'⚠️ 关注':r.orders>0?'🔻 低ROI':'⛔ 无转化';return'<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+c+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>'}).join('');
+  document.getElementById('m5-body').innerHTML=rs
+}
+
+window.addEventListener('load',function(){loadAll().then(function(){
+  try{initM1()}catch(e){console.error('M1:',e)}
+  try{initM2()}catch(e){console.error('M2:',e)}
+  try{renderM3()}catch(e){console.error('M3:',e)}
+  try{initM4()}catch(e){console.error('M4:',e)}
+  try{initM5()}catch(e){console.error('M5:',e)}
+}).catch(function(e){document.getElementById('loader').textContent='❌ 数据加载失败，请刷新重试';console.error(e)})});
+</script></body></html>'''
 
 os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
 with open(OUT_FILE, 'w', encoding='utf-8') as f:
-    f.write(final)
+    f.write(HTML)
 
-mb = os.path.getsize(OUT_FILE)/(1024*1024)
-print(f"\n✅ {OUT_FILE} ({mb:.1f}MB)")
+kb = os.path.getsize(OUT_FILE) / 1024
+print(f"\n✅ {OUT_FILE} ({kb:.0f}KB HTML + {len(data_files)} JSON in data/)")
 print(f"   {ALL_DATES[0]} ~ {ALL_DATES[-1]}")
 print(f"   DAILY_BRAND:{len(DAILY_BRAND)} DAILY_GOODS:{len(DAILY_GOODS)}")
 print(f"   TASK:{len(TASK_RAW)} PUSH:{len(PUSH_RAW)}")
