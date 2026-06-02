@@ -11,12 +11,6 @@
   .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
   .header h1{font-size:22px;color:#e6edf3}
   .header span{font-size:13px;color:#8b949e}
-  .kpi-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
-  .kpi-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px;flex:1;min-width:130px}
-  .kpi-card .l{font-size:11px;color:#8b949e;margin-bottom:3px}
-  .kpi-card .v{font-size:20px;font-weight:700;color:#e6edf3}
-  .kpi-card .c{font-size:12px;margin-top:2px}
-  .up{color:#3fb950}.down{color:#f85149}.neutral{color:#8b949e}
   .chart-container{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:20px 24px}
   .chart-container h2{font-size:15px;color:#e6edf3;margin-bottom:8px}
   .chart-wrapper{position:relative;width:100%;height:520px}
@@ -30,8 +24,6 @@
   <h1>📊 手串与饰品 · 大盘指数趋势看板</h1>
   <span>数据区间：2025-06 ~ 2026-05（12个月）｜ 左轴：各类目万元 · 右轴：店铺GSV元</span>
 </div>
-
-<div class="kpi-row" id="kpiRow"></div>
 
 <div class="chart-container">
   <h2>店铺GSV与各类目大盘成交指数</h2>
@@ -59,16 +51,6 @@ const cats = [
   {name:'翡翠项链',     data:[19.2,20.7,20.4,16.4,16.8,13.1,14.4,13.4,17.4,16.3,17.4,33.2], color:'#db6d28', width:1.5},
   {name:'小叶紫檀手串',   data:[10.0,7.5,12.9,9.6,8.8,8.1,9.4,8.7,10.4,8.8,8.7,10.9], color:'#7ee787', width:1.5},
 ];
-
-// KPI
-document.getElementById('kpiRow').innerHTML = [
-  {l:'最新GSV（5月）',v:'¥'+(gsvData[11]/10000).toFixed(1)+'万',c:'up',t:'环比 +'+(+(gsvData[11]-gsvData[10])/gsvData[10]*100).toFixed(1)+'%'},
-  {l:'年度峰值',v:'¥'+(Math.max(...gsvData)/10000).toFixed(1)+'万',c:'neutral',t:'2025-06'},
-  {l:'年度谷值',v:'¥'+(Math.min(...gsvData)/10000).toFixed(1)+'万',c:'down',t:'2026-04'},
-  {l:'谷峰比',v:(Math.min(...gsvData)/Math.max(...gsvData)*100).toFixed(0)+'%',c:'down',t:'振幅'+(+(Math.max(...gsvData)-Math.min(...gsvData))/Math.min(...gsvData)*100).toFixed(0)+'%'},
-  {l:'手链最新',v:cats[0].data[11].toFixed(0)+'万',c:'up',t:'月均'+(cats[0].data.reduce((a,b)=>a+b,0)/12).toFixed(0)+'万'},
-  {l:'玛瑙/玉髓最新',v:cats[1].data[11].toFixed(0)+'万',c:'up',t:'月均'+(cats[1].data.reduce((a,b)=>a+b,0)/12).toFixed(0)+'万'},
-].map(k=>`<div class="kpi-card"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="c ${k.c}">${k.t}</div></div>`).join('');
 
 // Main chart
 const ds = [
