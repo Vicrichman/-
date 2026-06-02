@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>手串与饰品 · 大盘指数看板</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0f1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px 32px}
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+  .header h1{font-size:22px;color:#e6edf3}
+  .header span{font-size:13px;color:#8b949e}
+  .kpi-row{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+  .kpi-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:14px 18px;flex:1;min-width:130px}
+  .kpi-card .l{font-size:11px;color:#8b949e;margin-bottom:3px}
+  .kpi-card .v{font-size:20px;font-weight:700;color:#e6edf3}
+  .kpi-card .c{font-size:12px;margin-top:2px}
+  .up{color:#3fb950}.down{color:#f85149}.neutral{color:#8b949e}
+  .chart-container{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:20px 24px}
+  .chart-container h2{font-size:15px;color:#e6edf3;margin-bottom:8px}
+  .chart-wrapper{position:relative;width:100%;height:520px}
+  .chart-wrapper canvas{width:100%!important}
+  .note{font-size:11px;color:#8b949e;margin-top:8px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 手串与饰品 · 大盘指数趋势看板</h1>
+  <span>数据区间：2025-06 ~ 2026-05（12个月）｜ 左轴：各类目万元 · 右轴：店铺GSV元</span>
+</div>
+
+<div class="kpi-row" id="kpiRow"></div>
+
+<div class="chart-container">
+  <h2>店铺GSV与各类目大盘成交指数</h2>
+  <div class="chart-wrapper"><canvas id="mainChart"></canvas></div>
+  <div class="note">柱状图 = 店铺GSV（右轴，单位元） ｜ 折线 = 各类目大盘成交指数（左轴，单位万元） ｜ 悬停查看详细数值</div>
+</div>
+
+<script>
+const dates = ['2025-06','2025-07','2025-08','2025-09','2025-10','2025-11',
+               '2025-12','2026-01','2026-02','2026-03','2026-04','2026-05'];
+
+const gsvData = [1297233,990139,1063061,746098,538656,398485,470789,320289,343320,182634,119338,163325];
+
+const cats = [
+  {name:'手链',       data:[727.8,648.5,999.5,666.4,607.2,586.8,731.0,575.4,847.0,671.3,643.1,995.5], color:'#58a6ff', width:2.5},
+  {name:'玛瑙/玉髓项链', data:[121.8,94.6,152.3,124.6,128.2,135.5,167.6,127.2,201.9,155.4,140.7,333.6], color:'#f0883e', width:2.5},
+  {name:'黑曜石手串',    data:[66.4,42.1,118.3,54.9,58.2,59.5,79.3,58.3,121.0,70.1,65.5,183.5], color:'#3fb950', width:2},
+  {name:'木作手串',     data:[124.9,99.7,117.8,95.3,83.3,62.6,41.6,38.2,54.3,38.9,34.9,44.7], color:'#f85149', width:2},
+  {name:'手绳',       data:[107.4,76.6,102.0,68.3,65.6,67.2,103.3,89.7,128.2,71.0,50.2,81.4], color:'#a371f7', width:2},
+  {name:'菩提类手串',    data:[65.7,58.9,57.7,45.6,44.0,33.4,28.9,26.3,36.2,31.0,25.8,30.1], color:'#d29922', width:2},
+  {name:'和田玉项链',    data:[53.8,42.1,60.8,43.1,38.3,38.9,48.3,44.8,76.0,52.0,47.9,101.4], color:'#79c0ff', width:1.5},
+  {name:'足银项链',     data:[45.3,34.9,55.8,43.1,44.9,50.9,78.0,43.4,62.8,42.8,39.8,63.5], color:'#56d364', width:1.5},
+  {name:'石榴石类手串',   data:[74.5,30.2,39.9,28.6,19.0,13.3,13.7,10.7,21.6,16.7,17.0,36.5], color:'#e5534b', width:1.5},
+  {name:'手串',       data:[54.7,52.5,72.8,42.6,34.2,29.4,31.5,27.2,52.5,34.7,32.4,54.5], color:'#bc8cff', width:1.5},
+  {name:'翡翠项链',     data:[19.2,20.7,20.4,16.4,16.8,13.1,14.4,13.4,17.4,16.3,17.4,33.2], color:'#db6d28', width:1.5},
+  {name:'小叶紫檀手串',   data:[10.0,7.5,12.9,9.6,8.8,8.1,9.4,8.7,10.4,8.8,8.7,10.9], color:'#7ee787', width:1.5},
+];
+
+// KPI
+document.getElementById('kpiRow').innerHTML = [
+  {l:'最新GSV（5月）',v:'¥'+(gsvData[11]/10000).toFixed(1)+'万',c:'up',t:'环比 +'+(+(gsvData[11]-gsvData[10])/gsvData[10]*100).toFixed(1)+'%'},
+  {l:'年度峰值',v:'¥'+(Math.max(...gsvData)/10000).toFixed(1)+'万',c:'neutral',t:'2025-06'},
+  {l:'年度谷值',v:'¥'+(Math.min(...gsvData)/10000).toFixed(1)+'万',c:'down',t:'2026-04'},
+  {l:'谷峰比',v:(Math.min(...gsvData)/Math.max(...gsvData)*100).toFixed(0)+'%',c:'down',t:'振幅'+(+(Math.max(...gsvData)-Math.min(...gsvData))/Math.min(...gsvData)*100).toFixed(0)+'%'},
+  {l:'手链最新',v:cats[0].data[11].toFixed(0)+'万',c:'up',t:'月均'+(cats[0].data.reduce((a,b)=>a+b,0)/12).toFixed(0)+'万'},
+  {l:'玛瑙/玉髓最新',v:cats[1].data[11].toFixed(0)+'万',c:'up',t:'月均'+(cats[1].data.reduce((a,b)=>a+b,0)/12).toFixed(0)+'万'},
+].map(k=>`<div class="kpi-card"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="c ${k.c}">${k.t}</div></div>`).join('');
+
+// Main chart
+const ds = [
+  {
+    label:'店铺GSV',
+    data:gsvData,
+    type:'bar',
+    backgroundColor:gsvData.map((_,i)=>i===11?'#3fb950':'rgba(88,166,255,0.45)'),
+    borderColor:gsvData.map((_,i)=>i===11?'#2ea043':'rgba(88,166,255,0.8)'),
+    borderWidth:1,
+    borderRadius:3,
+    yAxisID:'y1',
+    order:1,
+  },
+  ...cats.map(c=>({
+    label:c.name,
+    data:c.data,
+    type:'line',
+    borderColor:c.color,
+    backgroundColor:c.color+'15',
+    borderWidth:c.width,
+    tension:0.3,
+    pointRadius:3,
+    pointHoverRadius:6,
+    fill:false,
+    yAxisID:'y',
+    order:2,
+  }))
+];
+
+new Chart(document.getElementById('mainChart'),{
+  type:'bar',
+  data:{labels:dates,datasets:ds},
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'bottom',labels:{color:'#c9d1d9',padding:14,usePointStyle:true,pointStyle:'circle',font:{size:11},boxWidth:12}}
+    },
+    scales:{
+      x:{ticks:{color:'#8b949e',font:{size:11}},grid:{color:'#21262d'}},
+      y:{
+        type:'linear',position:'left',
+        title:{display:true,text:'类目指数（万元）',color:'#8b949e'},
+        ticks:{color:'#8b949e',font:{size:11},callback:v=>v.toFixed(0)+'万'},
+        grid:{color:'#21262d'}
+      },
+      y1:{
+        type:'linear',position:'right',
+        title:{display:true,text:'店铺GSV（元）',color:'#58a6ff'},
+        ticks:{color:'#58a6ff',font:{size:11},callback:v=>(v/10000).toFixed(0)+'万'},
+        grid:{drawOnChartArea:false}
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
