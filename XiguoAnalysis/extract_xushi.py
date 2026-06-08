@@ -294,7 +294,7 @@ PUSH_RAW = []
 push_agg = defaultdict(lambda: {'消耗':0,'直接支付单量':0,'直接支付金额':0,'引导支付单量':0,'引导支付金额':0,'曝光':0,'点击':0})
 
 for _, r in df_push.iterrows():
-    spu_id = safe_str(r['商品ID'])
+    spu_id = safe_str(r['商品ID2'])
     goods = id2goods.get(spu_id, '')
     if not goods: continue
     

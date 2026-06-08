@@ -17,7 +17,7 @@ import sys
 
 EXCEL_PATH = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
 START_DATE = "2025-05-01"
-END_DATE = "2026-06-07"
+END_DATE = "2026-06-08"
 BRANDS = ["CASIO/卡西欧", "COACH/蔻驰"]
 BRAND_SHORT = {"CASIO/卡西欧": "卡西欧", "COACH/蔻驰": "蔻驰"}
 
