@@ -88,19 +88,19 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 
 <!-- ====== MODULE 3 ====== -->
 <div class="module">
-  <h2>⚠️ 模块三：退货率异常警示</h2>
+  <h2>⚠️ 模块三：订单量异常警示</h2>
   <div class="btn-group">
     <button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button>
     <button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button>
-    <button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button>
+    <button id="m3-btn-all" onclick="switchM3('all')">全部款式</button>
   </div>
   <div class="scroll" style="max-height:360px;">
     <table class="alert-table">
-      <thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead>
+      <thead><tr><th>货号</th><th>历史日均订单</th><th>近期日均订单</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead>
       <tbody id="m3-body"></tbody>
     </table>
   </div>
-  <div id="m3-nodata" class="no-data" style="display:none;">✅ 未检测到退货率异常款式</div>
+  <div id="m3-nodata" class="no-data" style="display:none;">✅ 未检测到订单量异常款式</div>
 </div>
 
 <!-- ====== MODULE 4 ====== -->
@@ -122,14 +122,13 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 
 <!-- ====== MODULE 5 ====== -->
 <div class="module">
-  <h2>🚀 模块五：得物推投放分析</h2>
+  <h2>🚀 模块五：得物推投放分析（品牌·月度）</h2>
   <div class="filters">
-    <label>日期筛选</label>
-    <input type="date" id="m5-start" value=""><span style="color:#94a3b8">至</span><input type="date" id="m5-end" value="">
-    <button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;">筛选</button>
+    <span style="color:#94a3b8;font-size:13px;">数据范围：全部月份 | 排序：ROI降序</span>
+    <button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;margin-left:12px;">刷新</button>
   </div>
   <table class="alert-table">
-    <thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead>
+    <thead><tr><th>品牌</th><th>月份</th><th>投放费用(¥)</th><th>GMV(¥)</th><th>订单量</th><th>ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead>
     <tbody id="m5-body"></tbody>
   </table>
 </div>
@@ -174,6 +173,17 @@ if (D.market) D.market.forEach(function(r) { MARKET_MAP[r.date] = r.value; });
 // Build TASK_RAW from D.comm_tasks
 var TASK_RAW = D.comm_tasks || [];
 
+// Extract TASK_MONTHS and PUB_MONTHS
+var TASK_MONTHS = [], PUB_MONTHS = [];
+TASK_RAW.forEach(function(r) {
+  if (r.month && TASK_MONTHS.indexOf(r.month) < 0) TASK_MONTHS.push(r.month);
+  if (r.pub_date) {
+    var pm = r.pub_date.substring(0,7);
+    if (PUB_MONTHS.indexOf(pm) < 0) PUB_MONTHS.push(pm);
+  }
+});
+TASK_MONTHS.sort(); PUB_MONTHS.sort();
+
 // Build DETUI_AGG + PUSH_RAW from D.push_monthly
 var DETUI_AGG = [];
 var PUSH_RAW = [];
@@ -187,8 +197,42 @@ if (D.push_monthly) {
   });
 }
 
-// Placeholders for M3
-var GOODS_RATE = []; var ANOMALY_7D = []; var ANOMALY_30D = [];
+// Build M3 data from huohao_daily (order volume anomaly detection)
+var GOODS_RATE = [], ANOMALY_7D = [], ANOMALY_30D = [];
+(function buildM3Data() {
+  var allHuohaoData = {};
+  ALL_BRANDS.forEach(function(brand) {
+    (D.huohao_daily[brand]||[]).forEach(function(d) {
+      if (!allHuohaoData[d.huohao]) allHuohaoData[d.huohao] = [];
+      allHuohaoData[d.huohao].push({date: d.date, orders: d.orders, gmv: d.gmv});
+    });
+  });
+  Object.keys(allHuohaoData).forEach(function(hh) {
+    allHuohaoData[hh].sort(function(a,b){return a.date.localeCompare(b.date);});
+  });
+  var allDates = []; Object.values(allHuohaoData).forEach(function(arr) {
+    arr.forEach(function(d) { if (allDates.indexOf(d.date)<0) allDates.push(d.date); });
+  }); allDates.sort();
+  var latest = allDates[allDates.length-1]||'';
+  var c7=new Date(latest);c7.setDate(c7.getDate()-7);var cut7=c7.toISOString().slice(0,10);
+  var c14=new Date(latest);c14.setDate(c14.getDate()-14);var cut14=c14.toISOString().slice(0,10);
+  var c30=new Date(latest);c30.setDate(c30.getDate()-30);var cut30=c30.toISOString().slice(0,10);
+  var c60=new Date(latest);c60.setDate(c60.getDate()-60);var cut60=c60.toISOString().slice(0,10);
+  Object.keys(allHuohaoData).forEach(function(hh) {
+    var arr=allHuohaoData[hh], totalOrd=0,r7=0,p7=0,r30=0,p30=0;
+    arr.forEach(function(d){totalOrd+=d.orders;
+      if(d.date>=cut7)r7+=d.orders;else if(d.date>=cut14)p7+=d.orders;
+      if(d.date>=cut30)r30+=d.orders;else if(d.date>=cut60)p30+=d.orders;
+    });
+    GOODS_RATE.push({'货号':hh,return_rate:r30>0?((r30/Math.min(30,Math.ceil((new Date(latest)-new Date(cut30))/86400000))).toFixed(1)):'0',total:totalOrd,returned:r30});
+    var h7d=p7/7, r7d=r7/7, d7=h7d>0?((r7d-h7d)/h7d*100):(r7d>0?999:0);
+    if(r7>0||p7>0) ANOMALY_7D.push({goods:hh,hist_rate:h7d,recent_rate:r7d,delta:d7,is_alert:Math.abs(d7)>=30,total_orders:totalOrd,recent_orders:r7});
+    var h30d=p30/30, r30d=r30/30, d30=h30d>0?((r30d-h30d)/h30d*100):(r30d>0?999:0);
+    if(r30>0||p30>0) ANOMALY_30D.push({goods:hh,hist_rate:h30d,recent_rate:r30d,delta:d30,is_alert:Math.abs(d30)>=30,total_orders:totalOrd,recent_orders:r30});
+  });
+  ANOMALY_7D.sort(function(a,b){return Math.abs(b.delta)-Math.abs(a.delta);});
+  ANOMALY_30D.sort(function(a,b){return Math.abs(b.delta)-Math.abs(a.delta);});
+})();
 
 let m1Chart = null, m3Mode = '7d';
 
@@ -288,7 +332,7 @@ function updateM1() {
   
   m1Chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: isMonthly ? dates.map(function(d){return d.slice(5)+'月';}) : dates, datasets: datasets },
+    data: { labels: isMonthly ? dates.map(function(d){return d.slice(0,4)+'年'+parseInt(d.slice(5))+'月';}) : dates, datasets: datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode:'index', intersect:false },
@@ -298,7 +342,7 @@ function updateM1() {
       },
       scales: {
         x: { ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,
-          callback:function(v){var s=String(v);return isMonthly?s.substring(0,4)+'年'+s.substring(5,7)+'月':s.substring(5);}} },
+          callback:function(v){var s=String(v);return isMonthly?s:s.substring(5);}} },
         y: { type:'linear', position:'left', title:{display:true,text:'GMV(¥)',color:'#3b82f6'}, ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}} },
         y1: { type:'linear', position:'right', title:{display:true,text:'UV',color:'#f59e0b'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false} },
         y2: { type:'linear', position:'right', title:{display:true,text:'大盘(万元)',color:'#a78bfa'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true },
@@ -393,13 +437,13 @@ function renderM3() {
   var rows;
   if (m3Mode === 'all') {
     rows = data.map(function(r) {
-      return '<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>';
+      return '<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'单/日</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>';
     });
   } else {
     rows = data.map(function(r) {
       var delta = r.delta || 0;
-      var cls = delta > 3 ? 'delta-up' : (delta < -3 ? 'delta-down' : '');
-      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
+      var cls = delta > 20 ? 'delta-up' : (delta < -20 ? 'delta-down' : '');
+      return '<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'单/日</td><td>'+((r.recent_rate||0).toFixed(1))+'单/日</td><td class="'+cls+'">'+(delta>0?'+':'')+delta.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>';
     });
   }
 
@@ -420,95 +464,77 @@ function updateM4() {
   var pubM = document.getElementById('m4-pub-month').value;
 
   var filtered = TASK_RAW.filter(function(r) {
-    if (taskM !== 'all' && r.task_month !== taskM) return false;
-    if (pubM !== 'all' && r.pub_month !== pubM) return false;
+    if (taskM !== 'all' && r.month !== taskM) return false;
+    if (pubM !== 'all') {
+      var pm = r.pub_date ? r.pub_date.substring(0,7) : '';
+      if (pm !== pubM) return false;
+    }
     return true;
   });
 
   var agg = {};
   filtered.forEach(function(r) {
-    var g = r['匹配货号'];
+    var g = r.huohao || '';
     if (!agg[g]) agg[g] = { count: 0, amount: 0, exp: 0, reads: 0, visits: 0, inter: 0 };
-    agg[g].count += r['动态发布数量'];
-    agg[g].amount += r['实际任务金额'];
-    agg[g].exp += r['曝光'];
-    agg[g].reads += r['阅读数'];
-    agg[g].visits += r['商详访问'];
-    agg[g].inter += r['互动数'];
+    agg[g].count += 1;
+    agg[g].amount += r.amount || 0;
+    agg[g].exp += r.exposure || 0;
+    agg[g].reads += r.reads || 0;
+    agg[g].visits += r.visits || 0;
   });
 
   var entries = Object.entries(agg).sort(function(a,b){return b[1].amount - a[1].amount;});
   var rows = entries.map(function(e) {
     var v = e[1];
-    return '<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>';
+    return '<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>-</td></tr>';
   });
 
   document.getElementById('m4-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
   
   // Summary row
-  var tot = {count:0,amount:0,exp:0,reads:0,visits:0,inter:0};
+  var tot = {count:0,amount:0,exp:0,reads:0,visits:0};
   filtered.forEach(function(r) {
-    tot.count += r['动态发布数量'];
-    tot.amount += r['实际任务金额'];
-    tot.exp += r['曝光'];
-    tot.reads += r['阅读数'];
-    tot.visits += r['商详访问'];
-    tot.inter += r['互动数'];
+    tot.count += 1;
+    tot.amount += r.amount || 0;
+    tot.exp += r.exposure || 0;
+    tot.reads += r.reads || 0;
+    tot.visits += r.visits || 0;
   });
-  document.getElementById('m4-foot').innerHTML = '<tr><td><b>📊 合计 ('+entries.length+'个货号)</b></td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>';
+  document.getElementById('m4-foot').innerHTML = '<tr><td><b>📊 合计 ('+entries.length+'个货号)</b></td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>-</td></tr>';
 }
 
 // ============ MODULE 5 ============
 function initM5() {
-  var dates = PUSH_RAW.map(function(r){return r.date_str;}).filter(function(d){return d;}).sort();
-  if (dates.length) {
-    document.getElementById('m5-start').value = dates[0];
-    document.getElementById('m5-end').value = dates[dates.length-1];
-  }
   updateM5();
 }
 
 function updateM5() {
-  var d1 = document.getElementById('m5-start').value;
-  var d2 = document.getElementById('m5-end').value;
-
-  var agg = {};
-  PUSH_RAW.forEach(function(r) {
-    if (d1 && r.date_str < d1) return;
-    if (d2 && r.date_str > d2) return;
-    var g = r['货号'];
-    if (!agg[g]) agg[g] = {cost:0,direct_orders:0,direct_gmv:0,indirect_orders:0,indirect_gmv:0};
-    agg[g].cost += r['消耗'];
-    agg[g].direct_orders += r['直接支付单量'];
-    agg[g].direct_gmv += r['直接支付金额'];
-    agg[g].indirect_orders += r['引导支付单量'];
-    agg[g].indirect_gmv += r['引导支付金额'];
-  });
-
   var items = [];
-  Object.entries(agg).forEach(function(e) {
-    var v = e[1];
-    var totalGMV = v.direct_gmv + v.indirect_gmv;
-    var totalOrders = v.direct_orders + v.indirect_orders;
-    var roi = v.cost > 0 ? totalGMV / v.cost : 0;
-    var orderCost = totalOrders > 0 ? v.cost / totalOrders : 0;
-    items.push({goods: e[0], cost: v.cost, gmv: totalGMV, orders: totalOrders, roi: roi, oc: orderCost});
+  DETUI_AGG.forEach(function(r) {
+    var gmv = 0, orders = 0;
+    if (D.orders_monthly[r.brand] && D.orders_monthly[r.brand][r.month]) {
+      gmv = D.orders_monthly[r.brand][r.month].gmv || 0;
+      orders = D.orders_monthly[r.brand][r.month].orders || 0;
+    }
+    var roi = r.cost > 0 ? gmv / r.cost : 0;
+    var orderCost = orders > 0 ? r.cost / orders : 0;
+    items.push({brand: r.brand, month: r.month, cost: r.cost, gmv: gmv, orders: orders, roi: roi, oc: orderCost});
   });
   items.sort(function(a,b){return b.roi - a.roi;});
 
   var rows = items.map(function(r) {
     var cls = r.roi >= 2 ? 'roi-high' : (r.roi >= 1 ? 'roi-mid' : 'roi-low');
     var advice;
-    if (r.roi >= 3) advice = '🔥 加大投放';
-    else if (r.roi >= 2) advice = '🔥 持续加投';
-    else if (r.roi >= 1) advice = '✅ 保持投放';
-    else if (r.roi >= 0.5) advice = '⚠️ 观察优化';
+    if (r.roi >= 5) advice = '🔥 加大投放';
+    else if (r.roi >= 3) advice = '🔥 持续加投';
+    else if (r.roi >= 1.5) advice = '✅ 保持投放';
+    else if (r.roi >= 0.8) advice = '⚠️ 观察优化';
     else if (r.roi > 0) advice = '⛔ 建议暂停';
     else advice = '⛔ 无转化';
-    return '<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+advice+'</td></tr>';
+    return '<tr><td>'+r.brand+'</td><td>'+r.month.replace('-','年')+'月</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+advice+'</td></tr>';
   });
 
-  document.getElementById('m5-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
+  document.getElementById('m5-body').innerHTML = rows.length ? rows.join('') : '<tr><td colspan="8" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
 }
 
 // ============ INIT ============
