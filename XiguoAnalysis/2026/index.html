@@ -135,6 +135,61 @@ h2 { color: #60a5fa; font-size: 18px; margin-bottom: 12px; border-bottom: 1px so
 </div>
 
 <script>
+// Extract from D (data.js) for 5-module template compatibility
+var ALL_MONTHS = D.months;
+var ALL_BRANDS = Object.keys(D.orders_monthly);
+var ALL_DATES = Object.keys(D.uv_daily_by_brand ? (D.uv_daily_by_brand[ALL_BRANDS[0]] || []) : []).length ? 
+  Object.keys(D.uv_daily_by_brand[ALL_BRANDS[0]].reduce(function(m,r){m[r.date]=1;return m},{})).sort() : 
+  (D.dateRange ? (function(s,e){var a=[],d=new Date(s);while(d<=new Date(e)){a.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1)}return a;})(D.dateRange.start, D.dateRange.end) : []);
+
+// Build DAILY_BRAND from D.uv_daily_by_brand
+var DAILY_BRAND = [];
+ALL_BRANDS.forEach(function(brand) {
+  if (D.uv_daily_by_brand && D.uv_daily_by_brand[brand]) {
+    D.uv_daily_by_brand[brand].forEach(function(r) {
+      DAILY_BRAND.push({date_str: r.date, brand: brand, GMV: r.gmv||0, UV: r.uv||0, orders: r.orders||0});
+    });
+  }
+});
+
+// Build DAILY_GOODS from D.uv_spu_data
+var DAILY_GOODS = [];
+ALL_BRANDS.forEach(function(brand) {
+  if (D.uv_spu_data && D.uv_spu_data[brand]) {
+    D.uv_spu_data[brand].forEach(function(spu) {
+      if (spu.daily) spu.daily.forEach(function(d) {
+        DAILY_GOODS.push({
+          date_str: d.date, brand: brand, '商品货号': spu.huohao||spu.spu,
+          GMV: d.gmv||0, UV: d.uv||0, orders: d.orders||0
+        });
+      });
+    });
+  }
+});
+
+// MARKET_MAP from D
+var MARKET_MAP = {};
+if (D.market) D.market.forEach(function(r) { MARKET_MAP[r.date] = r.value; });
+
+// Build TASK_RAW from D.comm_tasks
+var TASK_RAW = D.comm_tasks || [];
+
+// Build DETUI_AGG + PUSH_RAW from D.push_monthly
+var DETUI_AGG = [];
+var PUSH_RAW = [];
+if (D.push_monthly) {
+  ALL_BRANDS.forEach(function(brand) {
+    if (D.push_monthly[brand]) {
+      Object.keys(D.push_monthly[brand]).forEach(function(m) {
+        DETUI_AGG.push({brand: brand, month: m, cost: D.push_monthly[brand][m]||0});
+      });
+    }
+  });
+}
+
+// Placeholders for M3
+var GOODS_RATE = []; var ANOMALY_7D = []; var ANOMALY_30D = [];
+
 let m1Chart = null, m3Mode = '7d';
 
 function fmt(n, d) { d=d||0; return Number(n||0).toLocaleString('zh-CN',{maximumFractionDigits:d}); }
@@ -233,7 +288,7 @@ function updateM1() {
   
   m1Chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: dates, datasets: datasets },
+    data: { labels: isMonthly ? dates.map(function(d){return d.slice(5)+'月';}) : dates, datasets: datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode:'index', intersect:false },
