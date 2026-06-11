@@ -149,7 +149,7 @@ var dataReady={cat:false, goods:false, task:false, push:false};
 
 async function loadCat(){
   try{
-    var r=await fetch('data/DAILY_CAT.json');
+    var r=await fetch('data/DAILY_CAT.json?v=2');
     DAILY_CAT=await r.json();
     dataReady.cat=true;
     document.getElementById('loader').style.display='none';
@@ -158,7 +158,7 @@ async function loadCat(){
 }
 async function loadGoods(){
   try{
-    var r=await fetch('data/DAILY_GOODS.json');
+    var r=await fetch('data/DAILY_GOODS.json?v=2');
     DAILY_GOODS=await r.json();
     dataReady.goods=true;
     initM2();
@@ -166,7 +166,7 @@ async function loadGoods(){
 }
 async function loadTask(){
   try{
-    var r=await fetch('data/TASK_RAW.json');
+    var r=await fetch('data/TASK_RAW.json?v=2');
     TASK_RAW=await r.json();
     dataReady.task=true;
     initM4();
@@ -174,7 +174,7 @@ async function loadTask(){
 }
 async function loadPush(){
   try{
-    var r=await fetch('data/PUSH_RAW.json');
+    var r=await fetch('data/PUSH_RAW.json?v=2');
     PUSH_RAW=await r.json();
     dataReady.push=true;
     initM5();
@@ -201,16 +201,16 @@ function fmt(v,d){d=d||0;if(typeof v==='number')return v.toLocaleString('en-US',
 function fmtMoney(v){if(typeof v==='number')return '¥'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return v||'0.00';}
 function sn(v){return v.length>20?v.slice(0,19)+'…':v;}
 
-// ── Array format helpers ──
-// DAILY_CAT: [date_str, cat, GMV, GSV, UV, orders]
-// DAILY_GOODS: [date_str, cat, goods, GMV, GSV, UV, orders]
-function rowDate(r){return r[0];}
-function rowCat(r){return r[1];}
-function rowGMV(r){return r.length>6?r[3]:r[2];}
-function rowGSV(r){return r.length>6?r[4]:r[3];}
-function rowUV(r){return r.length>6?r[5]:r[4];}
-function rowOrd(r){return r.length>6?r[6]:r[5];}
-function rowGoods(r){return r.length>6?r[2]:'';}
+// ── Array format helpers (compatible with both old objects and new arrays) ──
+// DAILY_CAT: [date_str, cat, GMV, GSV, UV, orders]  or  {date_str, cat, GMV, GSV, UV, orders}
+// DAILY_GOODS: [date_str, cat, goods, GMV, GSV, UV, orders]  or  {date_str, cat, goods, GMV, GSV, UV, orders}
+function rowDate(r){return Array.isArray(r)?r[0]:r.date_str;}
+function rowCat(r){return Array.isArray(r)?r[1]:r.cat;}
+function rowGMV(r){return Array.isArray(r)?(r.length>6?r[3]:r[2]):(r.GMV||0);}
+function rowGSV(r){return Array.isArray(r)?(r.length>6?r[4]:r[3]):(r.GSV||0);}
+function rowUV(r){return Array.isArray(r)?(r.length>6?r[5]:r[4]):(r.UV||0);}
+function rowOrd(r){return Array.isArray(r)?(r.length>6?r[6]:r[5]):(r.orders||0);}
+function rowGoods(r){return Array.isArray(r)?(r.length>6?r[2]:''):(r.goods||'');}
 
 function initM1(){
   var fromSel=document.getElementById('m1-month-from'),toSel=document.getElementById('m1-month-to');
