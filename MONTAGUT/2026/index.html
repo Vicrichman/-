@@ -57,6 +57,11 @@ h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d33
 <div class="module">
   <h2>📈 模块一：GMV / UV / 订单数 趋势</h2>
   <div class="filters">
+    <label>金额口径</label>
+    <div class="btn-group" style="margin-bottom:0;" id="m1-metric-group">
+      <button id="m1-btn-gmv" class="active" onclick="switchM1Metric('gmv')">💰 GMV</button>
+      <button id="m1-btn-gsv" onclick="switchM1Metric('gsv')">✅ 去退GSV</button>
+    </div>
     <label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select>
     <label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select>
     <label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end">
@@ -151,7 +156,9 @@ async function loadAll() {
 }
 
 var m1Chart;
+var m1Metric='gmv';
 var m3Mode='7d';
+function switchM1Metric(mode){m1Metric=mode;document.querySelectorAll('#m1-btn-gmv,#m1-btn-gsv').forEach(function(b){b.classList.remove('active');});document.getElementById('m1-btn-'+mode).classList.add('active');updateM1();}
 function fmt(v,d){d=d||0;if(typeof v==='number')return v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return v||'0';}
 function fmtMoney(v){if(typeof v==='number')return '¥'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return v||'0.00';}
 function sn(v){return v.length>20?v.slice(0,19)+'…':v;}
@@ -184,14 +191,18 @@ function updateM1(){
     if(!gf&&cats.indexOf(r.cat)<0)return false;
     return true;
   });
+  var metricLabel=m1Metric==='gsv'?'去退GSV':'GMV';
+  var metricColor=m1Metric==='gsv'?'#34d399':'#3b82f6';
+  var metricBg=m1Metric==='gsv'?'rgba(52,211,153,0.6)':'rgba(59,130,246,0.6)';
+  var mktConfig=m1Metric==='gsv'?'GSV':'GMV';
   var byDate={};
-  filtered.forEach(function(r){var key=isMonthly?r.date_str.substring(0,7):r.date_str;if(!byDate[key])byDate[key]={gmv:0,uv:0,orders:0};byDate[key].gmv+=r.GMV||0;byDate[key].uv+=r.UV||0;byDate[key].orders+=r.orders||0;});
+  filtered.forEach(function(r){var key=isMonthly?r.date_str.substring(0,7):r.date_str;if(!byDate[key])byDate[key]={val:0,uv:0,orders:0};byDate[key].val+=r[mktConfig]||0;byDate[key].uv+=r.UV||0;byDate[key].orders+=r.orders||0;});
   var dates=Object.keys(byDate).sort();
-  var gmv=dates.map(function(d){return byDate[d].gmv;}),uv=dates.map(function(d){return byDate[d].uv;}),orders=dates.map(function(d){return byDate[d].orders;});
+  var vals=dates.map(function(d){return byDate[d].val;}),uv=dates.map(function(d){return byDate[d].uv;}),orders=dates.map(function(d){return byDate[d].orders;});
   var mktIds=Array.from(document.getElementById('m1-market-cat').selectedOptions).map(function(o){return o.value;});
   if(m1Chart){m1Chart.destroy();m1Chart=null;}var ex=Chart.getChart('m1-chart');if(ex)ex.destroy();
   var ctx=document.getElementById('m1-chart').getContext('2d');
-  var datasets=[{label:'GMV(¥)',data:gmv,type:'bar',backgroundColor:'rgba(59,130,246,0.6)',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:3},{label:'UV',data:uv,type:'line',borderColor:'#f59e0b',tension:0.3,yAxisID:'y1',pointRadius:1,order:2}];
+  var datasets=[{label:metricLabel+'(¥)',data:vals,type:'bar',backgroundColor:metricBg,borderColor:metricColor,borderWidth:1,yAxisID:'y',order:3},{label:'UV',data:uv,type:'line',borderColor:'#f59e0b',tension:0.3,yAxisID:'y1',pointRadius:1,order:2}];
   MKT_CAT_CONFIG.forEach(function(mk){
     if(mktIds.indexOf(mk.id)<0)return;
     var mktData=dates.map(function(d){
@@ -202,7 +213,7 @@ function updateM1(){
       datasets.push({label:mk.label+'(万元)',data:mktData,type:'line',borderColor:mk.color,borderDash:[5,5],tension:0.3,yAxisID:'y2',pointRadius:2,spanGaps:true,order:1,borderWidth:1.5});
     }
   });
-  m1Chart=new Chart(ctx,{type:'bar',data:{labels:dates,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}},tooltip:{callbacks:{afterBody:function(ctx){return['订单数: '+fmt(orders[ctx[0].dataIndex])];}}}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,callback:function(v){var s=this.getLabelForValue(v);return isMonthly?s.substring(0,4)+'年'+s.substring(5,7)+'月':s.substring(5);}}},y:{type:'linear',position:'left',title:{display:true,text:'GMV(¥)',color:'#3b82f6'},ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}}},y1:{type:'linear',position:'right',title:{display:true,text:'UV',color:'#f59e0b'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false}},y2:{type:'linear',position:'right',title:{display:true,text:'大盘(万元)',color:'#a78bfa'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false},offset:true}},plugins:[{id:'orderLabels',afterDraw:function(chart){var ctx2=chart.ctx,meta=chart.getDatasetMeta(0),yScale=chart.scales.y;meta.data.forEach(function(bar,i){var x=bar.x,y=bar.y<yScale.getPixelForValue(0)?bar.y+4:yScale.getPixelForValue(0)-12;ctx2.save();ctx2.fillStyle='#94a3b8';ctx2.font='10px sans-serif';ctx2.textAlign='center';ctx2.fillText(orders[i],x,y);ctx2.restore();});}}]}});
+  m1Chart=new Chart(ctx,{type:'bar',data:{labels:dates,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}},tooltip:{callbacks:{afterBody:function(ctx){return['订单数: '+fmt(orders[ctx[0].dataIndex])];}}}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,callback:function(v){var s=this.getLabelForValue(v);return isMonthly?s.substring(0,4)+'年'+s.substring(5,7)+'月':s.substring(5);}}},y:{type:'linear',position:'left',title:{display:true,text:metricLabel+'(¥)',color:metricColor},ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}}},y1:{type:'linear',position:'right',title:{display:true,text:'UV',color:'#f59e0b'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false}},y2:{type:'linear',position:'right',title:{display:true,text:'大盘(万元)',color:'#a78bfa'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false},offset:true}},plugins:[{id:'orderLabels',afterDraw:function(chart){var ctx2=chart.ctx,meta=chart.getDatasetMeta(0),yScale=chart.scales.y;meta.data.forEach(function(bar,i){var x=bar.x,y=bar.y<yScale.getPixelForValue(0)?bar.y+4:yScale.getPixelForValue(0)-12;ctx2.save();ctx2.fillStyle='#94a3b8';ctx2.font='10px sans-serif';ctx2.textAlign='center';ctx2.fillText(orders[i],x,y);ctx2.restore();});}}]}});
 }
 
 function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2();}
