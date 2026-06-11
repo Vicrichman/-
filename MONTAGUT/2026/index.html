@@ -145,17 +145,40 @@ const LD = "2026-06-10";
 
 // ── Large data loaded via fetch ──
 var DAILY_CAT, DAILY_GOODS, TASK_RAW, PUSH_RAW;
+var dataReady={cat:false, goods:false, task:false, push:false};
 
-async function loadAll() {
-  document.getElementById('loader').style.display = 'flex';
-  var vars = ['DAILY_CAT', 'DAILY_GOODS', 'TASK_RAW', 'PUSH_RAW'];
-  var ps = vars.map(function(n) {
-    return fetch('data/' + n + '.json')
-      .then(function(r) { return r.json(); })
-      .then(function(d) { window[n] = d; });
-  });
-  await Promise.all(ps);
-  document.getElementById('loader').style.display = 'none';
+async function loadCat(){
+  try{
+    var r=await fetch('data/DAILY_CAT.json');
+    DAILY_CAT=await r.json();
+    dataReady.cat=true;
+    document.getElementById('loader').style.display='none';
+    initM1();
+  }catch(e){console.error('DAILY_CAT load failed:',e);}
+}
+async function loadGoods(){
+  try{
+    var r=await fetch('data/DAILY_GOODS.json');
+    DAILY_GOODS=await r.json();
+    dataReady.goods=true;
+    initM2();
+  }catch(e){console.error('DAILY_GOODS load failed:',e);}
+}
+async function loadTask(){
+  try{
+    var r=await fetch('data/TASK_RAW.json');
+    TASK_RAW=await r.json();
+    dataReady.task=true;
+    initM4();
+  }catch(e){console.error('TASK_RAW load failed:',e);}
+}
+async function loadPush(){
+  try{
+    var r=await fetch('data/PUSH_RAW.json');
+    PUSH_RAW=await r.json();
+    dataReady.push=true;
+    initM5();
+  }catch(e){console.error('PUSH_RAW load failed:',e);}
 }
 
 var m1Chart;
@@ -178,6 +201,17 @@ function fmt(v,d){d=d||0;if(typeof v==='number')return v.toLocaleString('en-US',
 function fmtMoney(v){if(typeof v==='number')return '¥'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return v||'0.00';}
 function sn(v){return v.length>20?v.slice(0,19)+'…':v;}
 
+// ── Array format helpers ──
+// DAILY_CAT: [date_str, cat, GMV, GSV, UV, orders]
+// DAILY_GOODS: [date_str, cat, goods, GMV, GSV, UV, orders]
+function rowDate(r){return r[0];}
+function rowCat(r){return r[1];}
+function rowGMV(r){return r.length>6?r[3]:r[2];}
+function rowGSV(r){return r.length>6?r[4]:r[3];}
+function rowUV(r){return r.length>6?r[5]:r[4];}
+function rowOrd(r){return r.length>6?r[6]:r[5];}
+function rowGoods(r){return r.length>6?r[2]:'';}
+
 function initM1(){
   var fromSel=document.getElementById('m1-month-from'),toSel=document.getElementById('m1-month-to');
   ALL_MONTHS.forEach(function(m){var t=m.replace('-','年')+'月';var o1=document.createElement('option');o1.value=m;o1.textContent=t;fromSel.appendChild(o1);var o2=document.createElement('option');o2.value=m;o2.textContent=t;toSel.appendChild(o2);});
@@ -194,34 +228,37 @@ function initM1(){
 }
 
 function updateM1(){
+  if(!DAILY_CAT){return;}
   var mFrom=document.getElementById('m1-month-from').value,mTo=document.getElementById('m1-month-to').value;
   var isMonthly=(mFrom!=='all'&&mTo!=='all');
   var d1=isMonthly?'':document.getElementById('m1-start').value,d2=isMonthly?'':document.getElementById('m1-end').value;
   var cats=Array.from(document.getElementById('m1-cat').selectedOptions).map(function(o){return o.value;});
   var gf=document.getElementById('m1-goods').value.trim().toUpperCase();
-  var filtered=gf?DAILY_GOODS.filter(function(r){return r.goods&&r.goods.toUpperCase().indexOf(gf)>=0;}):DAILY_CAT;
-  filtered=filtered.filter(function(r){
-    if(isMonthly){var rm=r.date_str.substring(0,7);if(rm<mFrom||rm>mTo)return false;}
-    else{if(mFrom==='all'&&mTo==='all'){if(d1&&r.date_str<d1)return false;if(d2&&r.date_str>d2)return false;}}
-    if(!gf&&cats.indexOf(r.cat)<0)return false;
+  var src=DAILY_CAT;
+  if(gf&&DAILY_GOODS){
+    src=DAILY_GOODS.filter(function(r){var g=rowGoods(r);return g&&g.toUpperCase().indexOf(gf)>=0;});
+  }
+  var filtered=src.filter(function(r){
+    var rm=rowDate(r);
+    if(isMonthly){var rmm=rm.substring(0,7);if(rmm<mFrom||rmm>mTo)return false;}
+    else{if(mFrom==='all'&&mTo==='all'){if(d1&&rm<d1)return false;if(d2&&rm>d2)return false;}}
+    if(!gf&&cats.indexOf(rowCat(r))<0)return false;
     return true;
   });
 
-  // Compute metric labels & colors
   var metricLabel, metricColor;
   if(m1Metric==='gsv'){metricLabel='去退GSV';metricColor='#34d399';}
   else if(m1Metric==='ret'){metricLabel='退货GMV';metricColor='#f87171';}
   else{metricLabel='支付GMV(堆叠)';metricColor='#3b82f6';}
 
-  // Aggregate by date: always collect gmv + gsv, compute ret=GMV-GSV
   var byDate={};
   filtered.forEach(function(r){
-    var key=isMonthly?r.date_str.substring(0,7):r.date_str;
+    var key=isMonthly?rowDate(r).substring(0,7):rowDate(r);
     if(!byDate[key])byDate[key]={gmv:0,gsv:0,uv:0,orders:0};
-    byDate[key].gmv+=r.GMV||0;
-    byDate[key].gsv+=r.GSV||0;
-    byDate[key].uv+=r.UV||0;
-    byDate[key].orders+=r.orders||0;
+    byDate[key].gmv+=rowGMV(r);
+    byDate[key].gsv+=rowGSV(r);
+    byDate[key].uv+=rowUV(r);
+    byDate[key].orders+=rowOrd(r);
   });
   var dates=Object.keys(byDate).sort();
   var gmvVals=dates.map(function(d){return byDate[d].gmv;});
@@ -236,23 +273,16 @@ function updateM1(){
   var ex=Chart.getChart('m1-chart');if(ex)ex.destroy();
   var ctx=document.getElementById('m1-chart').getContext('2d');
 
-  // Build datasets based on metric mode
   var datasets=[];
   if(m1Metric==='stacked'){
-    // Stacked: GSV (green bottom) + 退货GMV (red top) = 支付GMV
     datasets.push({label:'去退GSV(¥)',data:gsvVals,type:'bar',backgroundColor:'rgba(52,211,153,0.72)',borderColor:'#34d399',borderWidth:1,yAxisID:'y',stack:'amount',order:3});
     datasets.push({label:'退货GMV(¥)',data:retVals,type:'bar',backgroundColor:'rgba(248,113,113,0.50)',borderColor:'#f87171',borderWidth:1,yAxisID:'y',stack:'amount',order:3});
   } else if(m1Metric==='ret'){
     datasets.push({label:'退货GMV(¥)',data:retVals,type:'bar',backgroundColor:'rgba(248,113,113,0.60)',borderColor:'#f87171',borderWidth:1,yAxisID:'y',order:3});
   } else {
-    // gsv only
     datasets.push({label:'去退GSV(¥)',data:gsvVals,type:'bar',backgroundColor:'rgba(52,211,153,0.60)',borderColor:'#34d399',borderWidth:1,yAxisID:'y',order:3});
   }
-
-  // UV line
   datasets.push({label:'UV',data:uvVals,type:'line',borderColor:'#f59e0b',tension:0.3,yAxisID:'y1',pointRadius:1,order:2});
-
-  // 大盘 lines
   MKT_CAT_CONFIG.forEach(function(mk){
     if(mktIds.indexOf(mk.id)<0)return;
     var mktData=dates.map(function(d){
@@ -270,11 +300,23 @@ function updateM1(){
   m1Chart=new Chart(ctx,{type:'bar',data:{labels:dates,datasets:datasets},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}},tooltip:{callbacks:{afterBody:function(ctx){return ['订单数: '+fmt(orders[ctx[0].dataIndex])];}}}},scales:{x:{ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,callback:function(v){var s=this.getLabelForValue(v);return isMonthly?s.substring(0,4)+'年'+s.substring(5,7)+'月':s.substring(5);}}},y:{type:'linear',position:'left',title:{display:true,text:metricLabel+'(¥)',color:metricColor},ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}},stacked:m1Metric==='stacked'},y1:{type:'linear',position:'right',title:{display:true,text:'UV',color:'#f59e0b'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false}},y2:{type:'linear',position:'right',title:{display:true,text:'大盘(万元)',color:'#a78bfa'},ticks:{color:'#94a3b8'},grid:{drawOnChartArea:false},offset:true}},plugins:[{id:'orderLabels',afterDraw:function(chart){var ctx2=chart.ctx,yScale=chart.scales.y;if(m1Metric==='stacked'){var retMeta=chart.getDatasetMeta(1);retMeta.data.forEach(function(bar,i){var x=bar.x,y=bar.y<yScale.getPixelForValue(0)?bar.y+4:bar.y-8;ctx2.save();ctx2.fillStyle='#e2e8f0';ctx2.font='10px sans-serif';ctx2.textAlign='center';ctx2.fillText(orders[i],x,y);ctx2.restore();});}else{var meta=chart.getDatasetMeta(0);meta.data.forEach(function(bar,i){var x=bar.x,y=bar.y<yScale.getPixelForValue(0)?bar.y+4:bar.y-8;ctx2.save();ctx2.fillStyle='#e2e8f0';ctx2.font='10px sans-serif';ctx2.textAlign='center';ctx2.fillText(orders[i],x,y);ctx2.restore();});}}}]}});
 }
 
-function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2();}
+function initM2(){
+  if(!DAILY_GOODS)return;
+  document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)];
+  document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];
+  updateM2();
+}
 function updateM2(){
+  if(!DAILY_GOODS)return;
   var d1=document.getElementById('m2-start').value,d2=document.getElementById('m2-end').value;
-  var filtered=DAILY_GOODS.filter(function(r){if(d1&&r.date_str<d1)return false;if(d2&&r.date_str>d2)return false;return true;});
-  var byGoods={};filtered.forEach(function(r){var g=r.goods||'未知';if(!byGoods[g])byGoods[g]={uv:0,gmv:0,orders:0};byGoods[g].uv+=r.UV||0;byGoods[g].gmv+=r.GMV||0;byGoods[g].orders+=r.orders||0;});
+  var filtered=DAILY_GOODS.filter(function(r){
+    var d=rowDate(r);if(d1&&d<d1)return false;if(d2&&d>d2)return false;return true;
+  });
+  var byGoods={};
+  filtered.forEach(function(r){
+    var g=rowGoods(r)||'未知';if(!byGoods[g])byGoods[g]={uv:0,gmv:0,orders:0};
+    byGoods[g].uv+=rowUV(r);byGoods[g].gmv+=rowGMV(r);byGoods[g].orders+=rowOrd(r);
+  });
   var arr=Object.entries(byGoods).map(function(e){return{goods:e[0],uv:e[1].uv,gmv:e[1].gmv,orders:e[1].orders};});
   function render(id,key,sk,fn){var s=arr.slice().sort(function(a,b){return b[sk]-a[sk];}).slice(0,20);document.getElementById(id).innerHTML=s.map(function(r,i){return'<tr><td class="rank">'+(i+1)+'</td><td><span class="goods-name" title="'+r.goods.replace(/"/g,'&quot;')+'">'+sn(r.goods)+'</span></td><td>'+fn(r[key])+'</td></tr>';}).join('');}
   render('m2-uv','uv','uv',fmt);render('m2-gmv','gmv','gmv',fmtMoney);render('m2-orders','orders','orders',fmt);
@@ -288,8 +330,14 @@ function updateM3(){
   else{body.innerHTML=rows.map(function(r){var cls=r.is_alert?'alert-row':'';var dh=typeof r.delta==='number'?(r.delta>0?'<span class="delta-up">+'+r.delta+'%</span>':r.delta<0?'<span style="color:#34d399">'+r.delta+'%</span>':'<span style="color:#94a3b8">0%</span>'):'<span style="color:#94a3b8">-</span>';return'<tr class="'+cls+'"><td><span class="goods-name" title="'+r.goods.replace(/"/g,'&quot;')+'">'+sn(r.goods)+'</span></td><td>'+(typeof r.hist_rate==='number'?r.hist_rate+'%':r.hist_rate)+'</td><td>'+r.recent_rate+'%</td><td>'+dh+'</td><td>'+fmt(r.total_orders)+'</td><td>'+fmt(r.recent_orders)+'</td></tr>';}).join('');}
 }
 
-function initM4(){var tmSel=document.getElementById('m4-task-month');TASK_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';tmSel.appendChild(o);});var pmSel=document.getElementById('m4-pub-month');PUB_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';pmSel.appendChild(o);});updateM4();}
+function initM4(){
+  if(!TASK_RAW)return;
+  var tmSel=document.getElementById('m4-task-month');TASK_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';tmSel.appendChild(o);});
+  var pmSel=document.getElementById('m4-pub-month');PUB_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';pmSel.appendChild(o);});
+  updateM4();
+}
 function updateM4(){
+  if(!TASK_RAW)return;
   var tm=document.getElementById('m4-task-month').value,pm=document.getElementById('m4-pub-month').value;
   var filtered=TASK_RAW;if(tm!=='all')filtered=filtered.filter(function(r){return r.task_month===tm;});if(pm!=='all')filtered=filtered.filter(function(r){return r.pub_month===pm;});
   var byGoods={};filtered.forEach(function(r){var g=r['匹配货号'];if(!byGoods[g])byGoods[g]={cnt:0,amt:0,exp:0,read:0,visit:0,interact:0};byGoods[g].cnt+=r.动态发布数量||0;byGoods[g].amt+=r.实际任务金额||0;byGoods[g].exp+=r.曝光||0;byGoods[g].read+=r.阅读数||0;byGoods[g].visit+=r.商详访问||0;byGoods[g].interact+=r.互动数||0;});
@@ -298,20 +346,26 @@ function updateM4(){
   var tot={cnt:0,amt:0,exp:0,read:0,visit:0,interact:0};filtered.forEach(function(r){tot.cnt+=r.动态发布数量||0;tot.amt+=r.实际任务金额||0;tot.exp+=r.曝光||0;tot.read+=r.阅读数||0;tot.visit+=r.商详访问||0;tot.interact+=r.互动数||0;});document.getElementById('m4-foot').innerHTML='<tr><td><b>📊 合计 ('+arr.length+'个货号)</b></td><td>'+tot.cnt+'</td><td>'+fmtMoney(tot.amt)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.read)+'</td><td>'+fmt(tot.visit)+'</td><td>'+fmt(tot.interact)+'</td></tr>';
 }
 
-function initM5(){var dates=PUSH_RAW.map(function(r){return r.date_str;}).filter(function(d){return d;}).sort();if(dates.length){document.getElementById('m5-start').value=dates[0];document.getElementById('m5-end').value=dates[dates.length-1];}updateM5();}
-function updateM5(){var d1=document.getElementById('m5-start').value,d2=document.getElementById('m5-end').value;var agg={};PUSH_RAW.forEach(function(r){if(d1&&r.date_str<d1)return;if(d2&&r.date_str>d2)return;var g=r['货号'];if(!agg[g])agg[g]={cost:0,d_ord:0,d_gmv:0,i_ord:0,i_gmv:0};agg[g].cost+=r['消耗'];agg[g].d_ord+=r['直接支付单量'];agg[g].d_gmv+=r['直接支付金额'];agg[g].i_ord+=r['引导支付单量'];agg[g].i_gmv+=r['引导支付金额'];});var items=Object.entries(agg).map(function(e){var v=e[1];var gmv=v.d_gmv+v.i_gmv;var ord=v.d_ord+v.i_ord;var roi=v.cost>0?gmv/v.cost:0;var oc=ord>0?v.cost/ord:0;return{goods:e[0],cost:v.cost,gmv:gmv,orders:ord,roi:roi,oc:oc};}).sort(function(a,b){return b.roi-a.roi;});document.getElementById('m5-body').innerHTML=items.map(function(r){var cls=r.roi>=2?'roi-high':r.roi>=1?'roi-mid':'roi-low';var a;if(r.roi>=3)a='🔥 加大投放';else if(r.roi>=2)a='🔥 持续加投';else if(r.roi>=1)a='✅ 保持投放';else if(r.roi>=0.5)a='⚠️ 观察优化';else if(r.roi>0)a='⛔ 建议暂停';else a='⛔ 无转化';return'<tr><td><span class="goods-name" title="'+r.goods.replace(/"/g,'&quot;')+'">'+sn(r.goods)+'</span></td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+fmt(r.orders)+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>';}).join('');}
+function initM5(){
+  if(!PUSH_RAW)return;
+  var dates=PUSH_RAW.map(function(r){return r.date_str;}).filter(function(d){return d;}).sort();
+  if(dates.length){document.getElementById('m5-start').value=dates[0];document.getElementById('m5-end').value=dates[dates.length-1];}
+  updateM5();
+}
+function updateM5(){
+  if(!PUSH_RAW)return;
+  var d1=document.getElementById('m5-start').value,d2=document.getElementById('m5-end').value;
+  var agg={};PUSH_RAW.forEach(function(r){if(d1&&r.date_str<d1)return;if(d2&&r.date_str>d2)return;var g=r['货号'];if(!agg[g])agg[g]={cost:0,d_ord:0,d_gmv:0,i_ord:0,i_gmv:0};agg[g].cost+=r['消耗'];agg[g].d_ord+=r['直接支付单量'];agg[g].d_gmv+=r['直接支付金额'];agg[g].i_ord+=r['引导支付单量'];agg[g].i_gmv+=r['引导支付金额'];});var items=Object.entries(agg).map(function(e){var v=e[1];var gmv=v.d_gmv+v.i_gmv;var ord=v.d_ord+v.i_ord;var roi=v.cost>0?gmv/v.cost:0;var oc=ord>0?v.cost/ord:0;return{goods:e[0],cost:v.cost,gmv:gmv,orders:ord,roi:roi,oc:oc};}).sort(function(a,b){return b.roi-a.roi;});document.getElementById('m5-body').innerHTML=items.map(function(r){var cls=r.roi>=2?'roi-high':r.roi>=1?'roi-mid':'roi-low';var a;if(r.roi>=3)a='🔥 加大投放';else if(r.roi>=2)a='🔥 持续加投';else if(r.roi>=1)a='✅ 保持投放';else if(r.roi>=0.5)a='⚠️ 观察优化';else if(r.roi>0)a='⛔ 建议暂停';else a='⛔ 无转化';return'<tr><td><span class="goods-name" title="'+r.goods.replace(/"/g,'&quot;')+'">'+sn(r.goods)+'</span></td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+fmt(r.orders)+'</td><td class="'+cls+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>';}).join('');}
 
 window.addEventListener('load',function(){
-  loadAll().then(function(){
-    try{initM1();}catch(e){console.error('M1:',e);}
-    try{initM2();}catch(e){console.error('M2:',e);}
-    try{updateM3();}catch(e){console.error('M3:',e);}
-    try{initM4();}catch(e){console.error('M4:',e);}
-    try{initM5();}catch(e){console.error('M5:',e);}
-  }).catch(function(e){
-    document.getElementById('loader').innerHTML='<span style="color:#f87171">❌ 数据加载失败: '+e.message+'</span>';
-    console.error(e);
-  });
+  // Load M1 immediately (DAILY_CAT is only 187KB)
+  loadCat();
+  // Load remaining modules in parallel
+  loadGoods();
+  loadTask();
+  loadPush();
+  // M3 uses inline data, render now
+  try{updateM3();}catch(e){console.error('M3:',e);}
 });
 </script>
 </body>
