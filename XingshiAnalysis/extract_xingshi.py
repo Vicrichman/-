@@ -156,8 +156,10 @@ print(f"   {len(MARKET_MAP)} dates")
 # ============================================================
 print("📢 [4/6] 社区投放...")
 comm = pd.read_excel(SRC, sheet_name='社区投放任务', engine='calamine')
-comm = comm[['任务月份', '实际任务金额', '动态发布时间', '货号', '曝光', '阅读数', '互动数', '商详访问']].copy()
-comm.columns = ['task_m_raw','amount','pub_raw','goods_raw','exposure','reads','interact','visits']
+comm = comm[['任务月份', '实际任务金额', '动态发布时间', '货号', '曝光', '阅读数', '互动数', '商详访问', '任务状态']].copy()
+comm.columns = ['task_m_raw','amount','pub_raw','goods_raw','exposure','reads','interact','visits','status']
+# 仅保留4种有效状态：待验收、待寄回、待收货、完成
+comm = comm[comm['status'].astype(str).str.strip().isin(['待验收','待寄回','待收货','完成'])]
 comm['task_month'] = comm['task_m_raw'].apply(nm)
 comm['pub_date'] = comm['pub_raw'].apply(nd)
 comm['goods'] = comm['goods_raw'].apply(ss)
