@@ -332,6 +332,14 @@ for c in range(1, min(30, ws.max_column + 1)):
 time_col = 1
 goods_id_col = 7
 cost_col = 8
+# New columns for daily push output (from headers inspection):
+# Col 14=直接支付单量, 15=直接支付金额, 16=引导支付单量, 17=引导支付金额, 26=品牌, 27=货号
+direct_orders_col = 14
+direct_gmv_col = 15
+indirect_orders_col = 16
+indirect_gmv_col = 17
+push_brand_col = 26
+push_huohao_col = 27
 print(f"  Push: time_col={time_col}, goods_id_col={goods_id_col}, cost_col={cost_col}", file=sys.stderr)
 
 # Build SPU->brand mapping from 交易订单 too (supplement 货盘表)
@@ -350,6 +358,7 @@ for r in range(2, ws_orders.max_row + 1):
 print(f"  Orders SPU→brand mapping: {len(spu_brand_from_orders)} SPUs", file=sys.stderr)
 
 push_monthly = defaultdict(lambda: defaultdict(float))
+push_daily = []  # Per-day per-goods push records for Module 5
 push_processed = 0
 for r in range(2, ws.max_row + 1):
     dt = ws.cell(r, time_col).value
@@ -360,24 +369,57 @@ for r in range(2, ws.max_row + 1):
     if not (date_str and good_id and cost and in_range(date_str)):
         continue
     
-    # Match brand: first from 货盘表, then fallback to 交易订单
+    # Get brand and huohao from the push sheet directly (col 26, 27)
+    push_brand = ws.cell(r, push_brand_col).value
+    push_hh = ws.cell(r, push_huohao_col).value
+    
+    # Match brand: prefer columns 26/27, fallback to spu mapping
     brand = None
-    try:
-        gid = int(good_id)
-        brand = spu_brand.get(gid)
-        if not brand:
-            brand = spu_brand_from_orders.get(gid)
-    except (ValueError, TypeError):
-        continue
+    huohao = None
+    if push_brand and str(push_brand).strip() in BRANDS:
+        brand = BRAND_SHORT[str(push_brand).strip()]
+        huohao = str(push_hh).strip() if push_hh else None
+    else:
+        try:
+            gid = int(good_id)
+            brand = spu_brand.get(gid)
+            if not brand:
+                brand = spu_brand_from_orders.get(gid)
+        except (ValueError, TypeError):
+            pass
     
     if not brand:
         continue
     
+    if not huohao:
+        huohao = str(good_id)
+    
     month = date_to_month(date_str)
-    push_monthly[brand][month] += float(cost)
+    cost_val = float(cost) if cost else 0
+    
+    push_monthly[brand][month] += cost_val
+    
+    # Build daily record for Module 5
+    def safe_float(v):
+        try: return float(v) if v else 0.0
+        except: return 0.0
+    def safe_int(v):
+        try: return int(float(v)) if v else 0
+        except: return 0
+    
+    push_daily.append({
+        "date": date_str,
+        "brand": brand,
+        "huohao": huohao,
+        "cost": round(cost_val, 2),
+        "direct_orders": safe_int(ws.cell(r, direct_orders_col).value),
+        "direct_gmv": round(safe_float(ws.cell(r, direct_gmv_col).value), 2),
+        "indirect_orders": safe_int(ws.cell(r, indirect_orders_col).value),
+        "indirect_gmv": round(safe_float(ws.cell(r, indirect_gmv_col).value), 2)
+    })
     push_processed += 1
 
-print(f"  Push processed {push_processed} records", file=sys.stderr)
+print(f"  Push processed {push_processed} records (daily: {len(push_daily)})", file=sys.stderr)
 
 push_monthly_out = {}
 for brand in BRAND_SHORT.values():
@@ -580,6 +622,7 @@ output = {
     "market_bag": market_data_bag,
     "market_monthly_bag_avg": market_monthly_bag_avg,
     "push_monthly": push_monthly_out,
+    "push_daily": push_daily,
     "comm_monthly": comm_monthly_out,
     "comm_tasks": comm_tasks
 }

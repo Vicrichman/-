@@ -128,7 +128,9 @@ D.market.forEach(function(r){MARKET_MAP[r.date]=r.value;});
 var TASK_RAW = (D.comm_tasks||[]).map(function(r){
   return {task_month:r.month,pub_month:r.pub_date?r.pub_date.substring(0,7):r.month,"匹配货号":r.huohao,"动态发布数量":1,"实际任务金额":r.amount,"曝光":r.exposure,"阅读数":r.reads,"商详访问":r.visits,"互动数":0};
 });
-var PUSH_RAW = [];  // D lacks per-day push data; M5 uses push_monthly in a different structure
+var PUSH_RAW = (D.push_daily||[]).map(function(r){
+  return {date_str:r.date,"货号":r.huohao,"消耗":r.cost,"直接支付单量":r.direct_orders,"直接支付金额":r.direct_gmv,"引导支付单量":r.indirect_orders,"引导支付金额":r.indirect_gmv};
+});
 var TASK_MONTHS = [], PUB_MONTHS = [];
 (function(){
   var tm={},pm={};
