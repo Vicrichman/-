@@ -20,7 +20,7 @@ DATA_JS = "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
 BRANDS_LIST = ["CASIO/卡西欧", "COACH/蔻驰"]
 BRAND_SHORT = {"CASIO/卡西欧": "卡西欧", "COACH/蔻驰": "蔻驰"}
 START_DATE = "2025-05-01"
-END_DATE = "2026-06-08"
+END_DATE = "2026-06-14"
 
 def in_range(d):
     return d and START_DATE <= str(d)[:10] <= END_DATE
