@@ -7,13 +7,20 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>喜过跨品牌运营分析看板</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="data.js?v=10"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+  onerror="var s=document.createElement('script');s.src='chart.umd.min.js';document.head.appendChild(s);"></script>
+<script src="data.js?v=10" onerror="document.getElementById('loading-overlay').innerHTML='<div style=color:#f87171>⚠️ 数据加载失败，请刷新页面重试</div>';"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}.module{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}.filters label{font-size:13px;color:#94a3b8}.filters select,.filters input{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}.chart-wrap{position:relative;height:420px}.card .goods-name{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}.card td{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}.cards{display:flex;gap:12px}.card{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}.card h3{color:#60a5fa;font-size:13px;margin-bottom:8px}.card table{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}.card th:nth-child(1){width:28px}.card th:nth-child(2){width:auto}.card th:nth-child(3){width:70px;text-align:right}.card td:nth-child(3){text-align:right}.card th{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}.scroll{max-height:420px;overflow-y:auto}.card .rank{color:#94a3b8;width:24px}.alert-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}.alert-table th{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}.alert-table td{padding:8px 10px;border-bottom:1px solid #1a1d2e}.alert-row{background:rgba(248,113,113,0.08)}.delta-up{color:#f87171;font-weight:bold}.delta-down{color:#34d399;font-weight:bold}.btn-group{display:flex;gap:8px;margin-bottom:12px}.btn-group button{background:#0f1117;color:#94a3b8;border:1px solid #2d3348;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px}.btn-group button.active{background:#3b82f6;color:#fff;border-color:#3b82f6}.roi-high{color:#34d399;font-weight:bold}.roi-mid{color:#f59e0b}.roi-low{color:#f87171}.no-data{color:#94a3b8;text-align:center;padding:40px;font-size:14px}
 </style>
 </head>
 <body>
+
+<div id="loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0f1117;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;color:#94a3b8;font-size:16px;">
+  <div style="width:40px;height:40px;border:3px solid #2d3348;border-top-color:#3b82f6;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:16px;"></div>
+  数据加载中，请稍候...（约 6MB）
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px;">📊 喜过跨品牌运营分析看板</h1>
 
@@ -491,6 +498,8 @@ window.addEventListener('load', function() {
     try { renderM3(); } catch(e) { console.error('M3:', e); }
     try { initM4(); } catch(e) { console.error('M4:', e); }
     try { initM5(); } catch(e) { console.error('M5:', e); }
+    var overlay = document.getElementById('loading-overlay');
+    if (overlay) overlay.style.display = 'none';
   }, 200);
 });
 </script>
