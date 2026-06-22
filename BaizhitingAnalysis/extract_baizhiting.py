@@ -40,7 +40,7 @@ print(f"📂 {SRC}")
 # 1. 商详访客 → DAILY_BRAND + DAILY_GOODS (by date+cat)
 # ============================================================
 print("📊 [1/4] 商详访客...")
-uv = pd.read_excel(SRC, sheet_name='商详访客数据', engine='calamine')
+uv = pd.read_excel(SRC, sheet_name='数据源', engine='calamine')
 uv = uv[['日期', '商品货号', '支付金额', '支付订单数', '商详访问人数', '类目名称']].copy()
 uv.columns = ['date_raw', 'goods', 'gmv', 'orders', 'uv', 'cat_raw']
 uv['date_str'] = uv['date_raw'].apply(nd)
@@ -81,7 +81,7 @@ print(f"   {len(DAILY_BRAND)} brand-days, {len(DAILY_GOODS)} day-goods, {ALL_DAT
 # 2. 交易订单 + 售后 → 退货率 
 # ============================================================
 print("📦 [2/4] 交易+售后...")
-ord_df = pd.read_excel(SRC, sheet_name='交易订单', engine='calamine')
+ord_df = pd.read_excel(SRC, sheet_name='订单数据', engine='calamine')
 ord_df = ord_df[['货号', '数量', '出价金额（元）', '订单状态', '下单日期']].copy()
 ord_df.columns = ['goods', 'qty', 'amount', 'status', 'date_raw']
 ord_df['date_str'] = ord_df['date_raw'].apply(nd)
@@ -150,7 +150,8 @@ print(f"   GOODS_RATE:{len(GOODS_RATE)} ANOMALY_7D:{len(ANOMALY_7D)} ANOMALY_30D
 # ============================================================
 print("📈 [3/4] 大盘...")
 mkt = pd.read_excel(SRC, sheet_name='大盘指数', engine='calamine')
-# col[0]=月份, col[1]=永生花, col[2]=盲盒, col[3]=香薰礼盒, col[4]=店铺GMV, col[5]=UV
+# Only use first 6 columns; rest are unnamed pivots
+mkt = mkt.iloc[:, :6].copy()
 mkt.columns = ['month_raw','eternal','blindbox','scent','store_gmv','store_uv']
 mkt['date_str'] = mkt['month_raw'].apply(nd)
 mkt = mkt.dropna(subset=['date_str'])
