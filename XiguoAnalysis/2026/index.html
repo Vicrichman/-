@@ -8,8 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <title>喜过跨品牌运营分析看板</title>
 <script src="chart.umd.min.js"></script>
-<script src="data.js?v=4"></script>
-<script src="market_bag_data.js"></script>
+<script src="data.js?v=5"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}.module{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}.filters label{font-size:13px;color:#94a3b8}.filters select,.filters input{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}.chart-wrap{position:relative;height:420px}.card .goods-name{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}.card td{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}.cards{display:flex;gap:12px}.card{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}.card h3{color:#60a5fa;font-size:13px;margin-bottom:8px}.card table{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}.card th:nth-child(1){width:28px}.card th:nth-child(2){width:auto}.card th:nth-child(3){width:70px;text-align:right}.card td:nth-child(3){text-align:right}.card th{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}.scroll{max-height:420px;overflow-y:auto}.card .rank{color:#94a3b8;width:24px}.alert-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}.alert-table th{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}.alert-table td{padding:8px 10px;border-bottom:1px solid #1a1d2e}.alert-row{background:rgba(248,113,113,0.08)}.delta-up{color:#f87171;font-weight:bold}.delta-down{color:#34d399;font-weight:bold}.btn-group{display:flex;gap:8px;margin-bottom:12px}.btn-group button{background:#0f1117;color:#94a3b8;border:1px solid #2d3348;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px}.btn-group button.active{background:#3b82f6;color:#fff;border-color:#3b82f6}.roi-high{color:#34d399;font-weight:bold}.roi-mid{color:#f59e0b}.roi-low{color:#f87171}.no-data{color:#94a3b8;text-align:center;padding:40px;font-size:14px}
 </style>
@@ -136,7 +135,7 @@ Object.keys(D.uv_spu_data).forEach(function(brand){
 var MARKET_MAP = {};
 if (D.market) { D.market.forEach(function(r){MARKET_MAP[r.date]=r.value;}); }
 var BAG_MARKET_MAP = {};
-if (typeof MKT_BAG !== 'undefined') { MKT_BAG.forEach(function(r){BAG_MARKET_MAP[r.date]=r.value;}); }
+if (D.market_bag) { D.market_bag.forEach(function(r){BAG_MARKET_MAP[r.date]=r.value;}); }
 var TASK_RAW = (D.comm_tasks||[]).map(function(r){
   return {task_month:r.month,pub_month:r.pub_date?r.pub_date.substring(0,7):r.month,"匹配货号":r.huohao,"动态发布数量":1,"实际任务金额":r.amount,"曝光":r.exposure,"阅读数":r.reads,"商详访问":r.visits,"互动数":0};
 });
