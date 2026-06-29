@@ -174,7 +174,7 @@ async function loadTask(){
 }
 async function loadPush(){
   try{
-    var r=await fetch('data/PUSH_RAW.json?v=2');
+    var r=await fetch('data/PUSH_RAW.json?v=3');
     PUSH_RAW=await r.json();
     dataReady.push=true;
     initM5();
