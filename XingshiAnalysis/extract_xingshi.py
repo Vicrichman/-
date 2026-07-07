@@ -185,7 +185,7 @@ print(f"   {len(TASK_RAW)} items")
 # 5. 得物推
 # ============================================================
 print("🚀 [5/6] 得物推...")
-push = pd.read_excel(SRC, sheet_name='得物推数据', engine='calamine')
+push = pd.read_excel(SRC, sheet_name='得物推数据-商品', engine='calamine')
 # 直接用子表最后一列「货号」，不再通过货盘表映射
 push = push[['时间','商品ID','消耗(元)','直接支付单量(单)','直接支付金额(元)','引导支付单量(单)','引导支付金额(元)','货号']].copy()
 push.columns = ['date_raw','gid','cost','do2','dgmv','io2','igmv','goods']

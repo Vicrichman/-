@@ -333,13 +333,13 @@ time_col = 1
 goods_id_col = 7
 cost_col = 8
 # New columns for daily push output (from headers inspection):
-# Col 14=直接支付单量, 15=直接支付金额, 16=引导支付单量, 17=引导支付金额, 26=品牌, 27=货号
-direct_orders_col = 14
-direct_gmv_col = 15
-indirect_orders_col = 16
-indirect_gmv_col = 17
-push_brand_col = 26
-push_huohao_col = 27
+# Col 15=直接支付单量, 16=直接支付金额, 17=引导支付单量, 18=引导支付金额, 27=品牌, 28=货号
+direct_orders_col = 15
+direct_gmv_col = 16
+indirect_orders_col = 17
+indirect_gmv_col = 18
+push_brand_col = 27  # 品牌
+push_huohao_col = 28  # 货号
 print(f"  Push: time_col={time_col}, goods_id_col={goods_id_col}, cost_col={cost_col}", file=sys.stderr)
 
 # Build SPU->brand mapping from 交易订单 too (supplement 货盘表)
@@ -369,7 +369,7 @@ for r in range(2, ws.max_row + 1):
     if not (date_str and good_id and cost and in_range(date_str)):
         continue
     
-    # Get brand and huohao from the push sheet directly (col 26, 27)
+    # Get brand and huohao from the push sheet directly (col 27, 28)
     push_brand = ws.cell(r, push_brand_col).value
     push_hh = ws.cell(r, push_huohao_col).value
     
