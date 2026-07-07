@@ -12,6 +12,8 @@ BRAND = '美兰'
 def cn(v):
     if pd.isna(v): return 0.0
     s = str(v).strip()
+    # Handle double-dots like '263..47' → '263.47'
+    s = s.replace('..', '.')
     m = re.match(r'([\d.]+)', s)
     return float(m.group(1)) if m else 0.0
 
