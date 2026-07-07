@@ -322,7 +322,7 @@ for brand in BRAND_SHORT.values():
 # 5. 得物推数据 - 按月汇总（双源品牌匹配：货盘表 + 交易订单）
 # ============================================================
 print("5. Extracting 得物推数据...", file=sys.stderr)
-ws = wb["得物推数据"]
+ws = wb["得物推数据-商品"]
 # Headers: 时间, 用户ID, 计划名称, 计划ID, 计划类型, 优化目标, 商品ID, 消耗(元), 曝光(次), 点击(次), 点击率(%)...
 push_header = {}
 for c in range(1, min(30, ws.max_column + 1)):
