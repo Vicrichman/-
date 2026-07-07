@@ -259,14 +259,14 @@ HTML = r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta n
 var DAILY_BRAND,DAILY_GOODS,ALL_DATES,ALL_BRANDS,ALL_GOODS,ALL_MONTHS;
 var MARKET_MAP,ANOMALY_7D,ANOMALY_30D,GOODS_RATE;
 var TASK_RAW,TASK_MONTHS,PUB_MONTHS,DETUI_AGG,PUSH_RAW;
-var m1Chart=null,m3Mode='7d';
+var m1Chart=null,m3Mode='7d',VER='20260707';
 
 function fmt(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString()}
 function fmtMoney(n){return n>=10000?'¥'+(n/10000).toFixed(1)+'w':'¥'+n.toLocaleString()}
 
 async function loadAll(){
   var vars=['DAILY_BRAND','DAILY_GOODS','ALL_DATES','ALL_BRANDS','ALL_GOODS','ALL_MONTHS','MARKET_MAP','ANOMALY_7D','ANOMALY_30D','GOODS_RATE','TASK_RAW','TASK_MONTHS','PUB_MONTHS','DETUI_AGG','PUSH_RAW'];
-  var ps=vars.map(function(n){return fetch('data/'+n+'.json').then(function(r){return r.json()}).then(function(d){window[n]=d})});
+  var ps=vars.map(function(n){return fetch('data/'+n+'.json?v='+VER).then(function(r){return r.json()}).then(function(d){window[n]=d})});
   await Promise.all(ps);
   document.getElementById('loader').style.display='none';
 }
