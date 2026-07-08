@@ -322,8 +322,9 @@ for brand in BRAND_SHORT.values():
 # 5. 得物推数据 - 按月汇总（双源品牌匹配：货盘表 + 交易订单）
 # ============================================================
 print("5. Extracting 得物推数据...", file=sys.stderr)
-ws = wb["得物推数据-商品"]
-# Headers: 时间, 用户ID, 计划名称, 计划ID, 计划类型, 优化目标, 商品ID, 消耗(元), 曝光(次), 点击(次), 点击率(%)...
+ws = wb["得物推数据"]
+# Headers (0-indexed): 时间, 用户ID, 计划名称, 计划ID, 计划类型, 优化目标, 商品ID2, 消耗(元), ...
+# openpyxl 1-indexed: col 1=时间, col 7=商品ID2, col 8=消耗(元), col 15=直接支付单量, col 16=直接支付金额, col 17=引导支付单量, col 18=引导支付金额
 push_header = {}
 for c in range(1, min(30, ws.max_column + 1)):
     h = ws.cell(1, c).value
@@ -332,14 +333,11 @@ for c in range(1, min(30, ws.max_column + 1)):
 time_col = 1
 goods_id_col = 7
 cost_col = 8
-# New columns for daily push output (from headers inspection):
-# Col 15=直接支付单量, 16=直接支付金额, 17=引导支付单量, 18=引导支付金额, 27=品牌, 28=货号
 direct_orders_col = 15
 direct_gmv_col = 16
 indirect_orders_col = 17
 indirect_gmv_col = 18
-push_brand_col = 27  # 品牌
-push_huohao_col = 28  # 货号
+# Note: this sheet has NO brand/huohao columns — use SPU mapping from 货盘表
 print(f"  Push: time_col={time_col}, goods_id_col={goods_id_col}, cost_col={cost_col}", file=sys.stderr)
 
 # Build SPU->brand mapping from 交易订单 too (supplement 货盘表)
@@ -369,24 +367,15 @@ for r in range(2, ws.max_row + 1):
     if not (date_str and good_id and cost and in_range(date_str)):
         continue
     
-    # Get brand and huohao from the push sheet directly (col 27, 28)
-    push_brand = ws.cell(r, push_brand_col).value
-    push_hh = ws.cell(r, push_huohao_col).value
-    
-    # Match brand: prefer columns 26/27, fallback to spu mapping
+    # Match brand: use SPU mapping from 货盘表 / 交易订单
     brand = None
     huohao = None
-    if push_brand and str(push_brand).strip() in BRANDS:
-        brand = BRAND_SHORT[str(push_brand).strip()]
-        huohao = str(push_hh).strip() if push_hh else None
-    else:
-        try:
-            gid = int(good_id)
-            brand = spu_brand.get(gid)
-            if not brand:
-                brand = spu_brand_from_orders.get(gid)
-        except (ValueError, TypeError):
-            pass
+    try:
+        gid = int(good_id)
+        brand = spu_brand.get(gid) or spu_brand_from_orders.get(gid)
+        huohao = spu_name.get(gid)
+    except (ValueError, TypeError):
+        pass
     
     if not brand:
         continue
