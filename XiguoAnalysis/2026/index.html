@@ -276,7 +276,7 @@ function updateM1() {
       },
       scales: {
         x: { ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,
-          callback:function(v){var s=String(v);return isMonthly?s:s.substring(5);}} },
+          callback:function(v){var label=this.getLabelForValue(v);if(!label)return'';return isMonthly?label:label.substring(5);}} },
         y: { type:'linear', position:'left', title:{display:true,text:'GMV(¥)',color:'#3b82f6'}, ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}} },
         y1: { type:'linear', position:'right', title:{display:true,text:'UV',color:'#f59e0b'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false} },
         y2: { type:'linear', position:'right', title:{display:true,text:'大盘(万元)',color:'#a78bfa'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true },
