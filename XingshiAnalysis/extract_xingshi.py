@@ -5,7 +5,7 @@ import json, re, os
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-SRC = '/mnt/e/Obsidian本地仓库/09-数据源/醒狮/醒狮数据源收集表.xlsx'
+SRC = '/home/Vic/.hermes/tmp_data/醒狮数据源收集表.xlsx'
 OUT_FILE = '/home/Vic/dewu-reports/XingshiAnalysis/2026/index.html'
 BRAND = '醒狮'
 
