@@ -45,6 +45,7 @@ def map_brand(name):
     name = str(name).upper()
     if 'CASIO' in name or '卡西欧' in name: return '卡西欧'
     if 'COACH' in name or '蔻驰' in name: return '蔻驰'
+    if 'SWATCH' in name or '斯沃琪' in name: return '斯沃琪'
     return 'OTHER'
 
 print("=== 喜过数据提取 v2 ===\n")
@@ -93,7 +94,14 @@ for (d, brand, goods), v in sorted(daily_goods.items()):
 
 ALL_DATES = sorted(dates_set)
 ALL_GOODS = sorted(goods_set)
-ALL_BRANDS = ['卡西欧', '蔻驰']
+# Build ALL_BRANDS dynamically from data (sorted consistently)
+brands_in_data = set()
+for _, r in df_uv.iterrows():
+    d = norm_date(r['日期'])
+    if not d: continue
+    b = map_brand(r['品牌名称'])
+    if b != 'OTHER': brands_in_data.add(b)
+ALL_BRANDS = sorted(brands_in_data, key=lambda x: {'卡西欧':0,'蔻驰':1,'斯沃琪':2}.get(x,99))
 ALL_MONTHS = sorted(set(d[:7] for d in ALL_DATES))
 
 print(f"  DAILY_BRAND: {len(DAILY_BRAND)}, ALL_DATES: {len(ALL_DATES)}")
@@ -287,7 +295,7 @@ for _, r in df_orders_fb.iterrows():
     if spu_id and goods and spu_id.isdigit() and spu_id not in id2goods:
         id2goods[spu_id] = goods
 
-df_push = pd.read_excel(PATH_XIGUO, sheet_name='得物推数据', engine='calamine')
+df_push = pd.read_excel(PATH_XIGUO, sheet_name='得物推数据-商品', engine='calamine')
 
 # Raw push records with dates for M5 date filter
 PUSH_RAW = []
