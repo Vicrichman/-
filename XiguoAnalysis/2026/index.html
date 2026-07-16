@@ -9,6 +9,8 @@
 <title>喜过跨品牌运营分析看板</title>
 <script src="chart.umd.min.js"></script>
 <script src="data.js?v=10"></script>
+<script src="fivedata.js?v=1"></script>
+<script src="market_bag_data.js?v=1"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}.module{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}.filters label{font-size:13px;color:#94a3b8}.filters select,.filters input{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}.chart-wrap{position:relative;height:420px}.card .goods-name{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}.card td{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}.cards{display:flex;gap:12px}.card{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}.card h3{color:#60a5fa;font-size:13px;margin-bottom:8px}.card table{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}.card th:nth-child(1){width:28px}.card th:nth-child(2){width:auto}.card th:nth-child(3){width:70px;text-align:right}.card td:nth-child(3){text-align:right}.card th{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}.scroll{max-height:420px;overflow-y:auto}.card .rank{color:#94a3b8;width:24px}.alert-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}.alert-table th{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}.alert-table td{padding:8px 10px;border-bottom:1px solid #1a1d2e}.alert-row{background:rgba(248,113,113,0.08)}.delta-up{color:#f87171;font-weight:bold}.delta-down{color:#34d399;font-weight:bold}.btn-group{display:flex;gap:8px;margin-bottom:12px}.btn-group button{background:#0f1117;color:#94a3b8;border:1px solid #2d3348;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:13px}.btn-group button.active{background:#3b82f6;color:#fff;border-color:#3b82f6}.roi-high{color:#34d399;font-weight:bold}.roi-mid{color:#f59e0b}.roi-low{color:#f87171}.no-data{color:#94a3b8;text-align:center;padding:40px;font-size:14px}
 </style>
@@ -25,7 +27,7 @@
 
 <!-- ====== MODULE 1 ====== -->
 <div class="module">
-  <h2>📈 模块一：GMV / UV / 订单数 趋势</h2>
+  <h2>📈 模块一：五分类GMV / UV / 大盘趋势</h2>
   <div class="filters">
     <label>起始月份</label>
     <select id="m1-month-from"><option value="all">全部</option></select>
@@ -36,8 +38,14 @@
     <label>品牌</label>
     <select id="m1-brand" multiple style="min-width:160px;height:52px;"></select>
     <label>货号搜索</label>
-    <input type="text" id="m1-goods" placeholder="输入货号...">
+    <input type="text" id="m1-goods" placeholder="输入SPUID或货号...">
+    <div class="btn-group" style="margin-left:auto;margin-bottom:0">
+      <button id="m1-amt-stack" class="active" onclick="switchM1Amount('stack')">堆叠(GSV+退货)</button>
+      <button id="m1-amt-gsv" onclick="switchM1Amount('gsv')">去退GSV</button>
+      <button id="m1-amt-ret" onclick="switchM1Amount('ret')">退货GMV</button>
+    </div>
   </div>
+  <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;" id="m1-info"></div>
   <div class="chart-wrap"><canvas id="m1-chart"></canvas></div>
 </div>
 
@@ -108,14 +116,34 @@
 
 <script>
 // data.js (extract_xushi.py) outputs all const vars directly — no D bridge needed
-var BAG_MARKET_MAP = typeof MARKET_BAG_MAP !== 'undefined' ? MARKET_BAG_MAP : {};
+// Shoulder bag market data (单肩包大盘). Primary: MARKET_BAG_MAP from data.js (through 2026-07);
+// fallback: MKT_BAG daily array + MKT_BAG_MONTHLY from market_bag_data.js (through 2026-06).
+var BAG_MARKET_MAP = {};
+if (typeof MARKET_BAG_MAP !== 'undefined') {
+  BAG_MARKET_MAP = MARKET_BAG_MAP;
+} else if (typeof MKT_BAG !== 'undefined') {
+  MKT_BAG.forEach(function(r){ BAG_MARKET_MAP[r.date] = r.value; });
+}
+var BAG_MARKET_MONTHLY = typeof MKT_BAG_MONTHLY !== 'undefined' ? MKT_BAG_MONTHLY : {};
 
-let m1Chart = null, m3Mode = '7d';
+let m1Chart = null, m3Mode = '7d', m1AmountMode = 'stack';
+
+// Brand mapping: FIVECAT brand names -> DAILY_BRAND brand names
+var M1_BRAND_MAP = { 'CASIO/卡西欧':'卡西欧', 'COACH/蔻驰':'蔻驰', 'SWATCH/斯沃琪':'斯沃琪' };
 
 function fmt(n, d) { d=d||0; return Number(n||0).toLocaleString('zh-CN',{maximumFractionDigits:d}); }
 function fmtMoney(n) { return '¥'+fmt(n,0); }
 
 // ============ MODULE 1 ============
+function switchM1Amount(mode) {
+  m1AmountMode = mode;
+  ['stack','gsv','ret'].forEach(function(m) {
+    var btn = document.getElementById('m1-amt-'+m);
+    if (btn) btn.className = m===mode ? 'active' : '';
+  });
+  updateM1();
+}
+
 function initM1() {
   var fromSel = document.getElementById('m1-month-from');
   var toSel = document.getElementById('m1-month-to');
@@ -125,13 +153,15 @@ function initM1() {
     var o2=document.createElement('option'); o2.value=m; o2.textContent=txt; toSel.appendChild(o2);
   });
   if (ALL_MONTHS.length >= 3) { fromSel.value = ALL_MONTHS[ALL_MONTHS.length-3]; toSel.value = ALL_MONTHS[ALL_MONTHS.length-1]; }
-  
+
   var brandSel = document.getElementById('m1-brand');
-  ALL_BRANDS.forEach(function(b) { var o=document.createElement('option'); o.value=b; o.textContent=b; o.selected=true; brandSel.appendChild(o); });
-  
+  FIVECAT.all_brands.forEach(function(b) {
+    var o=document.createElement('option'); o.value=b; o.textContent=b; o.selected=true; brandSel.appendChild(o);
+  });
+
   document.getElementById('m1-start').value = ALL_DATES[Math.max(0,ALL_DATES.length-90)] || ALL_DATES[0];
   document.getElementById('m1-end').value = ALL_DATES[ALL_DATES.length-1];
-  
+
   [fromSel, toSel, brandSel, document.getElementById('m1-start'), document.getElementById('m1-end'), document.getElementById('m1-goods')]
     .forEach(function(el) { el.addEventListener('change', updateM1); });
   document.getElementById('m1-goods').addEventListener('input', updateM1);
@@ -147,43 +177,75 @@ function updateM1() {
   var brandOpts = document.getElementById('m1-brand').selectedOptions;
   var brands = Array.from(brandOpts).map(function(o){return o.value;});
   var goodsFilter = document.getElementById('m1-goods').value.trim().toUpperCase();
-  
-  var filtered;
+
+  // --- Goods search: find matching SPUIDs from spuid_data ---
+  var matchBrands = null;
+  var matchSpuids = [];
   if (goodsFilter) {
-    filtered = DAILY_GOODS.filter(function(r) { return r['商品货号'] && r['商品货号'].toUpperCase().indexOf(goodsFilter)>=0; });
-  } else {
-    filtered = DAILY_BRAND;
+    var matchSet = new Set();
+    FIVECAT.spuid_data.forEach(function(s) {
+      if ((s.spuid && s.spuid.toUpperCase().indexOf(goodsFilter)>=0) ||
+          (s.goods && s.goods.toUpperCase().indexOf(goodsFilter)>=0)) {
+        matchSet.add(s.brand);
+        if (matchSpuids.length < 10) matchSpuids.push(s.spuid + (s.goods?' / '+s.goods:''));
+      }
+    });
+    if (matchSet.size > 0) matchBrands = Array.from(matchSet);
   }
-  
-  filtered = filtered.filter(function(r) {
+
+  // --- Filter FIVECAT.daily_brand by date + brand ---
+  var filtered = FIVECAT.daily_brand.filter(function(r) {
     if (isMonthly) {
-      var rm = r.date_str.substring(0,7);
+      var rm = r.pay_date.substring(0,7);
       if (rm < mFrom || rm > mTo) return false;
     } else {
-      if (mFrom === 'all' && mTo === 'all') {
-        if (d1 && r.date_str < d1) return false;
-        if (d2 && r.date_str > d2) return false;
-      }
+      if (d1 && r.pay_date < d1) return false;
+      if (d2 && r.pay_date > d2) return false;
     }
-    if (!goodsFilter && brands.indexOf(r.brand) < 0) return false;
+    if (brands.indexOf(r.brand) < 0) return false;
+    if (matchBrands && matchBrands.indexOf(r.brand) < 0) return false;
     return true;
   });
-  
+
+  // --- Aggregate FIVECAT data by date ---
   var byDate = {};
   filtered.forEach(function(r) {
-    var key = isMonthly ? r.date_str.substring(0,7) : r.date_str;
-    if (!byDate[key]) byDate[key] = {gmv:0,uv:0,orders:0};
-    byDate[key].gmv += r.GMV||0;
-    byDate[key].uv += r.UV||0;
-    byDate[key].orders += r.orders||0;
+    var key = isMonthly ? r.pay_date.substring(0,7) : r.pay_date;
+    if (!byDate[key]) byDate[key] = {gmv_pay:0,gmv_ret:0,gmv_cancel:0,gmv_unclear:0,gmv_normal:0,n_pay:0};
+    byDate[key].gmv_pay += r.gmv_pay||0;
+    byDate[key].gmv_ret += r.gmv_ret||0;
+    byDate[key].gmv_cancel += r.gmv_cancel||0;
+    byDate[key].gmv_unclear += r.gmv_unclear||0;
+    byDate[key].gmv_normal += r.gmv_normal||0;
+    byDate[key].n_pay += r.n_pay||0;
   });
-  
+
+  // --- UV from DAILY_BRAND (mapped brands) ---
+  var dbBrands = [];
+  brands.forEach(function(b) {
+    var m = M1_BRAND_MAP[b];
+    if (m) dbBrands.push(m);
+  });
+  var uvByDate = {};
+  DAILY_BRAND.forEach(function(r) {
+    if (dbBrands.length && dbBrands.indexOf(r.brand) < 0) return;
+    var key = isMonthly ? r.date_str.substring(0,7) : r.date_str;
+    if (!uvByDate[key]) uvByDate[key] = 0;
+    uvByDate[key] += r.UV||0;
+  });
+
   var dates = Object.keys(byDate).sort();
-  var gmv = dates.map(function(d){return byDate[d].gmv;});
-  var uv = dates.map(function(d){return byDate[d].uv;});
-  var orders = dates.map(function(d){return byDate[d].orders;});
-  
-  // Market index - 日韩表
+  if (!dates.length) {
+    if (m1Chart) { m1Chart.destroy(); m1Chart=null; }
+    var existing = Chart.getChart('m1-chart'); if (existing) existing.destroy();
+    document.getElementById('m1-info').textContent = '无匹配数据';
+    return;
+  }
+
+  var uv = dates.map(function(d){return uvByDate[d]||0;});
+  var n_pay = dates.map(function(d){return byDate[d].n_pay;});
+
+  // --- Market index (日韩表) ---
   var marketData = dates.map(function(d) {
     if (isMonthly) {
       var vals = Object.keys(MARKET_MAP).filter(function(k){return k.substring(0,7)===d;}).map(function(k){return MARKET_MAP[k];});
@@ -191,70 +253,139 @@ function updateM1() {
     }
     return MARKET_MAP[d] || null;
   });
-  
-  // Bag market index - 单肩包
+
+  // --- Market index (单肩包 shoulder bag) ---
   var bagMarketData = dates.map(function(d) {
     if (isMonthly) {
       var vals = Object.keys(BAG_MARKET_MAP).filter(function(k){return k.substring(0,7)===d;}).map(function(k){return BAG_MARKET_MAP[k];});
-      return vals.length>0 ? +(vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1) : null;
+      if (vals.length>0) return +(vals.reduce(function(a,b){return a+b;},0)/vals.length).toFixed(1);
+      return BAG_MARKET_MONTHLY[d] != null ? BAG_MARKET_MONTHLY[d] : null;
     }
     return BAG_MARKET_MAP[d] || null;
   });
-  
+
+  // --- Datasets based on amount mode ---
+  // Simplified GSV+退货 model:
+  //   GSV  = gmv_normal (去退留存)
+  //   退货 = gmv_ret + gmv_cancel + gmv_unclear
+  var gsvArr = dates.map(function(d){return byDate[d].gmv_normal;});
+  var retArr = dates.map(function(d){return (byDate[d].gmv_ret||0)+(byDate[d].gmv_cancel||0)+(byDate[d].gmv_unclear||0);});
+  var datasets = [];
+  var isStacked = (m1AmountMode === 'stack');
+
+  if (m1AmountMode === 'stack') {
+    datasets.push(
+      { label:'去退GSV', data:gsvArr, backgroundColor:'rgba(52,211,153,0.7)', borderColor:'#34d399', borderWidth:1, stack:'gmv', yAxisID:'y', order:3 },
+      { label:'退货GMV', data:retArr, backgroundColor:'rgba(248,113,113,0.7)', borderColor:'#f87171', borderWidth:1, stack:'gmv', yAxisID:'y', order:3 }
+    );
+  } else if (m1AmountMode === 'gsv') {
+    datasets.push(
+      { label:'去退GSV', data:gsvArr, backgroundColor:'rgba(52,211,153,0.7)', borderColor:'#34d399', borderWidth:1, yAxisID:'y', order:3 }
+    );
+  } else {
+    datasets.push(
+      { label:'退货GMV', data:retArr, backgroundColor:'rgba(248,113,113,0.7)', borderColor:'#f87171', borderWidth:1, yAxisID:'y', order:3 }
+    );
+  }
+
+  // UV line
+  datasets.push(
+    { label:'UV', data:uv, type:'line', borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', tension:0.3, yAxisID:'y1', pointRadius:1, order:2, borderWidth:1.5 }
+  );
+
+  // Market index lines (日韩表 + 单肩包)
+  var hasMarket = marketData.some(function(v){return v!==null;});
+  if (hasMarket) {
+    datasets.push(
+      { label:'大盘指数(日韩表·万元)', data:marketData, type:'line', borderColor:'#38bdf8', borderDash:[5,5], tension:0.3, yAxisID:'y2', pointRadius:2, spanGaps:true, order:1, borderWidth:1.5 }
+    );
+  }
+  var hasBagMarket = bagMarketData.some(function(v){return v!==null;});
+  if (hasBagMarket) {
+    datasets.push(
+      { label:'大盘指数(单肩包·万元)', data:bagMarketData, type:'line', borderColor:'#a78bfa', borderDash:[5,5], tension:0.3, yAxisID:'y2', pointRadius:2, spanGaps:true, order:1, borderWidth:1.5 }
+    );
+  }
+
+  // --- Build chart ---
   if (m1Chart) { m1Chart.destroy(); m1Chart=null; }
   var existing = Chart.getChart('m1-chart');
   if (existing) existing.destroy();
   var ctx = document.getElementById('m1-chart').getContext('2d');
-  
-  var datasets = [
-    { label:'GMV(¥)', data:gmv, type:'bar', backgroundColor:'rgba(59,130,246,0.6)', borderColor:'#3b82f6', borderWidth:1, yAxisID:'y', order:3 },
-    { label:'UV', data:uv, type:'line', borderColor:'#f59e0b', backgroundColor:'rgba(245,158,11,0.1)', tension:0.3, yAxisID:'y1', pointRadius:1, order:2 },
-  ];
-  var hasMarket = marketData.some(function(v){return v!==null;});
-  if (hasMarket) {
-    datasets.push({ label:'大盘指数(日韩表·万元)', data:marketData, type:'line', borderColor:'#a78bfa', borderDash:[5,5], tension:0.3, yAxisID:'y2', pointRadius:3, spanGaps:true, order:1, borderWidth:1.5 });
-  }
-  var hasBagMarket = bagMarketData.some(function(v){return v!==null;});
-  if (hasBagMarket) {
-    datasets.push({ label:'大盘指数(单肩包·万元)', data:bagMarketData, type:'line', borderColor:'#f97316', borderDash:[3,3], tension:0.3, yAxisID:'y3', pointRadius:2, spanGaps:true, order:1, borderWidth:1.5 });
-  }
-  
+
   m1Chart = new Chart(ctx, {
     type: 'bar',
-    data: { labels: isMonthly ? dates.map(function(d){return d.slice(0,4)+'年'+parseInt(d.slice(5))+'月';}) : dates, datasets: datasets },
+    data: {
+      labels: isMonthly ? dates.map(function(d){return d.slice(0,4)+'年'+parseInt(d.slice(5))+'月';}) : dates,
+      datasets: datasets
+    },
     options: {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode:'index', intersect:false },
-      plugins: { 
+      plugins: {
         legend: { labels:{color:'#94a3b8',usePointStyle:true} },
-        tooltip: { callbacks: { afterBody: function(tc) { var i=tc[0].dataIndex; return ['订单数: '+fmt(orders[i])]; } } }
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var v = ctx.raw;
+              if (v == null) return '';
+              if (ctx.dataset.yAxisID === 'y') return ctx.dataset.label + ': ¥' + fmt(v,0);
+              if (ctx.dataset.yAxisID === 'y1') return ctx.dataset.label + ': ' + fmt(v,0);
+              if (ctx.dataset.yAxisID === 'y2') return ctx.dataset.label + ': ' + v + '万元';
+              return ctx.dataset.label + ': ' + v;
+            },
+            afterBody: function(tc) {
+              var i = tc[0].dataIndex;
+              return ['支付订单数: ' + fmt(n_pay[i])];
+            }
+          }
+        }
       },
       scales: {
-        x: { ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,
-          callback:function(v){var label=this.getLabelForValue(v);if(!label)return'';return isMonthly?label:label.substring(5);}} },
-        y: { type:'linear', position:'left', title:{display:true,text:'GMV(¥)',color:'#3b82f6'}, ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}} },
-        y1: { type:'linear', position:'right', title:{display:true,text:'UV',color:'#f59e0b'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false} },
-        y2: { type:'linear', position:'right', title:{display:true,text:'大盘(万元)',color:'#a78bfa'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true },
-        y3: { type:'linear', position:'right', title:{display:true,text:'单肩包(万元)',color:'#f97316'}, ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true },
+        x: {
+          stacked: isStacked,
+          ticks:{color:'#94a3b8',maxTicksLimit:isMonthly?12:20,maxRotation:45,
+            callback:function(v){var label=this.getLabelForValue(v);if(!label)return'';return isMonthly?label:label.substring(5);}}
+        },
+        y: {
+          type:'linear', position:'left', stacked:isStacked,
+          title:{display:true,text:'GMV(¥)',color:'#34d399'},
+          ticks:{color:'#94a3b8',callback:function(v){return fmt(v,0);}}
+        },
+        y1: {
+          type:'linear', position:'right',
+          title:{display:true,text:'UV',color:'#f59e0b'},
+          ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}
+        },
+        y2: {
+          type:'linear', position:'right',
+          title:{display:true,text:'大盘(万元)',color:'#94a3b8'},
+          ticks:{color:'#94a3b8'}, grid:{drawOnChartArea:false}, offset:true
+        },
       }
     },
     plugins: [{
       id: 'orderLabels',
       afterDraw: function(chart) {
-        var ctx2 = chart.ctx;
-        var meta = chart.getDatasetMeta(0);
-        var yScale = chart.scales.y;
-        meta.data.forEach(function(bar, i) {
-          if (orders[i] <= 0) return;
-          var x = bar.x, y = bar.y < yScale.getPixelForValue(0) ? bar.y + 4 : yScale.getPixelForValue(0) - 12;
-          ctx2.save();
-          ctx2.fillStyle = '#94a3b8'; ctx2.font = '10px sans-serif'; ctx2.textAlign = 'center';
-          ctx2.fillText(orders[i], x, y);
-          ctx2.restore();
-        });
+        var ctx2 = chart.ctx, meta = chart.getDatasetMeta(0);
+        if(!meta||!meta.data)return;
+        ctx2.save();ctx2.font='9px sans-serif';ctx2.fillStyle='#e2e8f0';ctx2.textAlign='center';ctx2.textBaseline='bottom';
+        for(var i=0;i<meta.data.length;i++){
+          if(i<n_pay.length&&n_pay[i]>0){
+            var x=meta.data[i].x;
+            var y=chart.scales.y.getPixelForValue(0)-14;
+            ctx2.fillText(n_pay[i],x,y);
+          }
+        }
+        ctx2.restore();
       }
     }]
   });
+
+  // --- Info line ---
+  var info = '成熟退货率: ' + FIVECAT.mature_return_rate + '% | 售后起始: ' + FIVECAT.as_start + ' | 总支付GMV: ¥' + fmt(FIVECAT.gmv_pay) + ' | 总支付单量: ' + fmt(FIVECAT.n_pay);
+  if (matchSpuids.length > 0) info += ' | 匹配货号: ' + matchSpuids.join(', ') + (matchSpuids.length >= 10 ? ' ...' : '');
+  document.getElementById('m1-info').textContent = info;
 }
 
 // ============ MODULE 2 ============

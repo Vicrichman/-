@@ -208,9 +208,31 @@ for g,v in da.items():
 print(f"   PUSH_RAW:{len(PUSH_RAW)} DETUI_AGG:{len(DETUI_AGG)}")
 
 # ============================================================
-# 6. 生成内联数据HTML
+# 6. 五分类GMV (from extract_fivecat module)
 # ============================================================
-print("💾 [6/6] 生成HTML...")
+print("📊 [6/7] 五分类GMV...")
+import sys
+sys.path.insert(0, '/home/Vic/dewu-reports')
+from extract_fivecat import classify_store, STORE_CONFIG
+
+fc = classify_store('美兰', STORE_CONFIG['美兰'])
+FIVECAT = {
+    'n_pay': fc['n_pay'], 'gmv_pay': round(fc['gmv_pay']),
+    'gmv_ret': round(fc['gmv_ret']), 'gmv_cancel': round(fc['gmv_cancel']),
+    'gmv_unclear': round(fc['gmv_unclear']), 'gmv_normal': round(fc['gmv_normal']),
+    'n_ret': fc['n_ret'], 'n_cancel': fc['n_cancel'], 'n_unclear': fc['n_unclear'],
+    'mature_return_rate': fc['mature_return_rate'],
+    'as_start': fc.get('as_start'),
+    'daily': fc['daily_gmv'],
+}
+print(f"   支付OID={FIVECAT['n_pay']}, 退货率={FIVECAT['mature_return_rate']}%, as_start={FIVECAT['as_start']}")
+if FIVECAT['mature_return_rate'] is not None:
+    print(f"   五分类GMV: 留存¥{FIVECAT['gmv_normal']:,} + 退货¥{FIVECAT['gmv_ret']:,} + 取消¥{FIVECAT['gmv_cancel']:,} + 待确认¥{FIVECAT['gmv_unclear']:,} = ¥{FIVECAT['gmv_pay']:,}")
+
+# ============================================================
+# 7. 生成内联数据HTML
+# ============================================================
+print("💾 [7/7] 生成HTML...")
 
 def js_dumps(obj, indent=0):
     """JSON dump as JS const (no quotes on keys)"""
@@ -222,6 +244,7 @@ HTML = f'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta n
 *{{box-sizing:border-box;margin:0;padding:0}}body{{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}}h2{{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}}.module{{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}}.filters{{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}}.filters label{{font-size:13px;color:#94a3b8}}.filters select,.filters input{{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}}.chart-wrap{{position:relative;height:420px}}.card .goods-name{{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}}.card td{{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}}.cards{{display:flex;gap:12px}}.card{{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}}.card h3{{color:#60a5fa;font-size:13px;margin-bottom:8px}}.card table{{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}}.card th:nth-child(1){{width:28px}}.card th:nth-child(2){{width:auto}}.card th:nth-child(3){{width:70px;text-align:right}}.card td:nth-child(3){{text-align:right}}.card th{{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}}.scroll{{max-height:420px;overflow-y:auto}}.card .rank{{color:#94a3b8;width:24px}}.alert-table{{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}}.alert-table th{{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}}.alert-table td{{padding:8px 10px;border-bottom:1px solid #1a1d2e}}.alert-row{{background:rgba(248,113,113,0.08)}}.delta-up{{color:#f87171;font-weight:bold}}.btn-group{{display:flex;gap:8px;margin-bottom:12px}}.btn-group button{{padding:6px 16px;border-radius:6px;cursor:pointer;background:#0f1117;color:#94a3b8;border:1px solid #2d3348}}.btn-group button.active{{background:#3b82f6;color:#fff;border-color:#3b82f6}}.roi-high{{color:#22c55e;font-weight:bold}}.roi-mid{{color:#f59e0b}}.roi-low{{color:#f87171}}.no-data{{text-align:center;color:#94a3b8;padding:20px}}
 </style></head><body>
 <h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 美兰运营分析看板</h1>
+<div class="module"><h2>💰 模块〇：支付GMV五分类结构</h2><div id="m0-cards" class="cards" style="margin-bottom:16px;"></div><div class="chart-wrap"><canvas id="m0-chart"></canvas></div><div style="margin-top:8px;font-size:12px;color:#94a3b8;" id="m0-mature"></div><div style="margin-top:4px;font-size:11px;color:#64748b;" id="m0-asinfo"></div></div>
 <div class="module"><h2>📈 模块一：GMV / UV / 订单数 趋势</h2><div class="filters"><label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select><label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select><label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end"><label>货号搜索</label><input type="text" id="m1-goods" placeholder="输入货号..."></div><div class="chart-wrap"><canvas id="m1-chart"></canvas></div></div>
 <div class="module"><h2>🏆 模块二：TOP20 排行</h2><div class="filters"><label>日期筛选</label><input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end"><button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">刷新</button></div><div class="cards"><div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div><div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div><div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div></div></div>
 <div class="module"><h2>⚠️ 模块三：退货率异常警示</h2><div class="btn-group"><button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button><button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button><button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button></div><div class="scroll" style="max-height:360px"><table class="alert-table"><thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead><tbody id="m3-body"></tbody></table></div><div id="m3-nodata" class="no-data" style="display:none">✅ 未检测到退货率异常款式</div></div>
@@ -243,6 +266,7 @@ const TASK_MONTHS = {js_dumps(TASK_MONTHS)};
 const PUB_MONTHS = {js_dumps(PUB_MONTHS)};
 const DETUI_AGG = {js_dumps(DETUI_AGG)};
 const PUSH_RAW = {js_dumps(PUSH_RAW)};
+const FIVECAT = {js_dumps(FIVECAT)};
 
 let m1Chart = null, m3Mode = '7d';
 
@@ -327,7 +351,61 @@ function updateM5(){{
   document.getElementById('m5-body').innerHTML=rs
 }}
 
+function initM0(){{
+  if (typeof FIVECAT === 'undefined' || !FIVECAT.n_pay) return;
+  var fc = FIVECAT;
+  var fmtM = function(n){{ return '¥'+(n||0).toLocaleString(); }};
+  var pct = function(a,b){{ return b>0 ? (a/b*100).toFixed(1)+'%' : 'N/A'; }};
+  var cards = document.getElementById('m0-cards');
+  cards.innerHTML = [
+    {{label:'支付GMV',val:fmtM(fc.gmv_pay),color:'#60a5fa'}},
+    {{label:'留存GMV',val:fmtM(fc.gmv_normal),color:'#22c55e'}},
+    {{label:'退货GMV',val:fmtM(fc.gmv_ret),color:'#ef4444'}},
+    {{label:'取消GMV',val:fmtM(fc.gmv_cancel),color:'#f59e0b'}},
+    {{label:'待确认GMV',val:fmtM(fc.gmv_unclear),color:'#6b7280'}},
+  ].map(function(c,i){{
+    return '<div class=\"card\" style=\"border-left:3px solid '+c.color+'\">'+
+      '<div style=\"font-size:11px;color:#94a3b8\">'+c.label+'</div>'+
+      '<div style=\"font-size:18px;font-weight:700;color:'+c.color+'\">'+c.val+'</div>'+
+      '</div>';
+  }}).join('');
+  var matureEl = document.getElementById('m0-mature');
+  if (fc.mature_return_rate !== null && fc.mature_return_rate !== undefined) {{
+    matureEl.innerHTML = '📊 45天成熟退货率: <b>'+fc.mature_return_rate.toFixed(2)+'%</b> | 支付后取消率: <b>'+pct(fc.n_cancel,fc.n_pay)+'</b> | 原因待确认: <b>'+pct(fc.n_unclear,fc.n_pay)+'</b> | 可靠售后起始: <b>'+(fc.as_start||'N/A')+'</b>';
+  }} else {{
+    matureEl.innerHTML = '⚠️ 售后明细字段不足，退货与取消指标暂不可计算。';
+  }}
+  if (fc.daily && fc.daily.length > 0) {{
+    var dates = fc.daily.map(function(d){{return d.date;}});
+    var ctx = document.getElementById('m0-chart').getContext('2d');
+    new Chart(ctx, {{
+      type: 'bar',
+      data: {{
+        labels: dates,
+        datasets: [
+          {{label:'留存',data:fc.daily.map(function(d){{return d.gmv_normal||0;}}),backgroundColor:'#22c55e',stack:'gmv'}},
+          {{label:'退货',data:fc.daily.map(function(d){{return d.gmv_ret||0;}}),backgroundColor:'#ef4444',stack:'gmv'}},
+          {{label:'取消',data:fc.daily.map(function(d){{return d.gmv_cancel||0;}}),backgroundColor:'#f59e0b',stack:'gmv'}},
+          {{label:'待确认',data:fc.daily.map(function(d){{return d.gmv_unclear||0;}}),backgroundColor:'#6b7280',stack:'gmv'}},
+        ]
+      }},
+      options: {{
+        responsive: true, maintainAspectRatio: false,
+        scales: {{
+          x: {{ stacked: true, ticks: {{ color: '#94a3b8', maxTicksLimit: 20, maxRotation: 45, font:{{size:9}} }} }},
+          y: {{ stacked: true, ticks: {{ color: '#94a3b8', callback: function(v){{return v>=10000?(v/10000).toFixed(0)+'万':v;}} }} }}
+        }},
+        plugins: {{
+          legend: {{ labels: {{ color: '#94a3b8', usePointStyle: true, padding: 10 }} }},
+          tooltip: {{ callbacks: {{ label: function(ctx){{return ctx.dataset.label+': ¥'+ctx.raw.toLocaleString();}} }} }}
+        }}
+      }}
+    }});
+  }}
+}}
+
 window.addEventListener('load',function(){{
+  try{{initM0()}}catch(e){{console.error('M0:',e)}}
   try{{initM1()}}catch(e){{console.error('M1:',e)}}
   try{{initM2()}}catch(e){{console.error('M2:',e)}}
   try{{renderM3()}}catch(e){{console.error('M3:',e)}}

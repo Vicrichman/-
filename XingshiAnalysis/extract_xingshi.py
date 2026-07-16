@@ -217,6 +217,34 @@ for g,v in da.items():
 print(f"   PUSH_RAW:{len(PUSH_RAW)} DETUI_AGG:{len(DETUI_AGG)}")
 
 # ============================================================
+# 5.5 五分类数据（extract_fivecat 集成）
+# ============================================================
+print("🏷️ [5.5/6] 五分类...")
+import sys
+sys.path.insert(0, '/home/Vic/dewu-reports')
+from extract_fivecat import classify_store, STORE_CONFIG
+fc = classify_store('醒狮', STORE_CONFIG['醒狮'])
+FIVECAT = {
+    'n_pay': fc['n_pay'],
+    'gmv_pay': fc['gmv_pay'],
+    'mature_return_rate': fc['mature_return_rate'],
+    'as_start': fc['as_start'],
+    'n_ret': fc['n_ret'],
+    'gmv_ret': fc['gmv_ret'],
+    'n_cancel': fc['n_cancel'],
+    'gmv_cancel': fc['gmv_cancel'],
+    'n_unclear': fc['n_unclear'],
+    'gmv_unclear': fc['gmv_unclear'],
+    'n_normal': fc['n_normal'],
+    'gmv_normal': fc['gmv_normal'],
+    'refund_total': fc['refund_total'],
+    'n_reliable_mature': fc['n_reliable_mature'],
+    'n_reliable_ret': fc['n_reliable_ret'],
+    'daily_gmv': fc['daily_gmv'],
+}
+print(f"   pay={FIVECAT['n_pay']}, gmv={FIVECAT['gmv_pay']:.0f}, mature_rate={FIVECAT['mature_return_rate']}%")
+
+# ============================================================
 # 6. 保存JSON数据 + 生成HTML（fetch模式，避免46MB单行导致浏览器崩溃）
 # ============================================================
 print("💾 [6/6] 保存JSON数据...")
@@ -229,6 +257,7 @@ data_files = {
     'ALL_DATES': ALL_DATES, 'ALL_BRANDS': [BRAND],
     'ALL_GOODS': ALL_GOODS, 'ALL_MONTHS': ALL_MONTHS,
     'MARKET_MAP': MARKET_MAP,
+    'FIVECAT': FIVECAT,
     'ANOMALY_7D': ANOMALY_7D, 'ANOMALY_30D': ANOMALY_30D,
     'GOODS_RATE': GOODS_RATE,
     'TASK_RAW': TASK_RAW, 'TASK_MONTHS': TASK_MONTHS,
@@ -250,6 +279,7 @@ HTML = r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta n
 </style></head><body>
 <h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 醒狮运营分析看板</h1>
 <div class="loading" id="loader"><span class="spinner"></span>数据加载中...</div>
+<div class="module"><h2>🏷️ 模块零：五分类看板</h2><div class="cards"><div class="card"><h3>📦 总支付单量</h3><div style="font-size:24px;font-weight:bold;color:#60a5fa" id="m0-pay">-</div></div><div class="card"><h3>💰 总支付GMV</h3><div style="font-size:24px;font-weight:bold;color:#34d399" id="m0-gmv">-</div></div><div class="card"><h3>📊 成熟退货率</h3><div style="font-size:24px;font-weight:bold;color:#f59e0b" id="m0-ret-rate">-</div></div><div class="card"><h3>📅 售后起始</h3><div style="font-size:24px;font-weight:bold;color:#94a3b8" id="m0-as-start">-</div></div></div><div class="chart-wrap" style="margin-top:16px"><canvas id="m0-chart"></canvas></div></div>
 <div class="module"><h2>📈 模块一：GMV / UV / 订单数 趋势</h2><div class="filters"><label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select><label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select><label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end"><label>货号搜索</label><input type="text" id="m1-goods" placeholder="输入货号..."></div><div class="chart-wrap"><canvas id="m1-chart"></canvas></div></div>
 <div class="module"><h2>🏆 模块二：TOP20 排行</h2><div class="filters"><label>日期筛选</label><input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end"><button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">刷新</button></div><div class="cards"><div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div><div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div><div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div></div></div>
 <div class="module"><h2>⚠️ 模块三：退货率异常警示</h2><div class="btn-group"><button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button><button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button><button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button></div><div class="scroll" style="max-height:360px"><table class="alert-table"><thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead><tbody id="m3-body"></tbody></table></div><div id="m3-nodata" class="no-data" style="display:none">✅ 未检测到退货率异常款式</div></div>
@@ -260,6 +290,8 @@ var DAILY_BRAND,DAILY_GOODS,ALL_DATES,ALL_BRANDS,ALL_GOODS,ALL_MONTHS;
 var MARKET_MAP,ANOMALY_7D,ANOMALY_30D,GOODS_RATE;
 var TASK_RAW,TASK_MONTHS,PUB_MONTHS,DETUI_AGG,PUSH_RAW;
 var m1Chart=null,m3Mode='7d',VER='20260707';
+const FIVECAT = {};
+var m0Chart=null;
 
 function fmt(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString()}
 function fmtMoney(n){return n>=10000?'¥'+(n/10000).toFixed(1)+'w':'¥'+n.toLocaleString()}
@@ -349,18 +381,43 @@ function updateM5(){
   document.getElementById('m5-body').innerHTML=rs
 }
 
+function initM0(){
+  document.getElementById('m0-pay').textContent=FIVECAT.n_pay?FIVECAT.n_pay.toLocaleString():'-';
+  document.getElementById('m0-gmv').textContent=FIVECAT.gmv_pay?'¥'+(FIVECAT.gmv_pay/10000).toFixed(1)+'w':'-';
+  document.getElementById('m0-ret-rate').textContent=FIVECAT.mature_return_rate!=null?FIVECAT.mature_return_rate+'%':'-';
+  document.getElementById('m0-as-start').textContent=FIVECAT.as_start||'-';
+  var daily=FIVECAT.daily_gmv||[];
+  if(!daily.length)return;
+  var dates=daily.map(function(d){return d.date});
+  var normal=daily.map(function(d){return d.gmv_normal||0});
+  var ret=daily.map(function(d){return d.gmv_ret||0});
+  var cancel=daily.map(function(d){return d.gmv_cancel||0});
+  var unclear=daily.map(function(d){return d.gmv_unclear||0});
+  if(m0Chart)m0Chart.destroy();
+  m0Chart=new Chart(document.getElementById('m0-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
+    {label:'正常',data:normal,backgroundColor:'rgba(96,165,250,0.7)',borderColor:'#60a5fa',borderWidth:1},
+    {label:'退货',data:ret,backgroundColor:'rgba(248,113,113,0.7)',borderColor:'#f87171',borderWidth:1},
+    {label:'取消',data:cancel,backgroundColor:'rgba(251,191,36,0.7)',borderColor:'#fbbf24',borderWidth:1},
+    {label:'不明确',data:unclear,backgroundColor:'rgba(148,163,184,0.7)',borderColor:'#94a3b8',borderWidth:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': ¥'+(ctx.raw/10000).toFixed(1)+'w'}}}},scales:{x:{stacked:true,ticks:{color:'#64748b',maxTicksLimit:15}},y:{stacked:true,ticks:{color:'#60a5fa',callback:function(v){return (v/10000).toFixed(0)+'w'}}}}}});
+}
+
 window.addEventListener('load',function(){loadAll().then(function(){
   try{initM1()}catch(e){console.error('M1:',e)}
   try{initM2()}catch(e){console.error('M2:',e)}
   try{renderM3()}catch(e){console.error('M3:',e)}
   try{initM4()}catch(e){console.error('M4:',e)}
+  try{initM0()}catch(e){console.error('M0:',e)}
   try{initM5()}catch(e){console.error('M5:',e)}
 }).catch(function(e){document.getElementById('loader').textContent='❌ 数据加载失败，请刷新重试';console.error(e)})});
 </script></body></html>'''
 
 os.makedirs(os.path.dirname(OUT_FILE), exist_ok=True)
+# Inject FIVECAT data into the placeholder
+ficat_json = json.dumps(FIVECAT, ensure_ascii=False, default=str)
+html_content = HTML.replace('const FIVECAT = {};', f'const FIVECAT = {ficat_json};')
 with open(OUT_FILE, 'w', encoding='utf-8') as f:
-    f.write(HTML)
+    f.write(html_content)
 
 kb = os.path.getsize(OUT_FILE) / 1024
 print(f"\n✅ {OUT_FILE} ({kb:.0f}KB HTML + {len(data_files)} JSON in data/)")

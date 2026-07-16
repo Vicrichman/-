@@ -5,7 +5,7 @@ import json, re, os
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-SRC = '/home/Vic/.hermes/tmp_data/柏治廷数据.xlsx'
+SRC = '/home/Vic/.hermes/tmp_data/baizhiting_latest.xlsx'
 HTML_SRC = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
 HTML_OUT = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
 
@@ -207,9 +207,31 @@ M4_CAT_COLORS = {'永生花':'#60a5fa','盲盒':'#f59e0b','香薰礼盒':'#34d39
 print(f"   MARKET_MAP:{len(MARKET_MAP)} dates, M4_MONTHS:{len(M4_MONTHS)}")
 
 # ============================================================
-# 4. 注入到HTML模板
+# 5. 五分类GMV (from extract_fivecat module)
 # ============================================================
-print("💾 [4/4] 注入HTML...")
+print("📊 [5/5] 五分类GMV...")
+import sys
+sys.path.insert(0, '/home/Vic/dewu-reports')
+from extract_fivecat import classify_store, STORE_CONFIG
+
+fc = classify_store('柏治廷', STORE_CONFIG['柏治廷'])
+FIVECAT = {
+    'n_pay': fc['n_pay'], 'gmv_pay': round(fc['gmv_pay']),
+    'gmv_ret': round(fc['gmv_ret']), 'gmv_cancel': round(fc['gmv_cancel']),
+    'gmv_unclear': round(fc['gmv_unclear']), 'gmv_normal': round(fc['gmv_normal']),
+    'n_ret': fc['n_ret'], 'n_cancel': fc['n_cancel'], 'n_unclear': fc['n_unclear'],
+    'mature_return_rate': fc['mature_return_rate'],
+    'as_start': fc.get('as_start'),
+    'daily': fc['daily_gmv'],
+}
+print(f"   支付OID={FIVECAT['n_pay']}, 退货率={FIVECAT['mature_return_rate']}%, as_start={FIVECAT['as_start']}")
+if FIVECAT['mature_return_rate'] is not None:
+    print(f"   五分类GMV: 留存¥{FIVECAT['gmv_normal']:,} + 退货¥{FIVECAT['gmv_ret']:,} + 取消¥{FIVECAT['gmv_cancel']:,} + 待确认¥{FIVECAT['gmv_unclear']:,} = ¥{FIVECAT['gmv_pay']:,}")
+
+# ============================================================
+# 6. 注入到HTML模板
+# ============================================================
+print("💾 [6/6] 注入HTML...")
 
 with open(HTML_SRC, 'r', encoding='utf-8') as f:
     html = f.read()
@@ -235,6 +257,7 @@ replacements = {
     'M4_MONTHS': M4_MONTHS,
     'M4_TOTAL_GMV': M4_TOTAL_GMV,
     'M4_CAT_COLORS': M4_CAT_COLORS,
+    'FIVECAT': FIVECAT,
 }
 
 for var_name, data in replacements.items():
