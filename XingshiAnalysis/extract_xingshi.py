@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""醒狮运营分析看板 — 数据提取脚本（5模块美兰模板，单文件HTML）"""
+"""醒狮运营分析看板 — 数据提取脚本（5模块美兰模板，单文件HTML）
+v2.1: 统一合约入口
+"""
 import pandas as pd
-import json, re, os
+import json, re, os, sys
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-SRC = '/home/Vic/.hermes/tmp_data/醒狮数据源收集表.xlsx'
+# v2.1: 统一合约
+sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
+import contract_lib as cl
+_CFG = cl.load_store_config('醒狮')
+
+SRC = '/home/Vic/.hermes/tmp_data/sources/醒狮/latest.xlsx'
 OUT_FILE = '/home/Vic/dewu-reports/XingshiAnalysis/2026/index.html'
 BRAND = '醒狮'
 
@@ -186,8 +193,9 @@ print(f"   {len(TASK_RAW)} items")
 # ============================================================
 print("🚀 [5/6] 得物推...")
 push = pd.read_excel(SRC, sheet_name='得物推数据-商品', engine='calamine')
-# 直接用子表最后一列「货号」，不再通过货盘表映射
-push = push[['时间','商品ID','消耗(元)','直接支付单量(单)','直接支付金额(元)','引导支付单量(单)','引导支付金额(元)','货号']].copy()
+# 动态匹配日期列（飞书列名可能为「时间」或「日期」）
+date_col = [c for c in push.columns if '日期' in str(c) or '时间' in str(c)][0]
+push = push[[date_col,'商品ID','消耗(元)','直接支付单量(单)','直接支付金额(元)','引导支付单量(单)','引导支付金额(元)','货号']].copy()
 push.columns = ['date_raw','gid','cost','do2','dgmv','io2','igmv','goods']
 push['goods'] = push['goods'].apply(ss)  # 直接用子表货号列
 push['date_str'] = push['date_raw'].apply(nd); push = push.dropna(subset=['date_str'])
@@ -279,7 +287,6 @@ HTML = r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta n
 </style></head><body>
 <h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 醒狮运营分析看板</h1>
 <div class="loading" id="loader"><span class="spinner"></span>数据加载中...</div>
-<div class="module"><h2>🏷️ 模块零：五分类看板</h2><div class="cards"><div class="card"><h3>📦 总支付单量</h3><div style="font-size:24px;font-weight:bold;color:#60a5fa" id="m0-pay">-</div></div><div class="card"><h3>💰 总支付GMV</h3><div style="font-size:24px;font-weight:bold;color:#34d399" id="m0-gmv">-</div></div><div class="card"><h3>📊 成熟退货率</h3><div style="font-size:24px;font-weight:bold;color:#f59e0b" id="m0-ret-rate">-</div></div><div class="card"><h3>📅 售后起始</h3><div style="font-size:24px;font-weight:bold;color:#94a3b8" id="m0-as-start">-</div></div></div><div class="chart-wrap" style="margin-top:16px"><canvas id="m0-chart"></canvas></div></div>
 <div class="module"><h2>📈 模块一：GMV / UV / 订单数 趋势</h2><div class="filters"><label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select><label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select><label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end"><label>货号搜索</label><input type="text" id="m1-goods" placeholder="输入货号..."></div><div class="chart-wrap"><canvas id="m1-chart"></canvas></div></div>
 <div class="module"><h2>🏆 模块二：TOP20 排行</h2><div class="filters"><label>日期筛选</label><input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end"><button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">刷新</button></div><div class="cards"><div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div><div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div><div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div></div></div>
 <div class="module"><h2>⚠️ 模块三：退货率异常警示</h2><div class="btn-group"><button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button><button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button><button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button></div><div class="scroll" style="max-height:360px"><table class="alert-table"><thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead><tbody id="m3-body"></tbody></table></div><div id="m3-nodata" class="no-data" style="display:none">✅ 未检测到退货率异常款式</div></div>
@@ -380,34 +387,11 @@ function updateM5(){
   var rs=as.map(function(r){var c=r.roi>=5?'roi-high':(r.roi>=2?'roi-mid':'roi-low'),a=r.roi>=5?'🔥 高效投放':r.roi>=3?'✅ 良好':r.roi>=1?'⚠️ 关注':r.orders>0?'🔻 低ROI':'⛔ 无转化';return'<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+c+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>'}).join('');
   document.getElementById('m5-body').innerHTML=rs
 }
-
-function initM0(){
-  document.getElementById('m0-pay').textContent=FIVECAT.n_pay?FIVECAT.n_pay.toLocaleString():'-';
-  document.getElementById('m0-gmv').textContent=FIVECAT.gmv_pay?'¥'+(FIVECAT.gmv_pay/10000).toFixed(1)+'w':'-';
-  document.getElementById('m0-ret-rate').textContent=FIVECAT.mature_return_rate!=null?FIVECAT.mature_return_rate+'%':'-';
-  document.getElementById('m0-as-start').textContent=FIVECAT.as_start||'-';
-  var daily=FIVECAT.daily_gmv||[];
-  if(!daily.length)return;
-  var dates=daily.map(function(d){return d.date});
-  var normal=daily.map(function(d){return d.gmv_normal||0});
-  var ret=daily.map(function(d){return d.gmv_ret||0});
-  var cancel=daily.map(function(d){return d.gmv_cancel||0});
-  var unclear=daily.map(function(d){return d.gmv_unclear||0});
-  if(m0Chart)m0Chart.destroy();
-  m0Chart=new Chart(document.getElementById('m0-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
-    {label:'正常',data:normal,backgroundColor:'rgba(96,165,250,0.7)',borderColor:'#60a5fa',borderWidth:1},
-    {label:'退货',data:ret,backgroundColor:'rgba(248,113,113,0.7)',borderColor:'#f87171',borderWidth:1},
-    {label:'取消',data:cancel,backgroundColor:'rgba(251,191,36,0.7)',borderColor:'#fbbf24',borderWidth:1},
-    {label:'不明确',data:unclear,backgroundColor:'rgba(148,163,184,0.7)',borderColor:'#94a3b8',borderWidth:1}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': ¥'+(ctx.raw/10000).toFixed(1)+'w'}}}},scales:{x:{stacked:true,ticks:{color:'#64748b',maxTicksLimit:15}},y:{stacked:true,ticks:{color:'#60a5fa',callback:function(v){return (v/10000).toFixed(0)+'w'}}}}}});
-}
-
 window.addEventListener('load',function(){loadAll().then(function(){
   try{initM1()}catch(e){console.error('M1:',e)}
   try{initM2()}catch(e){console.error('M2:',e)}
   try{renderM3()}catch(e){console.error('M3:',e)}
   try{initM4()}catch(e){console.error('M4:',e)}
-  try{initM0()}catch(e){console.error('M0:',e)}
   try{initM5()}catch(e){console.error('M5:',e)}
 }).catch(function(e){document.getElementById('loader').textContent='❌ 数据加载失败，请刷新重试';console.error(e)})});
 </script></body></html>'''

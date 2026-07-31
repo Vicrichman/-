@@ -13,38 +13,38 @@ MATURE_DAYS = 45
 # ── 店铺配置 ──
 STORE_CONFIG = {
     '醒狮': {
-        'src': '/home/Vic/.hermes/tmp_data/醒狮数据.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/醒狮/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（元）',
         'gmv_states': ['待平台发货','待平台收货','待卖家发货','待买家收货','交易成功','交易关闭成功'],
     },
     '美兰': {
-        'src': '/home/Vic/.hermes/tmp_data/美兰数据.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/美兰/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（元）',
         'gmv_states': ['待平台发货','待平台收货','待卖家发货','待买家收货','交易成功','交易关闭成功'],
     },
     '喜过': {
-        'src': '/home/Vic/.hermes/tmp_data/喜过数据.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/喜过/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（元）',
         'gmv_states': ['待平台发货','待平台收货','待卖家发货','待买家收货','交易成功','交易关闭成功'],
     },
     '蓄势': {
-        'src': '/home/Vic/.hermes/tmp_data/蓄势数据.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/蓄势/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（元）',
         'gmv_states': ['待平台发货','待平台收货','待卖家发货','待买家收货','交易成功','交易关闭成功'],
     },
     '梦特娇': {
-        'src': '/home/Vic/.hermes/tmp_data/梦特娇数据.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/梦特娇/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（元）',
         'gmv_states': ['已发货','交易成功','交易关闭成功'],
         'no_as_fields': True,
     },
     '柏治廷': {
-        'src': '/home/Vic/.hermes/tmp_data/baizhiting_latest.xlsx',
+        'src': '/home/Vic/.hermes/tmp_data/sources/柏治廷/latest.xlsx',
         'tx_sheet': '交易订单', 'as_sheet': '售后订单',
         'gmv_col': '出价金额（）',
         'gmv_states': ['待平台发货','待平台收货','待卖家发货','待买家收货','交易成功','交易关闭成功','待物流揽收'],

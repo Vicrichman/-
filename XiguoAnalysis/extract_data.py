@@ -17,9 +17,25 @@ import sys
 
 EXCEL_PATH = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
 START_DATE = "2025-05-01"
-END_DATE = "2026-06-28"
-BRANDS = ["CASIO/卡西欧", "COACH/蔻驰"]
-BRAND_SHORT = {"CASIO/卡西欧": "卡西欧", "COACH/蔻驰": "蔻驰"}
+END_DATE = None  # Dynamic: auto-detected from latest transaction data
+
+def standardize_brand(raw):
+    """Dynamic brand normalization — no whitelist."""
+    if raw is None or (isinstance(raw, float) and raw != raw):
+        return "未分类品牌"
+    s = str(raw).strip()
+    if s in ("", "-", "/", "暂无"):
+        return "未分类品牌"
+    sup = s.upper()
+    if "CASIO" in sup or "卡西欧" in s: return "CASIO/卡西欧"
+    if "COACH" in sup or "蔻驰" in s: return "COACH/蔻驰"
+    if "SWATCH" in sup or "斯沃琪" in s: return "SWATCH/斯沃琪"
+    if "GIVENCHY" in sup or "纪梵希" in s: return "Givenchy/纪梵希"
+    return s
+
+def brand_short(std_brand):
+    mapping = {"CASIO/卡西欧":"卡西欧","COACH/蔻驰":"蔻驰","SWATCH/斯沃琪":"斯沃琪","Givenchy/纪梵希":"纪梵希","未分类品牌":"未分类品牌"}
+    return mapping.get(std_brand, std_brand)
 
 def excel_to_date(serial):
     """Convert Excel date serial or string to YYYY-MM-DD string"""
@@ -52,6 +68,28 @@ def date_to_month(date_str):
 
 print("Loading workbook...", file=sys.stderr)
 wb = openpyxl.load_workbook(EXCEL_PATH, data_only=True)
+
+# ============================================================
+# 0. Dynamic brand discovery + END_DATE auto-detection
+# ============================================================
+ws_orders_brand = wb["交易订单"]
+brand_col_ord = 8
+raw_brands = set()
+all_dates_set = set()
+for r in range(2, min(ws_orders_brand.max_row + 1, 5000)):
+    b = ws_orders_brand.cell(r, brand_col_ord).value
+    if b is not None: raw_brands.add(str(b).strip())
+    d = excel_to_date(ws_orders_brand.cell(r, 21).value) # 订单状态 col
+    if d: all_dates_set.add(d)
+END_DATE = max(all_dates_set) if all_dates_set else "2026-07-28"
+
+DYNAMIC_BRANDS = set()
+for b in raw_brands:
+    DYNAMIC_BRANDS.add(brand_short(standardize_brand(b)))
+ALL_BRANDS_LIST = sorted(DYNAMIC_BRANDS)
+print(f"Discovered {len(raw_brands)} raw brands → {len(ALL_BRANDS_LIST)} standard: {ALL_BRANDS_LIST}", file=sys.stderr)
+print(f"Date range: {START_DATE} ~ {END_DATE}", file=sys.stderr)
+# ============================================================
 
 # ============================================================
 # 1. 大盘指数 (日韩表 + 单肩包)
@@ -94,9 +132,10 @@ for r in range(2, ws.max_row + 1):
     spuid = ws.cell(r, 1).value
     name = ws.cell(r, 2).value
     brand = ws.cell(r, 5).value
-    if spuid and brand in BRANDS:
+    if spuid and brand is not None:
+        std_brand = standardize_brand(brand)
         try:
-            spu_brand[int(spuid)] = BRAND_SHORT[brand]
+            spu_brand[int(spuid)] = std_brand
             spu_name[int(spuid)] = str(name)
         except (ValueError, TypeError):
             pass
@@ -137,7 +176,16 @@ amount_col = 11
 qty_col = 10
 huohao_col = 6  # 货号
 
-VALID_STATUSES = ["交易成功", "待发货", "待收货", "待买家收货", "待平台发货", "待卖家发货", "待平台收货"]
+# ============================================================
+# v2.1: 统一合约入口 — 状态集从 store_config 读取，禁止硬编码
+# ============================================================
+import sys as _sys
+_sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
+import contract_lib as _cl
+_CFG = _cl.load_store_config('喜过')
+VALID_STATUSES = list(_cl.get_paid_states(_CFG))
+EXCLUDED_STATUSES = list(_cl.get_excluded_states(_CFG))
+# ============================================================
 
 orders_monthly = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders": 0}))
 orders_by_spu = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders": 0}))
@@ -159,10 +207,10 @@ for r in range(2, ws.max_row + 1):
         dt = ws.cell(r, col_order_time).value
         date_str = excel_to_date(dt)
     
-    if not (spuid and amount and brand in BRANDS and status in VALID_STATUSES and date_str and in_range(date_str)):
+    if not (spuid and amount and status in VALID_STATUSES and date_str and in_range(date_str)):
         continue
-    
-    b = BRAND_SHORT[brand]
+    std_b = standardize_brand(brand)
+    b = brand_short(std_b)
     month = date_to_month(date_str)
     gmv = float(amount) * (ws.cell(r, qty_col).value or 1)
     
@@ -185,7 +233,7 @@ print(f"  Processed {processed} valid orders", file=sys.stderr)
 
 # Convert to sorted lists
 orders_monthly_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     orders_monthly_out[brand] = {}
     for m in sorted(orders_monthly[brand].keys()):
         orders_monthly_out[brand][m] = {
@@ -194,7 +242,7 @@ for brand in BRAND_SHORT.values():
         }
 
 orders_by_spu_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     spus = []
     for spu_name_key, data in sorted(orders_by_spu[brand].items(), key=lambda x: -x[1]["gmv"]):
         spus.append({
@@ -252,10 +300,10 @@ for r in range(2, ws.max_row + 1):
     date_cell = ws.cell(r, 2).value
     date_str = excel_to_date(date_cell)
     
-    if not (spuid and brand in BRANDS and date_str and in_range(date_str)):
+    if not (spuid and brand is not None and date_str and in_range(date_str)):
         continue
     
-    b = BRAND_SHORT[brand]
+    b = brand_short(standardize_brand(brand))
     month = date_to_month(date_str)
     
     uv = ws.cell(r, uv_col).value if uv_col else 0
@@ -299,7 +347,7 @@ for r in range(2, ws.max_row + 1):
 print(f"  UV processed {uv_processed} records", file=sys.stderr)
 
 uv_monthly_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     uv_monthly_out[brand] = {}
     for m in sorted(uv_monthly[brand].keys()):
         uv_monthly_out[brand][m] = {
@@ -309,7 +357,7 @@ for brand in BRAND_SHORT.values():
         }
 
 uv_by_spu_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     uv_by_spu_out[brand] = {}
     for spu_key, data in uv_by_spu[brand].items():
         uv_by_spu_out[brand][spu_key] = {
@@ -322,7 +370,7 @@ for brand in BRAND_SHORT.values():
 # 5. 得物推数据 - 按月汇总（双源品牌匹配：货盘表 + 交易订单）
 # ============================================================
 print("5. Extracting 得物推数据...", file=sys.stderr)
-ws = wb["得物推数据"]
+ws = wb["得物推数据-商品"]
 # Headers (0-indexed): 时间, 用户ID, 计划名称, 计划ID, 计划类型, 优化目标, 商品ID2, 消耗(元), ...
 # openpyxl 1-indexed: col 1=时间, col 7=商品ID2, col 8=消耗(元), col 15=直接支付单量, col 16=直接支付金额, col 17=引导支付单量, col 18=引导支付金额
 push_header = {}
@@ -348,9 +396,9 @@ brand_col_ord = 8
 for r in range(2, ws_orders.max_row + 1):
     spuid = ws_orders.cell(r, spu_id_col_ord).value
     brand = ws_orders.cell(r, brand_col_ord).value
-    if spuid and brand in BRANDS:
+    if spuid and brand is not None:
         try:
-            spu_brand_from_orders[int(spuid)] = BRAND_SHORT[brand]
+            spu_brand_from_orders[int(spuid)] = brand_short(standardize_brand(brand))
         except (ValueError, TypeError):
             pass
 print(f"  Orders SPU→brand mapping: {len(spu_brand_from_orders)} SPUs", file=sys.stderr)
@@ -411,7 +459,7 @@ for r in range(2, ws.max_row + 1):
 print(f"  Push processed {push_processed} records (daily: {len(push_daily)})", file=sys.stderr)
 
 push_monthly_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     push_monthly_out[brand] = {m: round(v, 2) for m, v in sorted(push_monthly[brand].items())}
 
 # ============================================================
@@ -481,7 +529,7 @@ for r in range(2, ws.max_row + 1):
 print(f"  Comm processed {comm_processed} records", file=sys.stderr)
 
 comm_monthly_out = {}
-for brand in BRAND_SHORT.values():
+for brand in ALL_BRANDS_LIST:
     comm_monthly_out[brand] = {}
     for m in sorted(comm_monthly[brand].keys()):
         comm_monthly_out[brand][m] = {
@@ -616,15 +664,44 @@ output = {
     "comm_tasks": comm_tasks
 }
 
-# Write as data.js
+# Write as data.js (SAFE ATOMIC VERSION — 2026-07-30 authorized)
 OUTPUT_PATH = "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
-with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-    f.write("var D=")
-    json.dump(output, f, ensure_ascii=False, separators=(",", ":"))
-    f.write(";\n")
+
+# Step 1: 序列化到临时文件并落盘
+import hashlib as _hashlib
+json_str = json.dumps(output, ensure_ascii=False, separators=(",", ":"))
+_file_content = "var D=" + json_str + ";\n"
+tmp_path = OUTPUT_PATH + ".tmp"
+
+with open(tmp_path, "w", encoding="utf-8") as f:
+    f.write(_file_content)
+    f.flush()
+    __import__('os').fsync(f.fileno())
+
+# Step 2: 重新读取并验证完整性
+with open(tmp_path, "r", encoding="utf-8") as f:
+    _written = f.read()
+
+_bo = _written.count("{")
+_bc = _written.count("}")
+assert _bo == _bc, f"FATAL: data.js bracket mismatch {{{_bo} vs {_bc}}}"
+assert _written.startswith("var D="), "FATAL: data.js missing var D= prefix"
+assert _written.rstrip().endswith("};"), f"FATAL: data.js bad terminator: {repr(_written[-20:])}"
+
+# Step 3: 验证JSON载荷
+_json_extracted = _written[_written.index("{"):_written.rindex("};")+1]
+_parsed = json.loads(_json_extracted)
+assert "months" in _parsed, "FATAL: data.js missing months field"
+assert "orders_monthly" in _parsed, "FATAL: data.js missing orders_monthly field"
+
+# Step 4: 原子替换
+_sha = _hashlib.sha256(_written.encode("utf-8")).hexdigest()
+__import__('os').rename(tmp_path, OUTPUT_PATH)
 
 print(f"\n✅ Written to {OUTPUT_PATH}", file=sys.stderr)
-print(f"  Size: {len(json.dumps(output, ensure_ascii=False))} chars", file=sys.stderr)
+print(f"  Size: {len(json_str)} chars, File: {len(_written)} bytes", file=sys.stderr)
+print(f"  SHA256: {_sha[:16]}...", file=sys.stderr)
+print(f"  Brackets: {_bo}/{_bc} OK, JSON valid: OK", file=sys.stderr)
 print(f"  Market records: {len(market_data)}", file=sys.stderr)
 print(f"  Months: {months_list}", file=sys.stderr)
 
@@ -635,3 +712,56 @@ print(f"  Months: {months_list}", file=sys.stderr)
 #   - huohao_daily
 # Run the pandas supplement script to inject these:
 #   python3 /home/Vic/dewu-reports/XiguoAnalysis/supplement_data.py
+
+# ============================================================
+# 8. 五分类提取 (extract_fivecat)
+# ============================================================
+def extract_fivecat(store_name='喜过'):
+    """
+    从交易订单和售后订单中提取五分类数据：
+    正常、退货、取消、不明确 四个分类的GMV/订单数
+    以及成熟退货率等KPI指标
+    """
+    import sys as _sys
+    _sys.path.insert(0, '/home/Vic/dewu-reports')
+    from extract_fivecat import classify_store, STORE_CONFIG
+    fc = classify_store(store_name, STORE_CONFIG[store_name])
+    
+    fivecat = {
+        'n_pay': fc['n_pay'],
+        'gmv_pay': fc['gmv_pay'],
+        'mature_return_rate': fc['mature_return_rate'],
+        'as_start': fc['as_start'],
+        'n_ret': fc['n_ret'],
+        'gmv_ret': fc['gmv_ret'],
+        'n_cancel': fc['n_cancel'],
+        'gmv_cancel': fc['gmv_cancel'],
+        'n_unclear': fc['n_unclear'],
+        'gmv_unclear': fc['gmv_unclear'],
+        'n_normal': fc['n_normal'],
+        'gmv_normal': fc['gmv_normal'],
+        'refund_total': fc['refund_total'],
+        'n_reliable_mature': fc['n_reliable_mature'],
+        'n_reliable_ret': fc['n_reliable_ret'],
+        'daily_gmv': fc['daily_gmv'],
+    }
+    
+    print(f"  五分类: pay={fivecat['n_pay']}, gmv={fivecat['gmv_pay']:.0f}, "
+          f"mature_rate={fivecat['mature_return_rate']}%, "
+          f"ret={fivecat['n_ret']}, cancel={fivecat['n_cancel']}, "
+          f"unclear={fivecat['n_unclear']}, normal={fivecat['n_normal']}", file=_sys.stderr)
+    
+    return fivecat
+
+# Extract and write fivedata.js
+print("\n8. Extracting 五分类...", file=sys.stderr)
+FIVECAT = extract_fivecat('喜过')
+
+FIVECAT_PATH = "/home/Vic/dewu-reports/XiguoAnalysis/2026/fivedata.js"
+with open(FIVECAT_PATH, "w", encoding="utf-8") as f:
+    f.write("const FIVECAT = ")
+    json.dump(FIVECAT, f, ensure_ascii=False, separators=(",", ":"))
+    f.write(";\n")
+
+print(f"✅ Written fivedata.js to {FIVECAT_PATH}", file=sys.stderr)
+print(f"  Size: {len(json.dumps(FIVECAT, ensure_ascii=False))} chars", file=sys.stderr)

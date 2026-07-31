@@ -10,6 +10,7 @@ Usage: python3 supplement_data.py
 Requirements: pip install pandas python-calamine
 """
 import pandas as pd
+import sys
 import json
 import re
 import os
@@ -17,13 +18,28 @@ from collections import defaultdict
 
 EXCEL = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
 DATA_JS = "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
-BRANDS_LIST = ["CASIO/卡西欧", "COACH/蔻驰"]
-BRAND_SHORT = {"CASIO/卡西欧": "卡西欧", "COACH/蔻驰": "蔻驰"}
 START_DATE = "2025-05-01"
-END_DATE = "2026-06-28"
+
+def standardize_brand(raw):
+    if raw is None or (isinstance(raw, float) and raw != raw): return "未分类品牌"
+    s = str(raw).strip()
+    if s in ("", "-", "/", "暂无"): return "未分类品牌"
+    sup = s.upper()
+    if "CASIO" in sup or "卡西欧" in s: return "CASIO/卡西欧"
+    if "COACH" in sup or "蔻驰" in s: return "COACH/蔻驰"
+    if "SWATCH" in sup or "斯沃琪" in s: return "SWATCH/斯沃琪"
+    if "GIVENCHY" in sup or "纪梵希" in s: return "Givenchy/纪梵希"
+    return s
+def brand_short(std): return {"CASIO/卡西欧":"卡西欧","COACH/蔻驰":"蔻驰","SWATCH/斯沃琪":"斯沃琪","Givenchy/纪梵希":"纪梵希","未分类品牌":"未分类品牌"}.get(std,std)
+
+# Dynamic brand discovery from extract's output
+sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
+import contract_lib as _cl2
+_CFG2 = _cl2.load_store_config('喜过')
+VALID_STATUSES = list(_cl2.get_paid_states(_CFG2))
 
 def in_range(d):
-    return d and START_DATE <= str(d)[:10] <= END_DATE
+    return d and str(d)[:10] >= START_DATE
 
 def clean_num(v):
     if v is None or (isinstance(v, float) and pd.isna(v)):
@@ -36,10 +52,33 @@ def clean_num(v):
 
 # 1. Read existing data.js
 print("1. Reading existing data.js...")
+# SAFE: pre-validate data.js before processing
+if not os.path.exists(DATA_JS):
+    raise SystemExit(f"FATAL: data.js not found: {DATA_JS}")
+
 with open(DATA_JS, 'r', encoding='utf-8') as f:
     content = f.read()
+
+if len(content) == 0:
+    raise SystemExit("FATAL: data.js is empty")
+if not content.startswith("var D="):
+    raise SystemExit("FATAL: data.js missing var D= prefix")
+if not content.rstrip().endswith("};"):
+    raise SystemExit(f"FATAL: data.js bad terminator: {repr(content[-20:])}")
+
+_bo = content.count("{")
+_bc = content.count("}")
+if _bo != _bc:
+    raise SystemExit(f"FATAL: data.js bracket mismatch {{{_bo} vs {_bc}}}")
+
 json_str = content[content.index('{'):content.rindex('};')+1]
-D = json.loads(json_str)
+try:
+    D = json.loads(json_str)
+except json.JSONDecodeError as e:
+    raise SystemExit(f"FATAL: data.js JSON parse failed: {e}")
+
+if "months" not in D or "orders_monthly" not in D:
+    raise SystemExit("FATAL: data.js missing required fields")
 
 # 2. Build SPU->brand mapping
 print("2. Building SPU→brand mapping...")
@@ -48,8 +87,8 @@ spu_brand, spu_name = {}, {}
 for _, row in df_huopan.iterrows():
     spuid, name, brand = row.iloc[0], row.iloc[1], row.iloc[4]
     try:
-        if brand in BRANDS_LIST:
-            spu_brand[int(spuid)] = BRAND_SHORT[brand]
+        if brand is not None:
+            spu_brand[int(spuid)] = brand_short(standardize_brand(brand))
             spu_name[int(spuid)] = str(name)
     except (ValueError, TypeError):
         pass
@@ -66,7 +105,7 @@ for i, c in enumerate(df_orders.columns):
     elif "支付时间" in cn or "付款时间" in cn: col_pay_time = i
     elif "订单创建时间" in cn or "下单时间" in cn: col_order_time = i
 
-VALID_STATUSES = ["交易成功", "待发货", "待收货", "待买家收货", "待平台发货", "待卖家发货", "待平台收货"]
+VALID_STATUSES = list(_cl2.get_paid_states(_CFG2))  # from contract_lib
 
 huohao_daily = defaultdict(list)
 processed = 0
@@ -79,17 +118,17 @@ for _, row in df_orders.iterrows():
     if not date_str and col_order_time is not None:
         dt = row.iloc[col_order_time]
         if pd.notna(dt): date_str = str(dt)[:10]
-    if not (pd.notna(spuid) and pd.notna(brand) and brand in BRANDS_LIST and 
+    if not (pd.notna(spuid) and pd.notna(brand) and brand is not None and 
             str(status).strip() in VALID_STATUSES and date_str and in_range(date_str)):
         continue
-    b = BRAND_SHORT[brand]
+    b = brand_short(standardize_brand(brand))
     amount = float(row.iloc[10]) if pd.notna(row.iloc[10]) else 0
     qty = int(row.iloc[9]) if pd.notna(row.iloc[9]) else 1
     gmv = amount * qty
     hh = str(row.iloc[5]).strip() if pd.notna(row.iloc[5]) else "—"
     huohao_daily[b].append({"date": date_str[:10], "huohao": hh, "gmv": round(gmv, 2), "orders": 1})
     processed += 1
-print(f"   Processed {processed} orders ({', '.join(f'{b}:{len(huohao_daily[b])}' for b in BRAND_SHORT.values())})")
+print(f"   Processed {processed} orders ({', '.join(f'{b}:{len(huohao_daily[b])}' for b in sorted(huohao_daily.keys()))})")
 
 # 4. uv_daily_by_brand + uv_spu_data from 商详访客数据
 print("4. Building UV data from 商详访客数据...")
@@ -102,9 +141,9 @@ for _, row in df_uv.iterrows():
     date_str = str(row.iloc[1])[:10] if pd.notna(row.iloc[1]) else None
     spuid, brand = row.iloc[2], row.iloc[5]
     huohao = str(row.iloc[4]).strip() if pd.notna(row.iloc[4]) else ""
-    if not (pd.notna(spuid) and brand in BRANDS_LIST and date_str and in_range(date_str)):
+    if not (pd.notna(spuid) and brand is not None and date_str and in_range(date_str)):
         continue
-    b = BRAND_SHORT[brand]
+    b = brand_short(standardize_brand(brand))
     uv_val = int(clean_num(row.iloc[11]))
     pay_amt = clean_num(row.iloc[9])
     pay_ord = int(clean_num(row.iloc[10]))
@@ -118,7 +157,7 @@ print(f"   UV processed {uv_processed} records")
 
 # Aggregate uv_daily_by_brand
 uv_daily_out = {}
-for brand in BRAND_SHORT.values():
+for brand in sorted(huohao_daily.keys()):
     dm = defaultdict(lambda: {"uv": 0, "gmv": 0.0, "orders": 0})
     for d in uv_daily_raw[brand]:
         dm[d["date"]]["uv"] += d["uv"]
@@ -129,7 +168,7 @@ for brand in BRAND_SHORT.values():
 
 # Build uv_spu_data
 uv_spu_out = {}
-for brand in BRAND_SHORT.values():
+for brand in sorted(huohao_daily.keys()):
     spus = []
     for spu_key, data in uv_spu_raw[brand].items():
         total_uv = sum(d["uv"] for d in data["daily"])
@@ -143,15 +182,36 @@ for brand in BRAND_SHORT.values():
 
 # 5. Merge and write
 print("5. Merging and writing data.js...")
-D["huohao_daily"] = {b: huohao_daily[b] for b in BRAND_SHORT.values()}
+D["huohao_daily"] = {b: huohao_daily[b] for b in sorted(huohao_daily.keys())}
 D["uv_daily_by_brand"] = uv_daily_out
 D["uv_spu_data"] = uv_spu_out
 
-with open(DATA_JS, 'w', encoding='utf-8') as f:
-    f.write("var D=")
-    json.dump(D, f, ensure_ascii=False, separators=(",", ":"))
-    f.write(";\n")
+# SAFE ATOMIC WRITE (2026-07-30 authorized)
+import hashlib as _h2
+_out = json.dumps(D, ensure_ascii=False, separators=(",", ":"))
+_tmp = DATA_JS + ".supp_tmp"
+
+with open(_tmp, "w", encoding="utf-8") as f:
+    f.write("var D=" + _out + ";\n")
+    f.flush()
+    __import__('os').fsync(f.fileno())
+
+# Verify written file
+with open(_tmp, "r", encoding="utf-8") as f:
+    _written = f.read()
+_bo2 = _written.count("{")
+_bc2 = _written.count("}")
+assert _bo2 == _bc2, f"FATAL: supplement output bracket mismatch {{{_bo2} vs {_bc2}}}"
+assert _written.startswith("var D="), "FATAL: supplement missing var D="
+assert _written.rstrip().endswith("};"), "FATAL: supplement bad terminator"
+
+# Validate JSON
+json.loads(_written[_written.index("{"):_written.rindex("};")+1])
+
+# Atomic rename
+_sha = _h2.sha256(_written.encode()).hexdigest()
+__import__('os').rename(_tmp, DATA_JS)
 
 size_mb = os.path.getsize(DATA_JS) / (1024*1024)
-print(f"   Written: {size_mb:.1f}MB, keys: {list(D.keys())}")
+print(f"   Written: {size_mb:.1f}MB, SHA256: {_sha[:16]}..., keys: {list(D.keys())}")
 print("✅ Supplement complete!")

@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""柏治廷运营分析看板 — 数据提取+模板注入脚本"""
+"""柏治廷运营分析看板 — 数据提取+模板注入脚本
+v2.1: 统一合约入口
+"""
 import pandas as pd
-import json, re, os
+import json, re, os, sys
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-SRC = '/home/Vic/.hermes/tmp_data/baizhiting_latest.xlsx'
+# v2.1: 统一合约
+sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
+import contract_lib as cl
+_CFG = cl.load_store_config('柏治廷')
+
+SRC = '/home/Vic/.hermes/tmp_data/sources/柏治廷/latest.xlsx'
 HTML_SRC = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
 HTML_OUT = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
 
