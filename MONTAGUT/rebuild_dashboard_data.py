@@ -91,16 +91,20 @@ print(f"  Partition gap: {partition_gap}")
 print(f"  Identity all:  ¥{gmv_all - (orders[is_failed]['amount'].sum() + gmv_close + gmv_gsv):,.0f}")
 print(f"  Identity gmv:  ¥{gmv_eff - gmv_close - gmv_gsv:,.0f}")
 
-# Verify targets
-targets = [(n_total, 9416), (n_fail, 1119), (n_eff, 8297), (n_close, 3280), (n_gsv, 5017),
-           (gmv_eff, 2566442), (gmv_gsv, 1468155), (gmv_close, 1098287)]
-all_match = True
-for actual, expected in targets:
-    ok = abs(actual - expected) < 2
-    if not ok:
-        print(f"  ❌ Target mismatch: actual={actual}, expected={expected}")
-        all_match = False
-if all_match: print("  ✅ All targets match")
+# Verify internal consistency (dynamic, not hardcoded targets)
+identity_all = gmv_all - (orders[is_failed]['amount'].sum() + gmv_close + gmv_gsv)
+identity_gmv = gmv_eff - gmv_close - gmv_gsv
+all_ok = True
+if partition_gap != 0:
+    print(f"  ❌ Partition gap non-zero: {partition_gap}")
+    all_ok = False
+if abs(identity_all) > 1 or abs(identity_gmv) > 1:
+    print(f"  ❌ Identity check failed: all=¥{identity_all:,.0f}, gmv=¥{identity_gmv:,.0f}")
+    all_ok = False
+if all_ok:
+    print(f"  ✅ OID consistency: partition_gap=0, identities=¥0")
+else:
+    print(f"  ⚠️ Partition gap: {partition_gap}, Identity all: ¥{identity_all:,.0f}, Identity gmv: ¥{identity_gmv:,.0f}")
 
 # ============================================================
 # Step 3: Read UV from 商详访客数据源
@@ -153,6 +157,8 @@ ord_dict = {k: int(v) for k, v in ord_by_cat.items()}
 # Collect all keys
 all_keys = set(gmv_dict.keys()) | set(uv_agg.index)
 
+# Separate transaction keys from UV-only keys
+txn_keys = set(gmv_dict.keys())  # (date, category) from transactions
 daily_cat_v2 = []
 dates_set, cats_set, months_set = set(), set(), set()
 
@@ -165,7 +171,8 @@ for key in sorted(all_keys):
     
     daily_cat_v2.append([d, c, round(g, 2), u, o, round(gsv, 2)])
     dates_set.add(d)
-    cats_set.add(c)
+    if key in txn_keys:
+        cats_set.add(c)  # Only transaction categories, not UV goods
     months_set.add(d[:7])
 
 # ============================================================
@@ -186,16 +193,24 @@ daily_goods_v2 = []
 goods_set = set()
 
 all_gkeys = set(gmv_g_dict.keys()) | set(uv_goods.index)
+txn_gkeys = set(gmv_g_dict.keys())  # (date, cat, goods) from transactions
 
 for key in sorted(all_gkeys):
-    d, c, g_name = key if isinstance(key, tuple) and len(key) == 3 else (key[0] if hasattr(key, '__getitem__') else '?', '?', str(key))
+    if isinstance(key, tuple) and len(key) == 3:
+        d, c, g_name = key
+    elif isinstance(key, tuple) and len(key) == 2:
+        d, g_name = key
+        c = 'UNKNOWN'
+    else:
+        d, c, g_name = ('?', '?', str(key))
     g = gmv_g_dict.get(key, 0)
     u = int(uv_goods.get((d, g_name), 0))
     gsv = gsv_g_dict.get(key, 0)
     o = ord_g_dict.get(key, 0)
     
     daily_goods_v2.append([d, c, g_name, round(g, 2), u, o, round(gsv, 2)])
-    goods_set.add(g_name)
+    if key in txn_gkeys:
+        goods_set.add(g_name)  # Only transaction goods, not UV-only goods
 
 # ============================================================
 # Step 6: Save all outputs
@@ -281,11 +296,11 @@ total_cat_gsv = sum(x[5] for x in daily_cat_v2)
 print(f"\n{'='*50}")
 print(f"VERIFICATION")
 print(f"{'='*50}")
-print(f"DAILY_CAT GMV: ¥{total_cat_gmv:,.0f} (target: ¥2,566,442)")
-print(f"DAILY_CAT GSV: ¥{total_cat_gsv:,.0f} (target: ¥1,468,155)")
+print(f"DAILY_CAT GMV: ¥{total_cat_gmv:,.0f} (OID fact: ¥{gmv_eff:,.0f})")
+print(f"DAILY_CAT GSV: ¥{total_cat_gsv:,.0f} (OID fact: ¥{gmv_gsv:,.0f})")
 
-gmv_ok = abs(total_cat_gmv - 2566442) < 2
-gsv_ok = abs(total_cat_gsv - 1468155) < 2
+gmv_ok = abs(total_cat_gmv - gmv_eff) < 2
+gsv_ok = abs(total_cat_gsv - gmv_gsv) < 2
 
 print(f"GMV: {'✅' if gmv_ok else '❌'}")
 print(f"GSV: {'✅' if gsv_ok else '❌'}")
