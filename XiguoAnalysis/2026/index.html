@@ -155,7 +155,7 @@ function initM1() {
   if (ALL_MONTHS.length >= 3) { fromSel.value = ALL_MONTHS[ALL_MONTHS.length-3]; toSel.value = ALL_MONTHS[ALL_MONTHS.length-1]; }
 
   var brandSel = document.getElementById('m1-brand');
-  FIVECAT.all_brands.forEach(function(b) {
+  ALL_BRANDS.forEach(function(b) {
     var o=document.createElement('option'); o.value=b; o.textContent=b; o.selected=true; brandSel.appendChild(o);
   });
 
@@ -183,7 +183,7 @@ function updateM1() {
   var matchSpuids = [];
   if (goodsFilter) {
     var matchSet = new Set();
-    FIVECAT.spuid_data.forEach(function(s) {
+    (typeof FIVECAT !== "undefined" && FIVECAT.spuid_data || []).forEach(function(s) {
       if ((s.spuid && s.spuid.toUpperCase().indexOf(goodsFilter)>=0) ||
           (s.goods && s.goods.toUpperCase().indexOf(goodsFilter)>=0)) {
         matchSet.add(s.brand);
@@ -194,7 +194,7 @@ function updateM1() {
   }
 
   // --- Filter FIVECAT.daily_brand by date + brand ---
-  var filtered = FIVECAT.daily_brand.filter(function(r) {
+  var filtered = (typeof FIVECAT !== "undefined" ? (FIVECAT.daily_brand || []) : []).filter(function(r) {
     if (isMonthly) {
       var rm = r.pay_date.substring(0,7);
       if (rm < mFrom || rm > mTo) return false;
@@ -383,7 +383,8 @@ function updateM1() {
   });
 
   // --- Info line ---
-  var info = '成熟退货率: ' + FIVECAT.mature_return_rate + '% | 售后起始: ' + FIVECAT.as_start + ' | 总支付GMV: ¥' + fmt(FIVECAT.gmv_pay) + ' | 总支付单量: ' + fmt(FIVECAT.n_pay);
+  var fmr = (typeof FIVECAT !== 'undefined') ? (FIVECAT.mature_return_rate || '—') : '—';
+  var info = '成熟退货率: ' + fmr + '% | 售后起始: ' + FIVECAT.as_start + ' | 总支付GMV: ¥' + fmt((typeof FIVECAT !== 'undefined') ? (FIVECAT.gmv_pay || 0) : 0) + ' | 总支付单量: ' + fmt((typeof FIVECAT !== 'undefined') ? (FIVECAT.n_pay || 0) : 0);
   if (matchSpuids.length > 0) info += ' | 匹配货号: ' + matchSpuids.join(', ') + (matchSpuids.length >= 10 ? ' ...' : '');
   document.getElementById('m1-info').textContent = info;
 }

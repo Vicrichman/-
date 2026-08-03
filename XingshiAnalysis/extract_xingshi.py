@@ -10,10 +10,25 @@ from collections import defaultdict
 # v2.1: 统一合约
 sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
 import contract_lib as cl
+# === M1 LINEAGE FIX: unified OID fact table ===
+import sys as _sys
+_sys.path.insert(0, '/home/Vic/dewu-reports')
+from m1_txn_bridge import build_m1_data as _build_m1
+
 _CFG = cl.load_store_config('醒狮')
 
 SRC = '/home/Vic/.hermes/tmp_data/sources/醒狮/latest.xlsx'
 OUT_FILE = '/home/Vic/dewu-reports/XingshiAnalysis/2026/index.html'
+
+# ── output-dir support (dry-run isolation) ──
+import argparse as _ap, os as _os
+_args = _ap.ArgumentParser()
+_args.add_argument('--output-dir', default=None)
+_args, _ = _args.parse_known_args()
+if _args.output_dir:
+    OUT_FILE = _os.path.join(_args.output_dir, _os.path.basename(OUT_FILE))
+    assert _os.path.isdir(_args.output_dir), f"output-dir not found: {_args.output_dir}"
+
 BRAND = '醒狮'
 
 def cn(v):
@@ -52,35 +67,23 @@ def ss(v):
 print(f"📂 {SRC}")
 
 # ============================================================
-# 1. 商详访客 → DAILY_BRAND + DAILY_GOODS
-# ============================================================
-print("📊 [1/6] 商详访客...")
-uv = pd.read_excel(SRC, sheet_name='商详访客数据源', engine='calamine')
-uv = uv[['日期', '货号', '支付订单金额', '支付订单量', '商详访问指数（UV）']].copy()
-uv.columns = ['date_raw', 'goods', 'gmv', 'orders', 'uv']
-uv['date_str'] = uv['date_raw'].apply(nd)
-uv = uv.dropna(subset=['date_str'])
-uv['gmv'] = uv['gmv'].apply(cn)
-uv['orders'] = uv['orders'].apply(cn)
-uv['uv'] = uv['uv'].apply(cn)
-uv = uv[uv['goods'].apply(lambda x: ss(x) not in ['','nan'])]
+# 1. 交易订单 -> ALL M1 data (LINEAGE FIX: single OID table)
+print("M1 OID table ...")
+_m1 = _build_m1(SRC, '醒狮', '醒狮')
+DAILY_BRAND = _m1['DAILY_BRAND']
+DAILY_GOODS = _m1['DAILY_GOODS']
+ALL_DATES = _m1['ALL_DATES']
+ALL_GOODS = _m1['ALL_GOODS']
+ALL_MONTHS = _m1['ALL_MONTHS']
+FIVECAT = _m1['FIVECAT']
+_s = _m1['summary']
+print(f"   eff: {_s['effective_oids']} OIDs, gmv={_s['effective_gmv']:,.0f}")
+print(f"   gsv: {_s['gsv_oids']} OIDs, gmv={_s['gsv_gmv']:,.0f}")
+print(f"   fvd: pay={FIVECAT['n_pay']}, gmv={FIVECAT['gmv_pay']:,.0f}")
+print(f"   {len(DAILY_BRAND)} days, {len(DAILY_GOODS)} goods")
 
-# DAILY_BRAND
-db = uv.groupby('date_str').agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-db['brand'] = BRAND
-DAILY_BRAND = db[['date_str','brand','GMV','UV','orders']].to_dict('records')
+ALL_BRANDS = sorted(set(r.get('brand','') for r in DAILY_BRAND))
 
-# DAILY_GOODS
-dg = uv.groupby(['date_str','goods']).agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-dg['brand'] = BRAND
-DAILY_GOODS = dg.rename(columns={'goods':'商品货号'})[['date_str','brand','商品货号','GMV','UV','orders']].to_dict('records')
-
-ALL_DATES = sorted(set(r['date_str'] for r in DAILY_BRAND))
-ALL_GOODS = sorted(set(r['商品货号'] for r in DAILY_GOODS))
-ALL_MONTHS = sorted(set(d[:7] for d in ALL_DATES))
-print(f"   {len(DAILY_BRAND)} days, {len(DAILY_GOODS)} day-goods, {ALL_DATES[0]}~{ALL_DATES[-1]}")
-
-# ============================================================
 # 2. 交易订单 + 售后 → 退货率
 # ============================================================
 print("📦 [2/6] 交易+售后...")
@@ -225,13 +228,11 @@ for g,v in da.items():
 print(f"   PUSH_RAW:{len(PUSH_RAW)} DETUI_AGG:{len(DETUI_AGG)}")
 
 # ============================================================
-# 5.5 五分类数据（extract_fivecat 集成）
+# 5.5 五分类数据（from bridge OID fact table）
 # ============================================================
 print("🏷️ [5.5/6] 五分类...")
-import sys
-sys.path.insert(0, '/home/Vic/dewu-reports')
-from extract_fivecat import classify_store, STORE_CONFIG
-fc = classify_store('醒狮', STORE_CONFIG['醒狮'])
+# Use bridge FIVECAT (computed from same OID fact table)
+fc = _m1['FIVECAT']
 FIVECAT = {
     'n_pay': fc['n_pay'],
     'gmv_pay': fc['gmv_pay'],

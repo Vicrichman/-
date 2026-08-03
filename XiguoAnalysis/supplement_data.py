@@ -18,6 +18,16 @@ from collections import defaultdict
 
 EXCEL = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
 DATA_JS = "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
+
+# ── output-dir support ──
+import argparse as _ap, os as _os
+_args = _ap.ArgumentParser()
+_args.add_argument('--output-dir', default=None)
+_args, _ = _args.parse_known_args()
+if _args.output_dir:
+    assert _os.path.isdir(_args.output_dir), f"output-dir not found: {_args.output_dir}"
+    DATA_JS = _os.path.join(_args.output_dir, "data.js")
+
 START_DATE = "2025-05-01"
 
 def standardize_brand(raw):

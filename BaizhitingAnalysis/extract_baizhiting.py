@@ -3,6 +3,7 @@
 v2.1: 统一合约入口
 """
 import pandas as pd
+import argparse
 import json, re, os, sys
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -10,11 +11,26 @@ from collections import defaultdict
 # v2.1: 统一合约
 sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
 import contract_lib as cl
+# === M1 LINEAGE FIX: unified OID fact table ===
+import sys as _sys
+_sys.path.insert(0, '/home/Vic/dewu-reports')
+from m1_txn_bridge import build_m1_data as _build_m1
+
 _CFG = cl.load_store_config('柏治廷')
 
 SRC = '/home/Vic/.hermes/tmp_data/sources/柏治廷/latest.xlsx'
 HTML_SRC = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
 HTML_OUT = '/home/Vic/dewu-reports/BaizhitingAnalysis/2026/index.html'
+
+# ── output-dir support (dry-run isolation) ──
+_args = argparse.ArgumentParser()
+_args.add_argument('--output-dir', default=None, help='Isolated output directory (dry-run)')
+_args, _unknown = _args.parse_known_args()
+if _args.output_dir:
+    HTML_OUT = os.path.join(_args.output_dir, os.path.basename(HTML_OUT))
+    # HTML_SRC stays unchanged (template is read-only)
+    assert os.path.isdir(_args.output_dir), f"output-dir not found: {_args.output_dir}"
+
 
 def cn(v):
     if pd.isna(v): return 0.0
@@ -44,47 +60,25 @@ def ss(v):
 print(f"📂 {SRC}")
 
 # ============================================================
-# 1. 商详访客 → DAILY_BRAND + DAILY_GOODS (by date+cat)
-# ============================================================
-print("📊 [1/4] 商详访客...")
-uv = pd.read_excel(SRC, sheet_name='商详访客数据', engine='calamine')
-uv = uv[['日期', '商品货号', '支付金额', '支付订单数', '商详访问人数', '类目名称']].copy()
-uv.columns = ['date_raw', 'goods', 'gmv', 'orders', 'uv', 'cat_raw']
-uv['date_str'] = uv['date_raw'].apply(nd)
-uv = uv.dropna(subset=['date_str'])
-uv['gmv'] = uv['gmv'].apply(cn)
-uv['orders'] = uv['orders'].apply(cn)
-uv['uv'] = uv['uv'].apply(cn)
-uv = uv[uv['goods'].apply(lambda x: ss(x) not in ['','nan'])]
+# 1. 交易订单 -> ALL M1 data (LINEAGE FIX: single OID table)
+print("M1 OID table ...")
+_m1 = _build_m1(SRC, '柏治廷', '柏治廷')
+DAILY_BRAND = _m1['DAILY_BRAND']
+DAILY_GOODS = _m1['DAILY_GOODS']
+ALL_DATES = _m1['ALL_DATES']
+ALL_GOODS = _m1['ALL_GOODS']
+ALL_MONTHS = _m1['ALL_MONTHS']
+FIVECAT = _m1['FIVECAT']
+_s = _m1['summary']
+print(f"   eff: {_s['effective_oids']} OIDs, gmv={_s['effective_gmv']:,.0f}")
+print(f"   gsv: {_s['gsv_oids']} OIDs, gmv={_s['gsv_gmv']:,.0f}")
+print(f"   fvd: pay={FIVECAT['n_pay']}, gmv={FIVECAT['gmv_pay']:,.0f}")
+print(f"   {len(DAILY_BRAND)} days, {len(DAILY_GOODS)} goods")
 
-# Category mapping (simplify from full hierarchy)
-def map_cat(name):
-    name = str(name).strip()
-    if '永生花' in name: return '永生花'
-    if '盲盒' in name: return '盲盒'
-    if '香薰' in name or '蜡烛' in name or '烛台' in name: return '香薰礼盒'
-    if '汽车' in name: return '香薰礼盒'
-    return '其他'
-uv['cat'] = uv['cat_raw'].apply(map_cat)
-uv = uv[uv['cat'] != '其他']
-print(f"   类目分布: {uv['cat'].value_counts().to_dict()}")
+ALL_CATS = _m1['ALL_CATS']
+MARKET_CATS = _m1['MARKET_CATS']
+BRAND = '柏治廷'
 
-# DAILY_BRAND: date+cat level
-db = uv.groupby(['date_str','cat']).agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-DAILY_BRAND = db.to_dict('records')
-
-# DAILY_GOODS: date+cat+goods level  
-dg = uv.groupby(['date_str','cat','goods']).agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-DAILY_GOODS = dg.to_dict('records')
-
-ALL_DATES = sorted(set(r['date_str'] for r in DAILY_BRAND))
-ALL_GOODS = sorted(set(r['goods'] for r in DAILY_GOODS))
-ALL_MONTHS = sorted(set(d[:7] for d in ALL_DATES))
-ALL_CATS = sorted(set(r['cat'] for r in DAILY_BRAND))
-MARKET_CATS = ALL_CATS.copy()
-print(f"   {len(DAILY_BRAND)} brand-days, {len(DAILY_GOODS)} day-goods, {ALL_DATES[0]}~{ALL_DATES[-1]}")
-
-# ============================================================
 # 2. 交易订单 + 售后 → 退货率 
 # ============================================================
 print("📦 [2/4] 交易+售后...")
@@ -215,13 +209,9 @@ print(f"   MARKET_MAP:{len(MARKET_MAP)} dates, M4_MONTHS:{len(M4_MONTHS)}")
 
 # ============================================================
 # 5. 五分类GMV (from extract_fivecat module)
-# ============================================================
-print("📊 [5/5] 五分类GMV...")
-import sys
-sys.path.insert(0, '/home/Vic/dewu-reports')
-from extract_fivecat import classify_store, STORE_CONFIG
-
-fc = classify_store('柏治廷', STORE_CONFIG['柏治廷'])
+# 5. 五分类GMV (from bridge OID fact table)
+print("🏷️ [5/6] 五分类...")
+fc = _m1['FIVECAT']
 FIVECAT = {
     'n_pay': fc['n_pay'], 'gmv_pay': round(fc['gmv_pay']),
     'gmv_ret': round(fc['gmv_ret']), 'gmv_cancel': round(fc['gmv_cancel']),

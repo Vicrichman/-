@@ -13,7 +13,15 @@ import openpyxl
 from datetime import datetime, timedelta
 from collections import defaultdict
 import json
-import sys
+import sys, os
+
+# ── B patch: --output-dir support ──
+_OUTPUT_DIR = None
+for _i, _a in enumerate(sys.argv):
+    if _a == '--output-dir' and _i + 1 < len(sys.argv):
+        _OUTPUT_DIR = sys.argv[_i + 1]
+        assert os.path.isdir(_OUTPUT_DIR), f"output-dir not found: {_OUTPUT_DIR}"
+        break
 
 EXCEL_PATH = "/mnt/e/Obsidian本地仓库/09-数据源/喜过数据源收集表.xlsx"
 START_DATE = "2025-05-01"
@@ -193,6 +201,11 @@ orders_by_huohao = defaultdict(lambda: defaultdict(lambda: {"gmv": 0.0, "orders"
 
 processed = 0
 for r in range(2, ws.max_row + 1):
+    # C5: 排除非订单汇总行（"汇总""合计"等Excel末行）
+    oid_val = ws.cell(r, 1).value
+    if oid_val and any(kw in str(oid_val) for kw in ['汇总', '合计', '小计', '总计']):
+        continue
+
     spuid = ws.cell(r, spu_id_col).value
     amount = ws.cell(r, amount_col).value
     brand = ws.cell(r, brand_col).value
@@ -665,7 +678,7 @@ output = {
 }
 
 # Write as data.js (SAFE ATOMIC VERSION — 2026-07-30 authorized)
-OUTPUT_PATH = "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
+OUTPUT_PATH = os.path.join(_OUTPUT_DIR, "data.js") if _OUTPUT_DIR else "/home/Vic/dewu-reports/XiguoAnalysis/2026/data.js"
 
 # Step 1: 序列化到临时文件并落盘
 import hashlib as _hashlib
@@ -757,7 +770,7 @@ def extract_fivecat(store_name='喜过'):
 print("\n8. Extracting 五分类...", file=sys.stderr)
 FIVECAT = extract_fivecat('喜过')
 
-FIVECAT_PATH = "/home/Vic/dewu-reports/XiguoAnalysis/2026/fivedata.js"
+FIVECAT_PATH = os.path.join(_OUTPUT_DIR, "fivedata.js") if _OUTPUT_DIR else "/home/Vic/dewu-reports/XiguoAnalysis/2026/fivedata.js"
 with open(FIVECAT_PATH, "w", encoding="utf-8") as f:
     f.write("const FIVECAT = ")
     json.dump(FIVECAT, f, ensure_ascii=False, separators=(",", ":"))

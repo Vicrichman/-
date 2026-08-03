@@ -10,10 +10,25 @@ from collections import defaultdict
 # v2.1: 统一合约
 sys.path.insert(0, '/home/Vic/.hermes/skills/dewu/dewu-operations-analysis/scripts')
 import contract_lib as cl
+# === M1 LINEAGE FIX: unified OID fact table ===
+import sys as _sys
+_sys.path.insert(0, '/home/Vic/dewu-reports')
+from m1_txn_bridge import build_m1_data as _build_m1
+
 _CFG = cl.load_store_config('蓄势')
 
 SRC = '/home/Vic/.hermes/tmp_data/sources/蓄势/latest.xlsx'
 OUT_FILE = '/home/Vic/dewu-reports/XushiAnalysis/2026/index.html'
+
+# ── output-dir support (dry-run isolation) ──
+import argparse as _ap, os as _os
+_args = _ap.ArgumentParser()
+_args.add_argument('--output-dir', default=None)
+_args, _ = _args.parse_known_args()
+if _args.output_dir:
+    OUT_FILE = _os.path.join(_args.output_dir, _os.path.basename(OUT_FILE))
+    assert _os.path.isdir(_args.output_dir), f"output-dir not found: {_args.output_dir}"
+
 BRAND = '蓄势'
 
 def cn(v):
@@ -48,41 +63,23 @@ def ss(v):
 print(f"📂 {SRC}")
 
 # ============================================================
-# 1. 商详访客
-# ============================================================
-print("📊 [1/6] 商详访客...")
-uv = pd.read_excel(SRC, sheet_name='商详访客数据', engine='calamine')
-uv = uv[['日期', '商品货号', '支付金额', '支付订单数', '商详访问人数', '品牌名称']].copy()
-uv.columns = ['date_raw', 'goods', 'gmv', 'orders', 'uv', 'brand_raw']
-uv['date_str'] = uv['date_raw'].apply(nd)
-uv = uv.dropna(subset=['date_str'])
-uv['gmv'] = uv['gmv'].apply(cn)
-uv['orders'] = uv['orders'].apply(cn)
-uv['uv'] = uv['uv'].apply(cn)
-uv = uv[uv['goods'].apply(lambda x: ss(x) not in ['','nan'])]
-# 品牌过滤: CASIO + VICKIT
-def map_brand(name):
-    name = str(name).upper()
-    if 'CASIO' in name or '卡西欧' in name: return 'CASIO'
-    if 'VICKIT' in name: return 'VICKIT'
-    return None
-uv['brand'] = uv['brand_raw'].apply(map_brand)
-uv = uv.dropna(subset=['brand'])
-print(f"   品牌分布: {uv['brand'].value_counts().to_dict()}")
+# 1. 交易订单 -> ALL M1 data (LINEAGE FIX: single OID table)
+print("M1 OID table ...")
+_m1 = _build_m1(SRC, '蓄势', '蓄势')
+DAILY_BRAND = _m1['DAILY_BRAND']
+DAILY_GOODS = _m1['DAILY_GOODS']
+ALL_DATES = _m1['ALL_DATES']
+ALL_GOODS = _m1['ALL_GOODS']
+ALL_MONTHS = _m1['ALL_MONTHS']
+FIVECAT = _m1['FIVECAT']
+_s = _m1['summary']
+print(f"   eff: {_s['effective_oids']} OIDs, gmv={_s['effective_gmv']:,.0f}")
+print(f"   gsv: {_s['gsv_oids']} OIDs, gmv={_s['gsv_gmv']:,.0f}")
+print(f"   fvd: pay={FIVECAT['n_pay']}, gmv={FIVECAT['gmv_pay']:,.0f}")
+print(f"   {len(DAILY_BRAND)} days, {len(DAILY_GOODS)} goods")
 
-db = uv.groupby(['date_str','brand']).agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-DAILY_BRAND = db.to_dict('records')
+ALL_BRANDS = sorted(set(r.get('brand','') for r in DAILY_BRAND))
 
-dg = uv.groupby(['date_str','brand','goods']).agg(GMV=('gmv','sum'), UV=('uv','sum'), orders=('orders','sum')).reset_index()
-DAILY_GOODS = dg.rename(columns={'goods':'商品货号'}).to_dict('records')
-
-ALL_DATES = sorted(set(r['date_str'] for r in DAILY_BRAND))
-ALL_GOODS = sorted(set(r['商品货号'] for r in DAILY_GOODS))
-ALL_MONTHS = sorted(set(d[:7] for d in ALL_DATES))
-ALL_BRANDS = sorted(set(r['brand'] for r in DAILY_BRAND))
-print(f"   {len(DAILY_BRAND)} brand-days, {len(DAILY_GOODS)} day-goods, {ALL_DATES[0]}~{ALL_DATES[-1]}")
-
-# ============================================================
 # 2. 交易订单 + 售后
 # ============================================================
 print("📦 [2/6] 交易+售后...")
@@ -223,13 +220,9 @@ print(f"   PUSH_RAW:{len(PUSH_RAW)} DETUI_AGG:{len(DETUI_AGG)}")
 
 # ============================================================
 # 5.5 五分类GMV (from extract_fivecat module)
-# ============================================================
-print("📊 [5.5/7] 五分类GMV...")
-import sys
-sys.path.insert(0, '/home/Vic/dewu-reports')
-from extract_fivecat import classify_store, STORE_CONFIG
-
-fc = classify_store('蓄势', STORE_CONFIG['蓄势'])
+# 5.5 五分类GMV (from bridge OID fact table)
+print(f"📊 [5.5/7] 五分类GMV...")
+fc = _m1['FIVECAT']
 FIVECAT = {
     'n_pay': fc['n_pay'], 'gmv_pay': round(fc['gmv_pay']),
     'gmv_ret': round(fc['gmv_ret']), 'gmv_cancel': round(fc['gmv_cancel']),
