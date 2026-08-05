@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>斯沃琪 周报 7.20-7.26</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+h2{font-size:17px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #2a2d3a}
+h3{font-size:14px;margin:16px 0 6px;color:#94a3b8}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-row{display:flex;gap:20px;flex-wrap:wrap}
+.chart-row .chart-half{flex:1;min-width:400px;background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:16px}
+.chart-half canvas{max-height:300px}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600}
+.bg-r{background:#7f1d1d;color:#fca5a5}.bg-g{background:#14532d;color:#bbf7d0}.bg-y{background:#713f12;color:#fde68a}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:16px}
+.kpi-card .l{font-size:11px;color:#64748b;margin-bottom:4px}
+.kpi-card .v{font-size:22px;font-weight:700}
+.kpi-card .s{font-size:11px;color:#94a3b8;margin-top:2px}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.9;margin-bottom:12px}
+.note-box ul{font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin-bottom:8px}
+.note-box ul li{margin-bottom:4px}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+.green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+.c3{color:#a78bfa}.c4{color:#f472b6}
+</style>
+</head><body>
+<h1>&#x231A; 斯沃琪 SWATCH &middot; 周度运营看板</h1>
+<p class="sub">本周：2026.7.20 &mdash; 7.26 &#x007C; 上周：2026.7.13 &mdash; 7.19 &#x007C; 期间：6.01-7.30 &#x007C; 数据源：飞书云文档</p>
+<div class="kpi-row">
+<div class="kpi-card"><div class="l">&#x1F3EA; 本周支付GMV</div><div class="v">¥16,390</div><div class="s">环比 <span class="red">-82.6%</span></div></div>
+<div class="kpi-card"><div class="l">&#x1F4E6; 去退GMV</div><div class="v">¥8,587</div><div class="s">环比 <span class="red">-80.5%</span></div></div>
+<div class="kpi-card"><div class="l">&#x1F4C9; 退货率</div><div class="v">47.6%</div><div class="s">上周 53.2% <span class="green">&darr; 5.6pp</span></div></div>
+<div class="kpi-card"><div class="l">&#x1F441; 店铺访客(UV)</div><div class="v">29,144</div><div class="s">环比 <span class="red">-6.8%</span></div></div>
+<div class="kpi-card"><div class="l">&#x1F6D2; 支付单量</div><div class="v">2</div><div class="s">去退 1 单 &middot; 件均 ¥8,195</div></div>
+<div class="kpi-card"><div class="l">&#x1F4CA; 期间累计GMV</div><div class="v">¥500,840</div><div class="s">6.01-7.30 &middot; 56单</div></div>
+</div>
+<h2>一、趋势图</h2>
+<div class="chart-row">
+<div class="chart-half"><h3 style="margin-top:0">&#x1F4CA; 店铺核心指标</h3><canvas id="c1"></canvas></div>
+<div class="chart-half"><h3 style="margin-top:0">&#x1F4C8; 日韩表大盘指数</h3><canvas id="c2"></canvas></div>
+</div>
+<script>window.addEventListener('load',function(){setTimeout(function(){
+try{new Chart(document.getElementById('c1'),{type:'bar',data:{labels:["06-01", "06-02", "06-03", "06-04", "06-05", "06-06", "06-07", "06-08", "06-09", "06-10", "06-11", "06-12", "06-13", "06-14", "06-15", "06-16", "06-17", "06-18", "06-19", "06-20", "06-21", "06-22", "06-23", "06-24", "06-25", "06-26", "06-27", "06-28", "06-29", "06-30", "07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-14", "07-15", "07-16", "07-17", "07-18", "07-19", "07-20", "07-21", "07-22", "07-23", "07-24", "07-25", "07-26", "07-27", "07-28", "07-29", "07-30"],datasets:[
+{label:'支付金额(¥)',data:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 15980.0, 17389.0, 11900.0, 30872.0, 11979.0, 29998.0, 0.0, 6379.0, 8988.0, 19287.0, 10888.0, 12700.0, 0.0, 0.0, 17475.0, 0.0, 18379.0, 14999.0, 0.0, 0.0, 0.0, 18587.0, 6587.0, 12758.0, 0.0, 21378.0, 0.0, 11900.0, 0.0, 0.0, 5888.0, 30141.0, 8998.0, 17996.0, 23863.0, 0.0, 14999.0, 30445.0, 0.0, 19103.0, 5867.0, 0.0, 7803.0, 0.0, 0.0, 8587.0, 0.0, 0.0, 0.0, 0.0, 17685.0, 11042.0],backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
+{label:'支付单数',data:[0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 3, 1, 2, 0, 1, 1, 2, 1, 1, 0, 0, 2, 0, 2, 1, 0, 0, 0, 2, 1, 2, 0, 2, 0, 1, 0, 0, 1, 4, 1, 2, 3, 0, 1, 4, 0, 3, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 2, 2],type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1',order:1},
+{label:'UV',data:[0.0, 0.0, 0.0, 0.0, 192.0, 925.0, 3989.0, 5900.0, 3705.0, 5187.0, 10465.0, 10120.0, 9486.0, 9644.0, 9859.0, 8627.0, 7928.0, 6258.0, 6150.0, 5730.0, 6097.0, 6037.0, 5760.0, 5603.0, 5251.0, 4934.0, 4686.0, 4422.0, 4150.0, 3606.0, 2357.0, 3279.0, 3561.0, 5750.0, 5543.0, 4575.0, 4539.0, 3875.0, 3590.0, 4404.0, 4927.0, 4959.0, 4570.0, 4475.0, 3994.0, 4023.0, 4319.0, 5051.0, 4854.0, 4715.0, 4507.0, 4696.0, 4563.0, 6274.0, 0.0, 4389.0, 4041.0, 3936.0, 4456.0, 0.0],type:'line',borderColor:'#f59e0b',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y2',order:0}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},y1:{position:'right',title:{display:true,text:'单数',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},y2:{display:false},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}}})}catch(e){console.error('c1',e)}
+try{new Chart(document.getElementById('c2'),{type:'line',data:{labels:["06-01", "06-02", "06-03", "06-04", "06-05", "06-06", "06-07", "06-08", "06-09", "06-10", "06-11", "06-12", "06-13", "06-14", "06-15", "06-16", "06-17", "06-18", "06-19", "06-20", "06-21", "06-22", "06-23", "06-24", "06-25", "06-26", "06-27", "06-28", "06-29", "06-30", "07-01", "07-02", "07-03", "07-04", "07-05", "07-06", "07-07", "07-08", "07-09", "07-10", "07-11", "07-12", "07-13", "07-14", "07-15", "07-16", "07-17", "07-18", "07-19", "07-20", "07-21", "07-22", "07-23", "07-24", "07-25", "07-26", "07-27", "07-28", "07-29", "07-30"],datasets:[
+{label:'日韩表大盘(万元)',data:[323.7, 280.1, 253.0, 254.9, 276.5, 322.1, 303.4, 260.0, 281.0, 270.1, 276.8, 271.4, 275.2, 295.2, 317.6, 309.1, 301.6, 328.7, 314.8, 263.1, 293.1, 244.5, 252.0, 232.4, 236.2, 240.9, 256.7, 250.6, 233.0, 245.7, 263.5, 244.3, 247.2, 260.8, 247.8, 231.8, 231.1, 229.9, 236.2, 237.0, 268.4, 260.3, 244.5, 236.9, 275.2, 253.1, 261.2, 244.0, 251.8, 259.4, 250.3, 249.0, 250.0, 256.3, 254.6, 269.2, 254.8, 256.0, 262.9, null],borderColor:'#a78bfa',borderWidth:2,pointRadius:4,tension:.3,spanGaps:true,yAxisID:'y'}
+]},options:{responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},scales:{y:{position:'left',title:{display:true,text:'日韩表大盘(万元)',color:'#a78bfa'},grid:{color:'#1e2030'},ticks:{color:'#a78bfa'}},x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}}}}})}catch(e){console.error('c2',e)}
+},200)};},100);</script>
+<h2>二、6-7月逐日运营明细</h2>
+<div class="table-box"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">退货率</th><th class="num">UV</th><th class="num">社区投放</th><th class="num">日韩表大盘(万元)</th></tr></thead><tbody>
+<tr><td>06-01</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">323.7</td></tr>
+<tr><td>06-02</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">280.1</td></tr>
+<tr><td>06-03</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">253.0</td></tr>
+<tr><td>06-04</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">254.9</td></tr>
+<tr><td>06-05</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">192</td><td class="num">-</td><td class="num">276.5</td></tr>
+<tr><td>06-06</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">925</td><td class="num">-</td><td class="num">322.1</td></tr>
+<tr><td>06-07</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">3,989</td><td class="num">-</td><td class="num">303.4</td></tr>
+<tr><td>06-08</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">5,900</td><td class="num">-</td><td class="num">260.0</td></tr>
+<tr><td>06-09</td><td class="num">¥15,980</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">3,705</td><td class="num">-</td><td class="num">281.0</td></tr>
+<tr><td>06-10</td><td class="num">¥17,389</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">5,187</td><td class="num">-</td><td class="num">270.1</td></tr>
+<tr><td>06-11</td><td class="num">¥11,900</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">10,465</td><td class="num">-</td><td class="num">276.8</td></tr>
+<tr><td>06-12</td><td class="num">¥30,872</td><td class="num">3</td><td class="num"><span class="badge bg-r">79%</span></td><td class="num">10,120</td><td class="num">-</td><td class="num">271.4</td></tr>
+<tr><td>06-13</td><td class="num">¥11,979</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">9,486</td><td class="num">-</td><td class="num">275.2</td></tr>
+<tr><td>06-14</td><td class="num">¥29,998</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">9,644</td><td class="num">-</td><td class="num">295.2</td></tr>
+<tr><td>06-15</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">9,859</td><td class="num">-</td><td class="num">317.6</td></tr>
+<tr><td>06-16</td><td class="num">¥6,379</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">8,627</td><td class="num">-</td><td class="num">309.1</td></tr>
+<tr><td>06-17</td><td class="num">¥8,988</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">7,928</td><td class="num">-</td><td class="num">301.6</td></tr>
+<tr><td>06-18</td><td class="num">¥19,287</td><td class="num">2</td><td class="num"><span class="badge bg-y">34%</span></td><td class="num">6,258</td><td class="num">-</td><td class="num">328.7</td></tr>
+<tr><td>06-19</td><td class="num">¥10,888</td><td class="num">1</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">6,150</td><td class="num">-</td><td class="num">314.8</td></tr>
+<tr><td>06-20</td><td class="num">¥12,700</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">5,730</td><td class="num">-</td><td class="num">263.1</td></tr>
+<tr><td>06-21</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">6,097</td><td class="num">-</td><td class="num">293.1</td></tr>
+<tr><td>06-22</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">6,037</td><td class="num">-</td><td class="num">244.5</td></tr>
+<tr><td>06-23</td><td class="num">¥17,475</td><td class="num">2</td><td class="num"><span class="badge bg-r">62%</span></td><td class="num">5,760</td><td class="num">-</td><td class="num">252.0</td></tr>
+<tr><td>06-24</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">5,603</td><td class="num">-</td><td class="num">232.4</td></tr>
+<tr><td>06-25</td><td class="num">¥18,379</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">5,251</td><td class="num">-</td><td class="num">236.2</td></tr>
+<tr><td>06-26</td><td class="num">¥14,999</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,934</td><td class="num">-</td><td class="num">240.9</td></tr>
+<tr><td>06-27</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,686</td><td class="num">-</td><td class="num">256.7</td></tr>
+<tr><td>06-28</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,422</td><td class="num">-</td><td class="num">250.6</td></tr>
+<tr><td>06-29</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,150</td><td class="num">-</td><td class="num">233.0</td></tr>
+<tr><td>06-30</td><td class="num">¥18,587</td><td class="num">2</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">3,606</td><td class="num">-</td><td class="num">245.7</td></tr>
+<tr><td>07-01</td><td class="num">¥6,587</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">2,357</td><td class="num">-</td><td class="num">263.5</td></tr>
+<tr><td>07-02</td><td class="num">¥12,758</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">3,279</td><td class="num">-</td><td class="num">244.3</td></tr>
+<tr><td>07-03</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">3,561</td><td class="num">-</td><td class="num">247.2</td></tr>
+<tr><td>07-04</td><td class="num">¥21,378</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">5,750</td><td class="num">-</td><td class="num">260.8</td></tr>
+<tr><td>07-05</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">5,543</td><td class="num">-</td><td class="num">247.8</td></tr>
+<tr><td>07-06</td><td class="num">¥11,900</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,575</td><td class="num">-</td><td class="num">231.8</td></tr>
+<tr><td>07-07</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,539</td><td class="num">-</td><td class="num">231.1</td></tr>
+<tr><td>07-08</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">3,875</td><td class="num">-</td><td class="num">229.9</td></tr>
+<tr><td>07-09</td><td class="num">¥5,888</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">3,590</td><td class="num">-</td><td class="num">236.2</td></tr>
+<tr><td>07-10</td><td class="num">¥30,141</td><td class="num">4</td><td class="num"><span class="badge bg-g">30%</span></td><td class="num">4,404</td><td class="num">-</td><td class="num">237.0</td></tr>
+<tr><td>07-11</td><td class="num">¥8,998</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,927</td><td class="num">-</td><td class="num">268.4</td></tr>
+<tr><td>07-12</td><td class="num">¥17,996</td><td class="num">2</td><td class="num"><span class="badge bg-r">50%</span></td><td class="num">4,959</td><td class="num">-</td><td class="num">260.3</td></tr>
+<tr><td>07-13</td><td class="num">¥23,863</td><td class="num">3</td><td class="num"><span class="badge bg-r">75%</span></td><td class="num">4,570</td><td class="num">-</td><td class="num">244.5</td></tr>
+<tr><td>07-14</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,475</td><td class="num">-</td><td class="num">236.9</td></tr>
+<tr><td>07-15</td><td class="num">¥14,999</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">3,994</td><td class="num">-</td><td class="num">275.2</td></tr>
+<tr><td>07-16</td><td class="num">¥30,445</td><td class="num">4</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,023</td><td class="num">-</td><td class="num">253.1</td></tr>
+<tr><td>07-17</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,319</td><td class="num">-</td><td class="num">261.2</td></tr>
+<tr><td>07-18</td><td class="num">¥19,103</td><td class="num">3</td><td class="num"><span class="badge bg-r">59%</span></td><td class="num">5,051</td><td class="num">-</td><td class="num">244.0</td></tr>
+<tr><td>07-19</td><td class="num">¥5,867</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,854</td><td class="num">-</td><td class="num">251.8</td></tr>
+<tr><td>07-20</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,715</td><td class="num">-</td><td class="num">259.4</td></tr>
+<tr><td>07-21</td><td class="num">¥7,803</td><td class="num">1</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,507</td><td class="num">-</td><td class="num">250.3</td></tr>
+<tr><td>07-22</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,696</td><td class="num">-</td><td class="num">249.0</td></tr>
+<tr><td>07-23</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,563</td><td class="num">-</td><td class="num">250.0</td></tr>
+<tr><td>07-24</td><td class="num">¥8,587</td><td class="num">1</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">6,274</td><td class="num">-</td><td class="num">256.3</td></tr>
+<tr><td>07-25</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">254.6</td></tr>
+<tr><td>07-26</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,389</td><td class="num">-</td><td class="num">269.2</td></tr>
+<tr><td>07-27</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">4,041</td><td class="num">-</td><td class="num">254.8</td></tr>
+<tr><td>07-28</td><td class="num">¥0</td><td class="num">0</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">3,936</td><td class="num">-</td><td class="num">256.0</td></tr>
+<tr><td>07-29</td><td class="num">¥17,685</td><td class="num">2</td><td class="num"><span class="badge bg-r">100%</span></td><td class="num">4,456</td><td class="num">-</td><td class="num">262.9</td></tr>
+<tr><td>07-30</td><td class="num">¥11,042</td><td class="num">2</td><td class="num"><span class="badge bg-g">0%</span></td><td class="num">0</td><td class="num">-</td><td class="num">-</td></tr>
+
+</tbody></table></div>
+<h2>三、周环比对比</h2>
+<div class="table-box"><table><thead><tr><th>指标</th><th class="num">上周(7.13-7.19)</th><th class="num">本周(7.20-7.26)</th><th class="num">环比变化</th></tr></thead><tbody>
+<tr><td>支付GMV</td><td class="num">¥94,277</td><td class="num">¥16,390</td><td class="num"><span class="red">-82.6%</span></td></tr>
+<tr><td>去退GMV</td><td class="num">¥44,115</td><td class="num">¥8,587</td><td class="num"><span class="red">-80.5%</span></td></tr>
+<tr><td>退货率(金额)</td><td class="num">53.2%</td><td class="num">47.6%</td><td class="num"><span class="green">&darr; 5.6pp</span></td></tr>
+<tr><td>UV</td><td class="num">31,286</td><td class="num">29,144</td><td class="num"><span class="red">-6.8%</span></td></tr>
+<tr><td>支付单量</td><td class="num">12</td><td class="num">2</td><td class="num"><span class="red">-83.3%</span></td></tr>
+<tr><td>件单价</td><td class="num">¥7,856</td><td class="num">¥8,195</td><td class="num"><span class="green">+4.3%</span></td></tr>
+<tr><td>转化率</td><td class="num">0.04%</td><td class="num">0.01%</td><td class="num"><span class="green">&darr; 0.0pp</span></td></tr>
+<tr><td>社区投放</td><td class="num">¥0</td><td class="num">¥0</td><td class="num"><span class="amber">¥0</span></td></tr>
+</tbody></table></div>
+<h2>四、品类对比（本周 vs 上周）</h2>
+<div class="table-box"><table><thead><tr><th>类目</th><th class="num">本周GMV</th><th class="num">占比</th><th class="num">支付单量</th><th class="num">动销SKU</th><th class="num">件单价</th><th class="num">UV</th><th class="num">上周GMV</th><th class="num">上周单量</th><th class="num">环比</th></tr></thead><tbody>
+<tr><td>手表-腕表-瑞表</td><td class="num">¥24,167</td><td class="num">100.0%</td><td class="num">3</td><td class="num">6</td><td class="num">¥0</td><td class="num">29,144</td><td class="num">¥94,277</td><td class="num">12</td><td class="num"><span class="red">-74%</span></td></tr>
+
+</tbody></table></div>
+<h2>五、TOP3 单品（期间累计按GMV排序）</h2>
+<div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th class="num">累计GMV</th><th class="num">单量</th><th class="num">占总GMV</th></tr></thead><tbody>
+<tr><td>1</td><td title="SSX03W100N(Team1100-改造-多巴胺生物陶）">SSX03W100N(Team1100-改造-多巴胺生物陶）</td><td class="num">¥324,260</td><td class="num">37</td><td class="num">64.7%</td></tr>
+<tr><td>2</td><td title="SSX03W100N(Team1100-改造-多巴胺橡胶）">SSX03W100N(Team1100-改造-多巴胺橡胶）</td><td class="num">¥158,316</td><td class="num">17</td><td class="num">31.6%</td></tr>
+<tr><td>3</td><td title="SSX03W100N(Team1100-改造-皓月星海）">SSX03W100N(Team1100-改造-皓月星海）</td><td class="num">¥14,999</td><td class="num">1</td><td class="num">3.0%</td></tr>
+
+</tbody></table></div>
+<h2>六、退货分析（本周 7.20-7.26）</h2>
+<div class="table-box"><table><thead><tr><th>关闭原因</th><th class="num">本周单数</th><th class="num">占比</th><th>分类</th></tr></thead><tbody>
+<tr><td>手表不走时/走时不准</td><td class="num">1</td><td class="num">100.0%</td><td><span class="badge bg-r">品控</span></td></tr>
+
+</tbody></table></div>
+<h2>七、运营总结 &amp; 下周计划</h2>
+<div class="note-box">
+<h3>&#x1F3EA; 店铺总体表现</h3>
+<p>本周支付GMV <b>¥16,390</b>（2单），环比 <b class="red">-82.6%</b>。UV 29,144（环比-6.8%），件单价 ¥8,195，转化率 0.01%。退货率 47.6%（偏高，需关注）。期间累计（6.1-7.30）支付GMV ¥500,840（56单），整体退货率 70.2%。社区投放为¥0，全自然流量运营。</p>
+
+<h3>&#x1F4E6; 类目情况</h3>
+<p>斯沃琪为单品牌瑞表店铺，全部销售集中在「手表-腕表-瑞表」类目。核心走量款 SSX03W100N 改造系列（多巴胺生物陶/多巴胺橡胶）贡献了绝大部分 GMV。大盘日韩表指数在 230-330 区间波动，7月上旬有阶段性低谷，7月下旬回升趋势明显。</p>
+
+<h3>&#x1F50D; 核心发现</h3>
+<ul>
+<li><b>1. 退货率 70.2% 是核心痛点。</b>退款原因中"手表不走时/走时不准"占100%，手表品类退货多来自功能性争议。建议加强发货前质检和详情页功能描述准确性。</li>
+<li><b>2. 客单价 ¥8,195 远高于卡西欧改装表。</b>斯沃琪定位中高端瑞表，SSX03W100N改造系列单品GMV集中度高。高端线需要更精细的商品描述和信任建设，降低退货。</li>
+<li><b>3. 零投放运营下 UV 稳定在 4,000-6,000。</b>自然流量尚可但转化率极低（0.01%）。6-7月属于手表品类传统淡季，大盘指数在低位徘徊，建议在旺季前做好详情页优化和备货。</li>
+<li><b>4. 社区投放为0，缺少内容引流入口。</b>对比卡西欧改装店的引力投放策略，斯沃琪完全依赖自然搜索，限制了流量增长和转化效率。</li>
+</ul>
+
+<h3>&#x1F3AF; 运营建议</h3>
+<ul>
+<li><b>[P0] 降低退货率。</b>发货前加检走时精度，详情页标注「机械表日常误差范围」，减少功能争议退货。这是当前最影响利润的问题。</li>
+<li><b>[P0] 启动社区投放测试。</b>¥100-200/天测试性投放，重点推 SSX03W100N 多巴胺系列，验证引流和转化效果。</li>
+<li><b>[P1] 详情页优化。</b>增加实拍机芯图、走时实测视频、包装开箱图，提升信任感和转化率。改造款强调设计细节对比。</li>
+<li><b>[P1] 丰富产品线。</b>当前 SSX03W100N 系列占比过高，可引入斯沃琪热门系列（Sistem51、Moonswatch等）分散单品风险。</li>
+</ul>
+</div>
+<p class="upd">斯沃琪周报 &middot; 数据源：喜过数据源收集表 &middot; 生成于 2026-07-31</p>
+</body></html>

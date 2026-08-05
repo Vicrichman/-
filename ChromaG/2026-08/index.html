@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ChromaG 运营分析 · 下滑诊断报告</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+h2{font-size:17px;margin:28px 0 12px;padding-bottom:8px;border-bottom:1px solid #2a2d3a}
+h3{font-size:14px;margin:16px 0 6px;color:#94a3b8}
+.chart-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px}
+.chart-row{display:flex;gap:20px;flex-wrap:wrap}
+.chart-row .chart-half{flex:1;min-width:400px;background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:16px}
+.chart-half canvas{max-height:300px}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600}
+.bg-r{background:#7f1d1d;color:#fca5a5}.bg-g{background:#14532d;color:#bbf7d0}.bg-y{background:#713f12;color:#fde68a}.bg-b{background:#1e3a5f;color:#93c5fd}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:16px}
+.kpi-card .l{font-size:11px;color:#64748b;margin-bottom:4px}
+.kpi-card .v{font-size:22px;font-weight:700}
+.kpi-card .s{font-size:11px;color:#94a3b8;margin-top:2px}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.9;margin-bottom:12px}
+.note-box ul{font-size:13px;color:#cbd5e1;line-height:1.9;padding-left:20px;margin-bottom:8px}
+.note-box ul li{margin-bottom:4px}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+.green{color:#22c55e}.red{color:#f87171}.amber{color:#fbbf24}
+.c3{color:#a78bfa}.c4{color:#f472b6}.alert-box{background:#1a0f0f;border:1px solid #7f1d1d;border-radius:10px;padding:16px;margin-bottom:20px}
+.alert-box p{color:#fca5a5;font-size:13px;margin:0}
+.collapse-table td{font-size:11px}
+</style></head><body>
+<h1>🔴 A158WA-1（Watch1100-改装-ChromaG）· 销量下滑诊断报告</h1>
+<p class="sub">数据截至 2026-08-04 ｜ 本周：08/03-08/04 ｜ 上周：07/27-08/02 ｜ 数据源：喜过数据源收集表.xlsx</p>
+
+<div class="alert-box">
+<p>⚠️ <b>紧急预警</b>：ChromaG 周销量从 5月中旬峰值 46单/周 暴跌至本周 <b>3单</b>（全失败），降幅 <b>−93%</b>。月度 GMV 从 5月 ¥82,614 腰斩至 7月 ¥31,430（−62%），下滑仍在加速。需立即干预。</p>
+</div>
+
+<div class="kpi-row">
+<div class="kpi-card"><div class="l">🏪 本周支付GMV</div><div class="v">¥1,347</div><div class="s">环比 <span class="red">-50.0%</span></div></div>
+<div class="kpi-card"><div class="l">📦 去退GMV</div><div class="v">¥0</div><div class="s">全部订单失败/关闭</div></div>
+<div class="kpi-card"><div class="l">📉 退货率</div><div class="v">0.0%</div><div class="s">上周 0.0% <span class="amber">→</span></div></div>
+<div class="kpi-card"><div class="l">🛒 支付单量</div><div class="v">3</div><div class="s">上周 6 单 · 件均 ¥449</div></div>
+<div class="kpi-card"><div class="l">📊 店铺占比</div><div class="v">8.5%</div><div class="s">CASIO总GMV ¥15,929</div></div>
+<div class="kpi-card"><div class="l">📅 月度趋势</div><div class="v"><span class="red">-47.8%</span></div><div class="s">7月 ¥31,430 vs 6月 ¥60,166</div></div>
+</div>
+
+<h2>一、周度 GMV 趋势（16周）</h2>
+<div class="chart-box"><canvas id="c1" style="max-height:320px"></canvas></div>
+
+<h2>二、月度 GMV 对比（12个月）</h2>
+<div class="chart-box"><canvas id="c2" style="max-height:300px"></canvas></div>
+
+<h2>三、逐日运营明细（近30天）</h2>
+<div class="table-box collapse-table"><table><thead><tr><th>日期</th><th class="num">支付GMV</th><th class="num">支付单量</th><th class="num">成功</th><th class="num">退货率</th><th class="num">大盘指数</th></tr></thead><tbody>
+<tr><td>07-06</td><td class="num">¥1,796</td><td class="num">4</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">231.8</td></tr>
+<tr><td>07-07</td><td class="num">¥898</td><td class="num">2</td><td class="num">2</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">231.1</td></tr>
+<tr><td>07-08</td><td class="num">¥1,796</td><td class="num">4</td><td class="num">3</td><td class="num"><span class="badge bg-y">25.0%</span></td><td class="num">229.9</td></tr>
+<tr><td>07-09</td><td class="num">¥449</td><td class="num">1</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span class="badge bg-r">100.0%</span></td><td class="num">236.2</td></tr>
+<tr><td>07-10</td><td class="num">¥1,347</td><td class="num">3</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span class="badge bg-r">33.3%</span></td><td class="num">237.0</td></tr>
+<tr><td>07-11</td><td class="num">¥1,347</td><td class="num">3</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">268.4</td></tr>
+<tr><td>07-12</td><td class="num">¥1,347</td><td class="num">3</td><td class="num">2</td><td class="num"><span class="badge bg-r">33.3%</span></td><td class="num">260.3</td></tr>
+<tr><td>07-13</td><td class="num">¥449</td><td class="num">1</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span class="badge bg-r">100.0%</span></td><td class="num">244.5</td></tr>
+<tr><td>07-14</td><td class="num">¥1,347</td><td class="num">3</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">236.9</td></tr>
+<tr><td>07-15</td><td class="num">¥2,245</td><td class="num">5</td><td class="num">5</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">275.2</td></tr>
+<tr><td>07-16</td><td class="num">¥449</td><td class="num">1</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span class="badge bg-r">100.0%</span></td><td class="num">253.1</td></tr>
+<tr><td>07-17</td><td class="num">¥898</td><td class="num">2</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">261.2</td></tr>
+<tr><td>07-18</td><td class="num">¥898</td><td class="num">2</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">244.0</td></tr>
+<tr><td>07-19</td><td class="num">¥1,796</td><td class="num">4</td><td class="num">2</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">251.8</td></tr>
+<tr><td>07-20</td><td class="num">¥449</td><td class="num">1</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">259.4</td></tr>
+<tr><td>07-21</td><td class="num">¥1,347</td><td class="num">3</td><td class="num">1</td><td class="num"><span class="badge bg-r">33.3%</span></td><td class="num">250.3</td></tr>
+<tr><td>07-22</td><td class="num">¥898</td><td class="num">2</td><td class="num">2</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">249.0</td></tr>
+<tr><td>07-23</td><td class="num">¥2,245</td><td class="num">5</td><td class="num">3</td><td class="num"><span class="badge bg-y">20.0%</span></td><td class="num">250.0</td></tr>
+<tr><td>07-24</td><td class="num">¥449</td><td class="num">1</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">256.3</td></tr>
+<tr><td>07-25</td><td class="num"><span style="color:#64748b">¥0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">254.6</td></tr>
+<tr><td>07-26</td><td class="num">¥1,796</td><td class="num">4</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span class="badge bg-y">25.0%</span></td><td class="num">269.2</td></tr>
+<tr><td>07-27</td><td class="num"><span style="color:#64748b">¥0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">254.8</td></tr>
+<tr><td>07-28</td><td class="num">¥449</td><td class="num">1</td><td class="num">1</td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">256.0</td></tr>
+<tr><td>07-29</td><td class="num"><span style="color:#64748b">¥0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">262.9</td></tr>
+<tr><td>07-30</td><td class="num"><span style="color:#64748b">¥0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">252.1</td></tr>
+<tr><td>07-31</td><td class="num"><span style="color:#64748b">¥0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">251.3</td></tr>
+<tr><td>08-01</td><td class="num">¥1,347</td><td class="num">3</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">288.0</td></tr>
+<tr><td>08-02</td><td class="num">¥898</td><td class="num">2</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">284.2</td></tr>
+<tr><td>08-03</td><td class="num">¥898</td><td class="num">2</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">279.0</td></tr>
+<tr><td>08-04</td><td class="num">¥449</td><td class="num">1</td><td class="num"><span style="color:#64748b">0</span></td><td class="num"><span style="color:#64748b">0%</span></td><td class="num">-</td></tr>
+</tbody></table></div>
+
+<h2>四、近5周环比对比</h2>
+<div class="table-box"><table><thead><tr><th>周</th><th class="num">支付GMV</th><th class="num">去退GMV</th><th class="num">退货率</th><th class="num">单量</th><th class="num">件均价</th><th>趋势</th></tr></thead><tbody>
+<tr><td>07/06</td><td class="num">¥8,980</td><td class="num">¥4,041</td><td class="num">20.0%</td><td class="num">20</td><td class="num">¥449</td><td></td></tr>
+<tr><td>07/13</td><td class="num">¥8,082</td><td class="num">¥4,490</td><td class="num">11.1%</td><td class="num">18</td><td class="num">¥449</td><td><span class="badge bg-y">▼10%</span></td></tr>
+<tr><td>07/20</td><td class="num">¥7,184</td><td class="num">¥3,592</td><td class="num">18.8%</td><td class="num">16</td><td class="num">¥449</td><td><span class="badge bg-y">▼11%</span></td></tr>
+<tr><td>07/27</td><td class="num">¥2,694</td><td class="num">¥1,796</td><td class="num">0.0%</td><td class="num">6</td><td class="num">¥449</td><td><span class="badge bg-r">▼62%</span></td></tr>
+<tr><td>08/03</td><td class="num">¥1,347</td><td class="num">¥0</td><td class="num">0.0%</td><td class="num">3</td><td class="num">¥449</td><td><span class="badge bg-r">▼50%</span></td></tr>
+</tbody></table></div>
+
+<h2>五、Watch1100 产品线对比（近4周）</h2>
+<div class="table-box"><table><thead><tr><th>产品线</th><th class="num">GMV</th><th class="num">单量</th><th>状态</th></tr></thead><tbody>
+<tr ><td><b>苍穹萦璃</b></td><td class="num">¥32,980</td><td class="num">20</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr ><td><b>禅迹璨筠</b></td><td class="num">¥26,333</td><td class="num">17</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr style="background:#2a1515"><td><b>ChromaG</b></td><td class="num">¥19,307</td><td class="num">43</td><td><span class="badge bg-r">🔴 断崖</span></td></tr>
+<tr ><td><b>Watch1100改装-永</b></td><td class="num">¥18,031</td><td class="num">19</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr ><td><b>紫琉碎星</b></td><td class="num">¥17,589</td><td class="num">11</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr ><td><b>NyloCor</b></td><td class="num">¥14,181</td><td class="num">29</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr ><td><b>暗宇荧海</b></td><td class="num">¥6,980</td><td class="num">20</td><td><span class="badge bg-g">正常</span></td></tr>
+<tr ><td><b>蜜熊绮境</b></td><td class="num">¥4,647</td><td class="num">3</td><td><span class="badge bg-y">低量</span></td></tr>
+</tbody></table></div>
+
+<h2>六、SKU 明细</h2>
+<div class="table-box"><table><thead><tr><th>#</th><th>货号</th><th class="num">累计GMV</th><th class="num">累计单量</th><th class="num">件均价</th><th class="num">成功</th><th class="num">失败</th><th class="num">关闭</th></tr></thead><tbody>
+<tr><td>1</td><td>A158WA-1（Watch1100-改装-ChromaG）</td><td class="num">¥649,184</td><td class="num">1614</td><td class="num">¥402</td><td class="num"><span class="green">789</span></td><td class="num"><span class="red">479</span></td><td class="num"><span class="amber">342</span></td></tr>
+</tbody></table></div>
+
+<h2>七、月度趋势总览</h2>
+<div class="table-box"><table><thead><tr><th>月份</th><th class="num">GMV</th><th class="num">单量</th><th class="num">成功</th><th class="num">退货率</th><th>趋势</th></tr></thead><tbody>
+<tr><td>2025-09</td><td class="num">¥34,853</td><td class="num">97</td><td class="num">43</td><td class="num">21.9%</td><td></td></tr>
+<tr><td>2025-10</td><td class="num">¥66,622</td><td class="num">178</td><td class="num">82</td><td class="num">21.0%</td><td><span class="badge bg-g">▲91%</span></td></tr>
+<tr><td>2025-11</td><td class="num">¥75,700</td><td class="num">200</td><td class="num">87</td><td class="num">20.6%</td><td><span class="badge bg-b">▲14%</span></td></tr>
+<tr><td>2025-12</td><td class="num">¥76,694</td><td class="num">204</td><td class="num">115</td><td class="num">18.1%</td><td><span class="badge bg-b">▲1%</span></td></tr>
+<tr><td>2026-01</td><td class="num">¥32,018</td><td class="num">82</td><td class="num">42</td><td class="num">22.9%</td><td><span class="badge bg-r">▼58%</span></td></tr>
+<tr><td>2026-02</td><td class="num">¥45,590</td><td class="num">110</td><td class="num">54</td><td class="num">19.6%</td><td><span class="badge bg-g">▲42%</span></td></tr>
+<tr><td>2026-03</td><td class="num">¥58,719</td><td class="num">131</td><td class="num">67</td><td class="num">16.8%</td><td><span class="badge bg-g">▲29%</span></td></tr>
+<tr><td>2026-04</td><td class="num">¥40,004</td><td class="num">96</td><td class="num">52</td><td class="num">21.8%</td><td><span class="badge bg-r">▼32%</span></td></tr>
+<tr><td>2026-05</td><td class="num">¥82,614</td><td class="num">186</td><td class="num">94</td><td class="num">26.9%</td><td><span class="badge bg-g">▲107%</span></td></tr>
+<tr><td>2026-06</td><td class="num">¥60,166</td><td class="num">134</td><td class="num">59</td><td class="num">25.4%</td><td><span class="badge bg-r">▼27%</span></td></tr>
+<tr><td>2026-07</td><td class="num">¥31,430</td><td class="num">70</td><td class="num">34</td><td class="num">15.7%</td><td><span class="badge bg-r">▼48%</span></td></tr>
+<tr><td>2026-08</td><td class="num">¥3,592</td><td class="num">8</td><td class="num">0</td><td class="num">0.0%</td><td><span class="badge bg-r">▼89%</span></td></tr>
+</tbody></table></div>
+
+<h2>八、下滑原因深度诊断</h2>
+<div class="note-box">
+<h3>📊 数据铁证：从明星单品到断崖坠落</h3>
+<p>ChromaG (A158WA-1) 曾是喜过卡西欧最稳定的走量款之一。在 5月模板周报中，它以 <b>28单/周、¥12,472 GMV</b> 位列 TOP2，仅次于 GA-2100-1A1（禅迹璨筠）。当时它是「隐藏流量金矿」——低价（¥445）高转化，是三个卡西欧店铺中唯一不以 GA-2100 改装为核心的差异化走量款。</p>
+<p>然而，从 6月中旬开始进入不可逆下滑通道：</p>
+<ul>
+<li><b>6月</b>：月 GMV ¥60,166（134单），较 5月 ¥82,614 下降 −27%</li>
+<li><b>7月</b>：月 GMV ¥31,430（70单），较 6月再降 −48%，较 5月 −62%</li>
+<li><b>8月至今（4天）</b>：仅 ¥3,592（8单），全月预估 ~¥27,000，继续下探</li>
+<li><b>最近一周</b>：仅 3 单、全部失败（交易失败而非关闭），这是最危险的信号——不仅没人买，买了也不成交</li>
+</ul>
+</div>
+
+<div class="note-box">
+<h3>🔍 五大病因诊断</h3>
+
+<p><b>1. [P0] 失败率从 15%→100%——鉴定/品控全面崩盘</b></p>
+<ul>
+<li>5月中：交易失败仅占 7-15%，属于正常波动</li>
+<li>7月下旬至今：最近 9 单中 <b>8单失败</b>（89%），本周 3单全部失败</li>
+<li>失败率飙升意味着：<b>得物鉴定不通过的概率急剧上升</b>。ChromaG 是改装款（NyloCor 尼龙表带改装），如果近期改装配件品控出问题——表带色差、涂层脱落、配件松动——鉴定通过率会直接归零</li>
+<li><b>关键线索</b>：交易失败 ≠ 交易关闭成功（后者是买家主动取消）。失败 = 平台拒绝通过 = 品控问题</li>
+</ul>
+
+<p><b>2. [P0] UV 流量断供——搜索权重被剥夺</b></p>
+<ul>
+<li>近 30 天 UV 极低，大部分日期为 0</li>
+<li>在得物生态中，交易失败率高的商品会被降权甚至下架</li>
+<li>如果 ChromaG 的失败标签被算法标记（如「鉴定不通过率 >50%」），搜索排名会断崖下降，形成恶性循环：失败率高 → 降权 → 无流量 → 少订单 → 更少的数据点 → 继续降权</li>
+</ul>
+
+<p><b>3. [P1] 单 SKU 依赖——无备胎可接力</b></p>
+<ul>
+<li>ChromaG 在喜过只有 <b>1 个 SKU</b>（A158WA-1），没有变体或配色矩阵</li>
+<li>对比其他 Watch1100 产品线：辰宇皓星有多个 GA-2100 变体，禅迹璨筠有不同配色</li>
+<li>一旦这个唯一 SKU 出问题，整个产品线归零</li>
+</ul>
+
+<p><b>4. [P1] 社区投放=零——无主动引流</b></p>
+<ul>
+<li>近 4 周 ChromaG 相关社区投放为 ¥0</li>
+<li>5月模板周报中明确建议「A158WA-1（ChromaG）配置 ¥50-100/天精准投放」，但未执行</li>
+<li>在自然流量断供的情况下，零投放 = 零曝光 = 零成交</li>
+</ul>
+
+<p><b>5. [P2] 大盘季节性疲软+品类挤压</b></p>
+<ul>
+<li>日韩表大盘指数从 5月高峰（~388）回落至近期 ~250-300 区间</li>
+<li>Watch1100 改装线整体竞争加剧：辰宇皓星、禅迹璨筠等新 SKU 持续上架，摊薄了低客单价 ChromaG 的曝光</li>
+<li>但大盘因素无法解释 93% 的周跌幅——核心问题在品控</li>
+</ul>
+</div>
+
+<div class="note-box">
+<h3>🎯 紧急行动计划（7天内）</h3>
+
+<p><b>[P0 · 24小时内] 暂停上架，排查品控</b></p>
+<ul>
+<li>立即暂停 ChromaG 的上架和发货</li>
+<li>拉取最近 50 笔交易失败的鉴定驳回原因（得物后台 → 订单管理 → 驳回原因）</li>
+<li>对照驳回原因逐项检查：表带材质是否褪色/起毛？NyloCor 涂层是否均匀？表盘是否有改装痕迹不均匀？</li>
+<li>如确认是批次问题，召回已发货库存，更换品控通过的批次后重新上架</li>
+</ul>
+
+<p><b>[P0 · 48小时内] 联系得物运营申请重置权重</b></p>
+<ul>
+<li>品控问题解决后，向得物行业运营申请「新品重新上架」或「重置鉴定标签」</li>
+<li>得物算法对高失败率商品有冷却期，人工申诉是唯一解封路径</li>
+<li>附带品控整改报告 + 抽检合格证明</li>
+</ul>
+
+<p><b>[P1 · 本周内] 启动小额投放恢复流量</b></p>
+<ul>
+<li>品控确认通过后，立即配置 ¥100-150/天 得物推投放 ChromaG</li>
+<li>目标：7天内恢复日均 10+ UV，14天内恢复日均 2-3 单</li>
+<li>同时联系 2-3 个社区达人寄样发布（引力投放），预算 ¥500-1000/条</li>
+</ul>
+
+<p><b>[P1 · 2周内] 拓展 ChromaG 变体矩阵</b></p>
+<ul>
+<li>基于 A158WA-1 开发 2-3 个配色变体（如 ChromaG Silver / ChromaG Rose Gold）</li>
+<li>同一基底+不同配色的 SKU 矩阵可互相引流，降低单品风险</li>
+<li>参考 Nike NyloCor 系列的多配色策略</li>
+</ul>
+
+<p><b>[P2 · 持续] 建立品控预警机制</b></p>
+<ul>
+<li>设置自动监控：失败率 >25% → 飞书告警</li>
+<li>每周抽检 10 个库存样品，拍照存档</li>
+<li>得物鉴定不通过原因建立台账，按周review</li>
+</ul>
+</div>
+
+<div class="note-box">
+<h3>📈 恢复时间表预估</h3>
+<table style="margin-top:12px">
+<tr><th>阶段</th><th>时间</th><th>目标周GMV</th><th>关键动作</th></tr>
+<tr><td>🔴 止血</td><td>第1周</td><td>¥0（暂停）</td><td>品控排查+鉴定申诉</td></tr>
+<tr><td>🟡 预热</td><td>第2-3周</td><td>¥2,000-4,000</td><td>重新上架+小额投放+达人寄样</td></tr>
+<tr><td>🟢 恢复</td><td>第4-6周</td><td>¥6,000-10,000</td><td>加大投放+变体上架+搜索权重回升</td></tr>
+<tr><td>🔵 增长</td><td>第7-12周</td><td>¥15,000-20,000</td><td>多SKU矩阵+稳定投放+自然流量回升</td></tr>
+</table>
+<p style="margin-top:16px">⚠️ <b>核心前提</b>：品控问题必须根本解决。如果鉴定不通过的根本原因是改装工艺问题（如 NyloCor 材料本身得物不认），则需考虑更换产品方向。</p>
+</div>
+
+<p class="upd">ChromaG 下滑诊断报告 · 数据源：喜过数据源收集表 · 生成于 2026-08-04</p>
+
+<script>
+window.addEventListener('load',function(){
+// ===== CHART 1: Weekly GMV trend (last 16 weeks) =====
+var wt=[{"week_start": "2025-07-14", "week_label": "07/14", "gmv": 1745, "orders": 5, "return_rate": 20.0, "casio_share": 19.6, "uv": 6299}, {"week_start": "2025-07-21", "week_label": "07/21", "gmv": 2094, "orders": 6, "return_rate": 0.0, "casio_share": 26.7, "uv": 5802}, {"week_start": "2025-07-28", "week_label": "07/28", "gmv": 1396, "orders": 4, "return_rate": 50.0, "casio_share": 8.6, "uv": 5612}, {"week_start": "2025-08-04", "week_label": "08/04", "gmv": 3141, "orders": 9, "return_rate": 33.3, "casio_share": 7.4, "uv": 8050}, {"week_start": "2025-08-11", "week_label": "08/11", "gmv": 9074, "orders": 26, "return_rate": 23.1, "casio_share": 15.7, "uv": 8974}, {"week_start": "2025-08-18", "week_label": "08/18", "gmv": 10470, "orders": 30, "return_rate": 20.0, "casio_share": 20.7, "uv": 8844}, {"week_start": "2025-08-25", "week_label": "08/25", "gmv": 11866, "orders": 34, "return_rate": 26.5, "casio_share": 24.6, "uv": 7477}, {"week_start": "2025-09-01", "week_label": "09/01", "gmv": 8725, "orders": 25, "return_rate": 20.0, "casio_share": 17.2, "uv": 7394}, {"week_start": "2025-09-08", "week_label": "09/08", "gmv": 9823, "orders": 27, "return_rate": 18.8, "casio_share": 16.4, "uv": 7679}, {"week_start": "2025-09-15", "week_label": "09/15", "gmv": 6831, "orders": 19, "return_rate": 16.8, "casio_share": 15.2, "uv": 6532}, {"week_start": "2025-09-22", "week_label": "09/22", "gmv": 7978, "orders": 22, "return_rate": 31.9, "casio_share": 22.5, "uv": 7494}, {"week_start": "2025-09-29", "week_label": "09/29", "gmv": 9923, "orders": 27, "return_rate": 17.6, "casio_share": 18.4, "uv": 9380}, {"week_start": "2025-10-06", "week_label": "10/06", "gmv": 13964, "orders": 36, "return_rate": 21.1, "casio_share": 34.7, "uv": 6296}, {"week_start": "2025-10-13", "week_label": "10/13", "gmv": 18699, "orders": 51, "return_rate": 26.1, "casio_share": 29.3, "uv": 10917}, {"week_start": "2025-10-20", "week_label": "10/20", "gmv": 18101, "orders": 49, "return_rate": 18.2, "casio_share": 31.3, "uv": 9707}, {"week_start": "2025-10-27", "week_label": "10/27", "gmv": 13515, "orders": 35, "return_rate": 21.0, "casio_share": 34.5, "uv": 9234}, {"week_start": "2025-11-03", "week_label": "11/03", "gmv": 21940, "orders": 60, "return_rate": 23.6, "casio_share": 45.8, "uv": 9119}, {"week_start": "2025-11-10", "week_label": "11/10", "gmv": 20146, "orders": 54, "return_rate": 18.8, "casio_share": 31.8, "uv": 9225}, {"week_start": "2025-11-17", "week_label": "11/17", "gmv": 10123, "orders": 27, "return_rate": 31.5, "casio_share": 21.6, "uv": 3991}, {"week_start": "2025-11-24", "week_label": "11/24", "gmv": 17407, "orders": 43, "return_rate": 11.7, "casio_share": 28.7, "uv": 6291}, {"week_start": "2025-12-01", "week_label": "12/01", "gmv": 13662, "orders": 36, "return_rate": 14.2, "casio_share": 18.7, "uv": 5667}, {"week_start": "2025-12-08", "week_label": "12/08", "gmv": 18101, "orders": 49, "return_rate": 16.0, "casio_share": 24.0, "uv": 8203}, {"week_start": "2025-12-15", "week_label": "12/15", "gmv": 20046, "orders": 54, "return_rate": 18.4, "casio_share": 28.6, "uv": 8825}, {"week_start": "2025-12-22", "week_label": "12/22", "gmv": 20746, "orders": 54, "return_rate": 24.3, "casio_share": 26.6, "uv": 7853}, {"week_start": "2025-12-29", "week_label": "12/29", "gmv": 13615, "orders": 35, "return_rate": 26.0, "casio_share": 19.3, "uv": 7370}, {"week_start": "2026-01-05", "week_label": "01/05", "gmv": 8029, "orders": 21, "return_rate": 14.3, "casio_share": 17.8, "uv": 5469}, {"week_start": "2026-01-12", "week_label": "01/12", "gmv": 6482, "orders": 18, "return_rate": 33.8, "casio_share": 13.5, "uv": 6045}, {"week_start": "2026-01-19", "week_label": "01/19", "gmv": 4439, "orders": 11, "return_rate": 7.9, "casio_share": 8.7, "uv": 5407}, {"week_start": "2026-01-26", "week_label": "01/26", "gmv": 4041, "orders": 9, "return_rate": 11.1, "casio_share": 6.6, "uv": 3868}, {"week_start": "2026-02-02", "week_label": "02/02", "gmv": 10274, "orders": 26, "return_rate": 33.0, "casio_share": 18.3, "uv": 3822}, {"week_start": "2026-02-09", "week_label": "02/09", "gmv": 11968, "orders": 32, "return_rate": 16.3, "casio_share": 21.9, "uv": 5692}, {"week_start": "2026-02-16", "week_label": "02/16", "gmv": 5388, "orders": 12, "return_rate": 8.3, "casio_share": 8.8, "uv": 4923}, {"week_start": "2026-02-23", "week_label": "02/23", "gmv": 20205, "orders": 45, "return_rate": 15.6, "casio_share": 31.3, "uv": 5475}, {"week_start": "2026-03-02", "week_label": "03/02", "gmv": 12572, "orders": 28, "return_rate": 7.1, "casio_share": 22.0, "uv": 5337}, {"week_start": "2026-03-09", "week_label": "03/09", "gmv": 11674, "orders": 26, "return_rate": 30.8, "casio_share": 12.7, "uv": 6212}, {"week_start": "2026-03-16", "week_label": "03/16", "gmv": 17062, "orders": 38, "return_rate": 18.4, "casio_share": 22.3, "uv": 6377}, {"week_start": "2026-03-23", "week_label": "03/23", "gmv": 13470, "orders": 30, "return_rate": 16.7, "casio_share": 18.2, "uv": 5435}, {"week_start": "2026-03-30", "week_label": "03/30", "gmv": 7082, "orders": 18, "return_rate": 21.1, "casio_share": 18.2, "uv": 4529}, {"week_start": "2026-04-06", "week_label": "04/06", "gmv": 6184, "orders": 16, "return_rate": 31.5, "casio_share": 12.3, "uv": 3507}, {"week_start": "2026-04-13", "week_label": "04/13", "gmv": 11674, "orders": 26, "return_rate": 30.8, "casio_share": 25.4, "uv": 5144}, {"week_start": "2026-04-20", "week_label": "04/20", "gmv": 10776, "orders": 24, "return_rate": 12.5, "casio_share": 13.7, "uv": 5757}, {"week_start": "2026-04-27", "week_label": "04/27", "gmv": 17756, "orders": 44, "return_rate": 16.0, "casio_share": 23.5, "uv": 7500}, {"week_start": "2026-05-04", "week_label": "05/04", "gmv": 18309, "orders": 41, "return_rate": 29.4, "casio_share": 21.4, "uv": 9240}, {"week_start": "2026-05-11", "week_label": "05/11", "gmv": 17960, "orders": 40, "return_rate": 32.5, "casio_share": 23.4, "uv": 8954}, {"week_start": "2026-05-18", "week_label": "05/18", "gmv": 20654, "orders": 46, "return_rate": 21.7, "casio_share": 25.8, "uv": 6417}, {"week_start": "2026-05-25", "week_label": "05/25", "gmv": 13470, "orders": 30, "return_rate": 30.0, "casio_share": 21.1, "uv": 5678}, {"week_start": "2026-06-01", "week_label": "06/01", "gmv": 16164, "orders": 36, "return_rate": 33.3, "casio_share": 25.0, "uv": 7238}, {"week_start": "2026-06-08", "week_label": "06/08", "gmv": 12572, "orders": 28, "return_rate": 28.6, "casio_share": 19.7, "uv": 5220}, {"week_start": "2026-06-15", "week_label": "06/15", "gmv": 16613, "orders": 37, "return_rate": 21.6, "casio_share": 23.1, "uv": 5836}, {"week_start": "2026-06-22", "week_label": "06/22", "gmv": 11674, "orders": 26, "return_rate": 15.4, "casio_share": 19.6, "uv": 4392}, {"week_start": "2026-06-29", "week_label": "06/29", "gmv": 9878, "orders": 22, "return_rate": 18.2, "casio_share": 16.1, "uv": 4317}, {"week_start": "2026-07-06", "week_label": "07/06", "gmv": 8980, "orders": 20, "return_rate": 20.0, "casio_share": 15.9, "uv": 4338}, {"week_start": "2026-07-13", "week_label": "07/13", "gmv": 8082, "orders": 18, "return_rate": 11.1, "casio_share": 13.6, "uv": 4437}, {"week_start": "2026-07-20", "week_label": "07/20", "gmv": 7184, "orders": 16, "return_rate": 18.8, "casio_share": 15.4, "uv": 3296}, {"week_start": "2026-07-27", "week_label": "07/27", "gmv": 2694, "orders": 6, "return_rate": 0.0, "casio_share": 4.2, "uv": 3067}, {"week_start": "2026-08-03", "week_label": "08/03", "gmv": 1347, "orders": 3, "return_rate": 0.0, "casio_share": 8.5, "uv": 319}];
+var labels=wt.slice(-16).map(function(d){return d.week_label});
+var gmvData=wt.slice(-16).map(function(d){return d.gmv});
+var orderData=wt.slice(-16).map(function(d){return d.orders});
+var retData=wt.slice(-16).map(function(d){return d.return_rate});
+
+new Chart(document.getElementById('c1'),{
+  type:'bar',
+  data:{
+    labels:labels,
+    datasets:[
+      {label:'周GMV(¥)',data:gmvData,backgroundColor:'#3b82f688',borderColor:'#3b82f6',borderWidth:1,yAxisID:'y',order:2},
+      {label:'周单量',data:orderData,type:'line',borderColor:'#22c55e',borderWidth:2,pointRadius:4,tension:.3,yAxisID:'y1',order:1},
+      {label:'退货率(%)',data:retData,type:'line',borderColor:'#f87171',borderWidth:2,borderDash:[4,2],pointRadius:3,tension:.3,yAxisID:'y2',order:0}
+    ]
+  },
+  options:{
+    responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},
+    scales:{
+      y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},
+      y1:{position:'right',title:{display:true,text:'单量',color:'#22c55e'},grid:{display:false},ticks:{color:'#22c55e'}},
+      y2:{display:false},
+      x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+    }
+  }
+});
+
+// ===== CHART 2: Monthly GMV bar =====
+var mdata=[{"month": "2025-09", "gmv": 34853, "orders": 97, "success": 43, "return_rate": 21.9}, {"month": "2025-10", "gmv": 66622, "orders": 178, "success": 82, "return_rate": 21.0}, {"month": "2025-11", "gmv": 75700, "orders": 200, "success": 87, "return_rate": 20.6}, {"month": "2025-12", "gmv": 76694, "orders": 204, "success": 115, "return_rate": 18.1}, {"month": "2026-01", "gmv": 32018, "orders": 82, "success": 42, "return_rate": 22.9}, {"month": "2026-02", "gmv": 45590, "orders": 110, "success": 54, "return_rate": 19.6}, {"month": "2026-03", "gmv": 58719, "orders": 131, "success": 67, "return_rate": 16.8}, {"month": "2026-04", "gmv": 40004, "orders": 96, "success": 52, "return_rate": 21.8}, {"month": "2026-05", "gmv": 82614, "orders": 186, "success": 94, "return_rate": 26.9}, {"month": "2026-06", "gmv": 60166, "orders": 134, "success": 59, "return_rate": 25.4}, {"month": "2026-07", "gmv": 31430, "orders": 70, "success": 34, "return_rate": 15.7}, {"month": "2026-08", "gmv": 3592, "orders": 8, "success": 0, "return_rate": 0.0}];
+var mlabels=mdata.map(function(d){return d.month});
+var mgmv=mdata.map(function(d){return d.gmv});
+var morders=mdata.map(function(d){return d.orders});
+
+new Chart(document.getElementById('c2'),{
+  type:'bar',
+  data:{
+    labels:mlabels,
+    datasets:[
+      {label:'月GMV(¥)',data:mgmv,backgroundColor:function(ctx){var v=ctx.raw;return v>50000?'#14532d88':v>30000?'#3b82f688':v>10000?'#713f1288':'#7f1d1d88'},borderColor:function(ctx){var v=ctx.raw;return v>50000?'#22c55e':v>30000?'#3b82f6':v>10000?'#fbbf24':'#f87171'},borderWidth:1,yAxisID:'y',order:2},
+      {label:'月单量',data:morders,type:'line',borderColor:'#a78bfa',borderWidth:2,pointRadius:5,tension:.3,yAxisID:'y1',order:1}
+    ]
+  },
+  options:{
+    responsive:true,interaction:{mode:'index',intersect:false},
+    plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true,padding:12}}},
+    scales:{
+      y:{position:'left',title:{display:true,text:'GMV ¥',color:'#64748b'},grid:{color:'#1e2030'},ticks:{color:'#94a3b8'}},
+      y1:{position:'right',title:{display:true,text:'单量',color:'#a78bfa'},grid:{display:false},ticks:{color:'#a78bfa'}},
+      x:{ticks:{color:'#94a3b8'},grid:{color:'#1e2030'}}
+    }
+  }
+});
+});
+</script>
+</body></html>
