@@ -1,113 +1,173 @@
-<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>醒狮运营分析看板</title><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script><style>
-*{box-sizing:border-box;margin:0;padding:0}body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:20px}h2{color:#60a5fa;font-size:18px;margin-bottom:12px;border-bottom:1px solid #2d3348;padding-bottom:8px}.module{background:#1a1d2e;border-radius:10px;padding:20px;margin-bottom:20px;border:1px solid #2d3348;overflow:hidden}.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}.filters label{font-size:13px;color:#94a3b8}.filters select,.filters input{background:#0f1117;color:#e0e0e0;border:1px solid #2d3348;border-radius:6px;padding:6px 10px;font-size:13px}.chart-wrap{position:relative;height:420px}.card .goods-name{max-width:none;overflow:visible;white-space:normal;word-break:break-all;display:block;line-height:1.3;font-size:11px}.card td{padding:4px 6px;border-bottom:1px solid #1a1d2e;vertical-align:top}.cards{display:flex;gap:12px}.card{flex:1;background:#0f1117;border-radius:8px;padding:12px;border:1px solid #2d3348;min-width:0;overflow:hidden}.card h3{color:#60a5fa;font-size:13px;margin-bottom:8px}.card table{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed}.card th:nth-child(1){width:28px}.card th:nth-child(2){width:auto}.card th:nth-child(3){width:70px;text-align:right}.card td:nth-child(3){text-align:right}.card th{text-align:left;padding:6px 8px;color:#94a3b8;border-bottom:1px solid #2d3348;position:sticky;top:0;background:#0f1117}.scroll{max-height:420px;overflow-y:auto}.card .rank{color:#94a3b8;width:24px}.alert-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:12px}.alert-table th{text-align:left;padding:8px 10px;color:#94a3b8;border-bottom:1px solid #2d3348;background:#0f1117;position:sticky;top:0}.alert-table td{padding:8px 10px;border-bottom:1px solid #1a1d2e}.alert-row{background:rgba(248,113,113,0.08)}.delta-up{color:#f87171;font-weight:bold}.btn-group{display:flex;gap:8px;margin-bottom:12px}.btn-group button{padding:6px 16px;border-radius:6px;cursor:pointer;background:#0f1117;color:#94a3b8;border:1px solid #2d3348}.btn-group button.active{background:#3b82f6;color:#fff;border-color:#3b82f6}.roi-high{color:#22c55e;font-weight:bold}.roi-mid{color:#f59e0b}.roi-low{color:#f87171}.no-data{text-align:center;color:#94a3b8;padding:20px}.loading{text-align:center;color:#94a3b8;padding:40px;font-size:14px}.spinner{display:inline-block;width:20px;height:20px;border:2px solid #2d3348;border-top:2px solid #60a5fa;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle}@keyframes spin{to{transform:rotate(360deg)}}
-</style></head><body>
-<h1 style="color:#60a5fa;font-size:22px;margin-bottom:20px">📊 醒狮运营分析看板</h1>
-<div class="loading" id="loader"><span class="spinner"></span>数据加载中...</div>
-<div class="module"><h2>📈 模块一：GMV / UV / 订单数 趋势</h2><div class="filters"><label>起始月份</label><select id="m1-month-from"><option value="all">全部</option></select><label>终止月份</label><select id="m1-month-to"><option value="all">全部</option></select><label>日期范围</label><input type="date" id="m1-start"><span style="color:#94a3b8">至</span><input type="date" id="m1-end"><label>货号搜索</label><input type="text" id="m1-goods" placeholder="输入货号..."></div><div class="chart-wrap"><canvas id="m1-chart"></canvas></div></div>
-<div class="module"><h2>🏆 模块二：TOP20 排行</h2><div class="filters"><label>日期筛选</label><input type="date" id="m2-start"><span style="color:#94a3b8">至</span><input type="date" id="m2-end"><button onclick="updateM2()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">刷新</button></div><div class="cards"><div class="card"><h3>📊 UV TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>UV</th></tr></thead><tbody id="m2-uv"></tbody></table></div></div><div class="card"><h3>💰 支付金额 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>金额</th></tr></thead><tbody id="m2-gmv"></tbody></table></div></div><div class="card"><h3>📦 支付订单量 TOP20</h3><div class="scroll"><table><thead><tr><th>#</th><th>货号</th><th>订单</th></tr></thead><tbody id="m2-orders"></tbody></table></div></div></div></div>
-<div class="module"><h2>⚠️ 模块三：退货率异常警示</h2><div class="btn-group"><button id="m3-btn-7d" class="active" onclick="switchM3('7d')">近7天异常</button><button id="m3-btn-30d" onclick="switchM3('30d')">近30天异常</button><button id="m3-btn-all" onclick="switchM3('all')">全部退货率</button></div><div class="scroll" style="max-height:360px"><table class="alert-table"><thead><tr><th>货号</th><th>历史退货率</th><th>近期退货率</th><th>变化</th><th>总订单</th><th>近期订单</th></tr></thead><tbody id="m3-body"></tbody></table></div><div id="m3-nodata" class="no-data" style="display:none">✅ 未检测到退货率异常款式</div></div>
-<div class="module"><h2>📢 模块四：社区投放任务分析</h2><div class="filters"><label>任务月份</label><select id="m4-task-month"><option value="all">全部</option></select><label>发布月份</label><select id="m4-pub-month"><option value="all">全部</option></select><button onclick="updateM4()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>匹配货号</th><th>动态发布数量</th><th>实际任务金额(¥)</th><th>曝光</th><th>阅读数</th><th>商详访问</th><th>互动数</th></tr></thead><tbody id="m4-body"></tbody><tfoot id="m4-foot"></tfoot></table></div>
-<div class="module"><h2>🚀 模块五：得物推投放分析</h2><div class="filters"><label>日期筛选</label><input type="date" id="m5-start"><span style="color:#94a3b8">至</span><input type="date" id="m5-end"><button onclick="updateM5()" style="background:#3b82f6;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer">筛选</button></div><table class="alert-table"><thead><tr><th>货号</th><th>总消耗(¥)</th><th>总支付金额(¥)</th><th>总支付单量</th><th>综合ROI</th><th>订单成本(¥)</th><th>建议</th></tr></thead><tbody id="m5-body"></tbody></table></div>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>六店经营分析看板 V2</title>
+  <script src="chart.umd.min.js"></script>
+  <script src="data.js?v=5"></script>
+  <style>
+    :root{--bg:#0f1117;--card:#1a1d2e;--ink:#e0e0e0;--muted:#94a3b8;--line:#2d3348;--blue:#2563eb;--cyan:#06b6d4;--orange:#f59e0b;--red:#ef4444;--green:#10b981;--violet:#8b5cf6;--nav:#10131d}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif}
+    header{background:linear-gradient(125deg,#10131d,#1a1d2e);color:#f8fafc;padding:22px 28px 18px;position:sticky;top:0;z-index:20;box-shadow:0 6px 20px #00000055;border-bottom:1px solid var(--line)}
+    header h1{margin:0 0 5px;font-size:24px}.subtitle{font-size:13px;color:#cbd5e1}.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;background:#ffffff19;border:1px solid #ffffff24;margin-left:8px}
+    nav{display:flex;gap:8px;overflow:auto;margin-top:15px}nav a{white-space:nowrap;color:#cbd5e1;text-decoration:none;padding:7px 11px;border-radius:8px;font-size:13px;background:#ffffff0d;border:1px solid #ffffff0b}nav a:hover{background:#ffffff18}
+    main{max-width:1500px;margin:0 auto;padding:22px}.module{scroll-margin-top:140px;margin-bottom:24px}.module-head{display:flex;align-items:end;justify-content:space-between;margin:0 0 10px}.module h2{font-size:19px;margin:0;color:#60a5fa}.module-note{font-size:12px;color:var(--muted)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 4px 18px #00000028;padding:16px}.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-bottom:14px}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;color:var(--muted)}input,select,button{border:1px solid var(--line);border-radius:7px;background:#0f1117;color:var(--ink);padding:8px 10px;font:inherit;font-size:13px}input[type=date],select{min-height:36px;color-scheme:dark}input[type=text]{min-width:220px}button{cursor:pointer}button.primary{background:var(--blue);color:white;border-color:var(--blue)}button.toggle.on{background:#3b82f6;border-color:#3b82f6;color:#fff;font-weight:650}
+    .checks{display:flex;gap:6px}.checks label{display:flex;gap:5px;align-items:center;border:1px solid var(--line);padding:8px 9px;border-radius:7px;font-size:12px;background:#0f1117}input[type=checkbox]{accent-color:#3b82f6}
+    .kpis{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:10px;margin-bottom:14px}.kpi{background:#0f1117;border:1px solid var(--line);border-radius:9px;padding:11px}.kpi span{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}.kpi b{font-size:17px;color:#f1f5f9}.chartbox{height:430px;position:relative}.chartbox.tall{height:520px}.push-detail{display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px}.push-detail.show{display:block}.push-detail h3{font-size:14px;margin:0 0 8px;color:#60a5fa}
+    .top-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.rank h3,.table-title{font-size:14px;margin:0 0 8px;color:#60a5fa}.rank-row{display:grid;grid-template-columns:28px 1fr auto;gap:7px;padding:7px 3px;border-top:1px solid #24283a;font-size:12px;align-items:center}.rank-row .code{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rank-row .value{font-weight:650;font-variant-numeric:tabular-nums}.rank-num{color:#94a3b8;text-align:center}.rank-row:nth-child(-n+4) .rank-num{color:#f59e0b;font-weight:700}
+    .split{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(360px,.8fr);gap:12px}.table-wrap{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:9px}table{border-collapse:collapse;width:100%;font-size:12px}th{position:sticky;top:0;background:#0f1117;z-index:2;color:#94a3b8;text-align:left}th,td{padding:8px 9px;border-bottom:1px solid #24283a;white-space:nowrap}td.num{text-align:right;font-variant-numeric:tabular-nums}tbody tr:hover{background:#202538}.empty{text-align:center;padding:32px;color:var(--muted)}
+    .quality{padding:10px 12px;background:#292516;color:#fbbf24;border:1px solid #5e4b19;border-radius:8px;font-size:12px;margin-top:10px}.foot{font-size:11px;color:#64748b;text-align:center;padding:10px 0 24px}.multi-status{display:flex;flex-wrap:wrap;gap:6px;max-width:620px}.multi-status label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:7px;background:#0f1117;padding:8px 9px;font-size:12px}.decision-table{margin-top:14px}.decision-table h3{font-size:14px;margin:0 0 8px;color:#60a5fa}.chart-hint{text-align:center;color:#64748b;font-size:11px;margin:4px 0 7px}.chart-hint b{color:#94a3b8;font-weight:600}.series-toggle{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:2px 0 4px}.series-toggle button{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;background:#0f1117;border:1px solid #394158;color:#cbd5e1;border-radius:999px;font-size:11px}.series-toggle button:hover{border-color:#64748b}.series-toggle button.off{opacity:.45;text-decoration:line-through}.series-toggle .swatch{width:11px;height:11px;border-radius:3px;box-shadow:0 0 0 1px #ffffff24 inset}
+    @media(max-width:900px){header{position:relative}.kpis{grid-template-columns:repeat(2,1fr)}.top-grid,.split{grid-template-columns:1fr}.chartbox,.chartbox.tall{height:360px}main{padding:12px}.module{scroll-margin-top:10px}}
+  </style>
+</head>
+<body>
+<header>
+  <h1 id="dashboardTitle">经营分析看板 V2 <span class="badge">正式版</span></h1>
+  <div class="subtitle" id="metaLine"></div>
+  <nav><a href="#m1">模块一 · 经营趋势</a><a href="#m2">模块二 · TOP20</a><a href="#m3">模块三 · 得物推商品</a><a href="#m4">模块四 · 得物推内容</a><a href="#m5">模块五 · 社区投放</a><a href="#m6">模块六 · 退货率</a></nav>
+</header>
+<main>
+  <section id="m1" class="module"><div class="module-head"><h2>模块一 · UV、退货GMV、去退GSV与大盘趋势</h2><span class="module-note">交易失败剔除；交易关闭成功=退货GMV；其余状态=去退GSV</span></div><div class="card">
+    <div class="filters" id="m1Filters"></div><div class="kpis" id="m1Kpis"></div><div class="quality" id="m1Notice"></div><div id="m1Legend" class="series-toggle"></div><div class="chart-hint">点击<b>彩色选项</b>可隐藏或恢复对应柱状图、曲线；曲线固定绘制在柱体上层；订单数量请将鼠标停在对应GMV柱上查看</div><div class="chartbox tall"><canvas id="m1Chart"></canvas></div>
+  </div></section>
+  <section id="m2" class="module"><div class="module-head"><h2>模块二 · 货号 TOP20</h2><span class="module-note">同一 SPUID 始终展示源表最新完整货号</span></div><div class="card"><div class="filters" id="m2Filters"></div><div class="top-grid" id="topGrid"></div></div></section>
+  <section id="m3" class="module"><div class="module-head"><h2>模块三 · 得物推数据—商品分析</h2><span class="module-note">直接支付以强调色嵌入总支付柱；归因明细使用独立比例</span></div><div class="card"><div class="filters" id="m3Filters"></div><div class="kpis" id="m3Kpis"></div><div class="chartbox"><canvas id="m3Chart"></canvas></div><div id="m3PushPanel" class="push-detail"><h3>得物推归因明细（独立比例，显示原始数值）</h3><div class="chartbox"><canvas id="m3PushChart"></canvas></div><div class="decision-table"><h3>货号投放决策（随日期和货号筛选联动）</h3><div class="table-wrap"><table><thead><tr><th>货号</th><th>消耗</th><th>直接支付金额</th><th>直接支付单量</th><th>ROI</th></tr></thead><tbody id="m3PushBody"></tbody></table></div></div></div><div class="quality" id="m3Quality"></div></div></section>
+  <section id="m4" class="module"><div class="module-head"><h2>模块四 · 得物推内容分析</h2><span class="module-note">按内容ID及日期查看消耗、商详访问、直接支付量与金额</span></div><div class="card"><div class="filters" id="m4Filters"></div><div class="split"><div class="chartbox"><canvas id="m4Chart"></canvas></div><div class="table-wrap"><table><thead><tr><th>内容ID</th><th>消耗</th><th>访问</th><th>直接单量</th><th>直接金额</th></tr></thead><tbody id="m4Body"></tbody></table></div></div></div></section>
+  <section id="m5" class="module"><div class="module-head"><h2>模块五 · 社区投放任务分析</h2><span class="module-note">任务月份、动态发布时间、任务状态与货号联动</span></div><div class="card"><div class="filters" id="m5Filters"></div><div class="kpis" id="m5Kpis"></div><div class="table-wrap"><table><thead><tr><th>货号</th><th>动态数</th><th>实际金额</th><th>曝光</th><th>阅读</th><th>商详访问</th><th>互动</th></tr></thead><tbody id="m5Body"></tbody></table></div></div></section>
+  <section id="m6" class="module"><div class="module-head"><h2>模块六 · 综合退货率分析</h2><span class="module-note">交易关闭成功＋售后识别补充退货</span></div><div class="card"><div class="filters" id="m6Filters"></div><div class="kpis" id="m6Kpis"></div><div class="table-wrap"><table><thead><tr><th>排名</th><th>货号</th><th>品牌</th><th>类目</th><th>有效订单</th><th>交易关闭成功</th><th>售后补充</th><th>综合退货</th><th>退货率</th></tr></thead><tbody id="m6Body"></tbody></table></div><div class="quality">综合退货率 =（交易订单状态为“交易关闭成功”的唯一订单＋售后退款/价格达到80%且交易状态为“交易成功”的唯一订单）÷ 剔除“交易失败”后的唯一订单。</div></div></section>
+  <div class="foot" id="dashboardFoot">本页面只读取本地源文件生成的静态数据，不连接线上仓库，不修改 Hermes 或自动任务。</div>
+</main>
 <script>
-var DAILY_BRAND,DAILY_GOODS,ALL_DATES,ALL_BRANDS,ALL_GOODS,ALL_MONTHS;
-var MARKET_MAP,ANOMALY_7D,ANOMALY_30D,GOODS_RATE;
-var TASK_RAW,TASK_MONTHS,PUB_MONTHS,DETUI_AGG,PUSH_RAW;
-var m1Chart=null,m3Mode='7d',VER='20260707';
-const FIVECAT = {"n_pay": 19213, "gmv_pay": 24102738.0, "mature_return_rate": 40.38, "as_start": "2025-01-01", "n_ret": 59, "gmv_ret": 74896.0, "n_cancel": 0, "gmv_cancel": 0.0, "n_unclear": 7699, "gmv_unclear": 9820821.0, "n_normal": 11455, "gmv_normal": 14207021.0, "refund_total": 9895717.0, "n_reliable_mature": 19213, "n_reliable_ret": 59, "daily_gmv": 27234.73};
-var m0Chart=null;
-
-function fmt(n){return n>=10000?(n/10000).toFixed(1)+'w':n.toLocaleString()}
-function fmtMoney(n){return n>=10000?'¥'+(n/10000).toFixed(1)+'w':'¥'+n.toLocaleString()}
-
-async function loadAll(){
-  var vars=['DAILY_BRAND','DAILY_GOODS','ALL_DATES','ALL_BRANDS','ALL_GOODS','ALL_MONTHS','MARKET_MAP','ANOMALY_7D','ANOMALY_30D','GOODS_RATE','TASK_RAW','TASK_MONTHS','PUB_MONTHS','DETUI_AGG','PUSH_RAW'];
-  var ps=vars.map(function(n){return fetch('data/'+n+'.json?v='+VER).then(function(r){return r.json()}).then(function(d){window[n]=d})});
-  await Promise.all(ps);
-  document.getElementById('loader').style.display='none';
+const C={blue:'#2563eb',cyan:'#06b6d4',orange:'#f59e0b',red:'#ef4444',green:'#10b981',violet:'#8b5cf6',gray:'#94a3b8'};
+Chart.defaults.color='#94a3b8';Chart.defaults.borderColor='#2d3348';
+const charts={}; const money=n=>'¥'+Math.round(n||0).toLocaleString('zh-CN'); const count=n=>Math.round(n||0).toLocaleString('zh-CN');
+const sum=(a,k)=>a.reduce((s,x)=>s+(+x[k]||0),0); const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); const preciseCount=n=>Number.isInteger(+n)?count(n):Number(n).toLocaleString('zh-CN',{maximumFractionDigits:1});
+const uniq=a=>[...new Set(a.filter(Boolean))].sort(); const byDate=(a)=>a.reduce((o,x)=>{(o[x.date]??=[]).push(x);return o},{});
+function field(label,html){return `<div class="field"><label>${label}</label>${html}</div>`} function opt(v,t=v){return `<option value="${esc(v)}">${esc(t)}</option>`}
+function rangeFilter(rows,from,to,key='date'){return rows.filter(x=>(!from||x[key]>=from)&&(!to||x[key]<=to))}
+function codeMatch(x,q){return !q||String(x.code||'').toLowerCase().includes(q.toLowerCase())}
+function productScope(q){
+  const query=String(q||'').trim();
+  if(!query)return null;
+  const rows=[...DATA.product_daily,...DATA.orders];
+  return new Set(rows.filter(x=>codeMatch(x,query)).map(x=>String(x.spu||'')).filter(Boolean));
 }
+function productMatch(x,q,scope){return !q||(scope?.has(String(x.spu||''))??false)||codeMatch(x,q)}
+function destroy(id){if(charts[id])charts[id].destroy()}
+function line(ds,label,data,color,y='y'){ds.push({label,data,borderColor:color,backgroundColor:color,borderWidth:3,pointRadius:2,pointHoverRadius:5,pointBorderWidth:2,pointBackgroundColor:'#1a1d2e',tension:.22,type:'line',yAxisID:y,order:0,clip:false})}
+const baseOptions={responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{boxWidth:12,font:{size:11},usePointStyle:true},onHover:(e,item,legend)=>{legend.chart.canvas.style.cursor='pointer'},onLeave:(e,item,legend)=>{legend.chart.canvas.style.cursor='default'}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.dataset.yAxisID==='money'?money(c.raw):Number(c.raw||0).toLocaleString('zh-CN',{maximumFractionDigits:2})}`}}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:14}},y:{position:'left',beginAtZero:true,title:{display:true,text:'UV / 数量'}},money:{position:'right',beginAtZero:true,grid:{drawOnChartArea:false},title:{display:true,text:'金额（元）'}}}};
+document.getElementById('metaLine').textContent=`数据：${DATA.meta.date_min} 至 ${DATA.meta.date_max} · 源文件SHA ${DATA.meta.source_sha256.slice(0,12)} · 历史货号按SPUID映射为最新完整货号`;
+document.title=`${DATA.meta.store}经营分析看板 V2`;
+document.getElementById('dashboardTitle').innerHTML=`${esc(DATA.meta.store)}经营分析看板 V2 <span class="badge">正式版</span>`;
+document.getElementById('dashboardFoot').textContent=`本页面数据由${DATA.meta.store}业务源文件生成，数据口径以当前看板版本为准。`;
 
-function initM1(){
-  var fs=document.getElementById('m1-month-from'),ts=document.getElementById('m1-month-to');
-  ALL_MONTHS.forEach(function(m){var t=m.replace('-','年')+'月';var o=document.createElement('option');o.value=m;o.textContent=t;fs.appendChild(o);o=document.createElement('option');o.value=m;o.textContent=t;ts.appendChild(o)});
-  if(ALL_MONTHS.length>=3){fs.value=ALL_MONTHS[ALL_MONTHS.length-3];ts.value=ALL_MONTHS[ALL_MONTHS.length-1]}
-  document.getElementById('m1-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-90)]||ALL_DATES[0];
-  document.getElementById('m1-end').value=ALL_DATES[ALL_DATES.length-1];
-  [fs,ts,document.getElementById('m1-start'),document.getElementById('m1-end'),document.getElementById('m1-goods')].forEach(function(el){el.addEventListener('change',updateM1)});
-  document.getElementById('m1-goods').addEventListener('input',updateM1);
-  updateM1()
-}
+function commonDateControls(prefix,withMonth=true){const months=uniq(DATA.product_daily.map(x=>x.date.slice(0,7)));return `${withMonth?field('月份',`<select id="${prefix}Month"><option value="">全部月份</option>${months.map(x=>opt(x)).join('')}</select>`):''}${field('开始日期',`<input id="${prefix}From" type="date" value="${DATA.meta.date_max.slice(0,8)}01">`)}${field('结束日期',`<input id="${prefix}To" type="date" value="${DATA.meta.date_max}">`)}`}
+function bind(ids,fn){ids.forEach(id=>document.getElementById(id)?.addEventListener('input',fn));ids.forEach(id=>document.getElementById(id)?.addEventListener('change',fn))}
 
-function updateM1(){
-  var mf=document.getElementById('m1-month-from').value,mt=document.getElementById('m1-month-to').value;
-  var im=mf!=='all'&&mt!=='all';
-  var d1=im?'':document.getElementById('m1-start').value,d2=im?'':document.getElementById('m1-end').value;
-  var gf=document.getElementById('m1-goods').value.trim().toUpperCase();
-  var raw=gf?DAILY_GOODS.filter(function(r){return r['商品货号']&&r['商品货号'].toUpperCase().indexOf(gf)>=0}):DAILY_BRAND;
-  if(im)raw=raw.filter(function(r){return r.date_str>=mf+'-01'&&r.date_str<=mt+'-31'});
-  else if(d1&&d2)raw=raw.filter(function(r){return r.date_str>=d1&&r.date_str<=d2});
-  var dates=[],gmv=[],uv=[],orders=[];
-  if(im){var mo={};raw.forEach(function(r){var m=r.date_str.substr(0,7);if(!mo[m])mo[m]={GMV:0,UV:0,orders:0};mo[m].GMV+=r.GMV;mo[m].UV+=r.UV;mo[m].orders+=r.orders});var ks=Object.keys(mo).sort();ks.forEach(function(m){dates.push(m);gmv.push(mo[m].GMV);uv.push(mo[m].UV);orders.push(mo[m].orders)})}
-  else if(gf){var agg={};raw.forEach(function(r){if(!agg[r.date_str])agg[r.date_str]={GMV:0,UV:0,orders:0};agg[r.date_str].GMV+=r.GMV;agg[r.date_str].UV+=r.UV;agg[r.date_str].orders+=r.orders});var ks2=Object.keys(agg).sort();ks2.forEach(function(d){dates.push(d);gmv.push(agg[d].GMV);uv.push(agg[d].UV);orders.push(agg[d].orders)})}
-  else raw.forEach(function(r){dates.push(r.date_str);gmv.push(r.GMV);uv.push(r.UV);orders.push(r.orders)});
-  var mkt;if(im){mkt=dates.map(function(m){var sum=0,cnt=0;for(var d in MARKET_MAP){if(d.substr(0,7)===m){sum+=MARKET_MAP[d];cnt++}}return cnt?sum/cnt:null})}else{mkt=dates.map(function(d){return MARKET_MAP[d]||null})}
-  if(m1Chart)m1Chart.destroy();
-  m1Chart=new Chart(document.getElementById('m1-chart').getContext('2d'),{type:'bar',data:{labels:dates,datasets:[
-    {label:'GMV(元)',data:gmv,backgroundColor:'rgba(96,165,250,0.6)',borderColor:'#60a5fa',borderWidth:1,maxBarThickness:16,yAxisID:'y'},
-    {label:'UV',type:'line',data:uv,borderColor:'#34d399',yAxisID:'y1',tension:0.3,pointRadius:0},
-    {label:'订单',type:'line',data:orders,borderColor:'#f59e0b',yAxisID:'y2',tension:0.3,pointRadius:0},
-    {label:'大盘日韩表指数(万元)',type:'line',data:mkt,borderColor:'#f87171',yAxisID:'y3',tension:0.3,pointRadius:0,borderDash:[5,5]}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',usePointStyle:true}}},scales:{x:{ticks:{color:'#64748b',maxTicksLimit:15}},y:{type:'linear',position:'left',ticks:{color:'#60a5fa',callback:function(v){return v>=10000?(v/10000).toFixed(0)+'w':v}}},y1:{type:'linear',position:'right',beginAtZero:true,ticks:{color:'#34d399'},grid:{drawOnChartArea:false}},y2:{type:'linear',position:'right',beginAtZero:true,ticks:{color:'#f59e0b'},grid:{drawOnChartArea:false}},y3:{type:'linear',position:'right',beginAtZero:true,ticks:{color:'#f87171'},grid:{drawOnChartArea:false}}}}})
+const allMonths=uniq(DATA.product_daily.map(x=>x.date.slice(0,7))),latestMonth=DATA.meta.date_max.slice(0,7),monthOpts=allMonths.map(x=>opt(x)).join('');
+const m1HiddenSeries=new Set(),m1DimensionType=DATA.meta.m1_filter||'none';
+const m1DimensionField=m1DimensionType==='brand'?field('品牌',`<select id="m1Dimension"><option value="">全部品牌</option>${DATA.meta.brands.map(x=>opt(x)).join('')}</select>`):m1DimensionType==='category'?field('类目',`<select id="m1Dimension"><option value="">全部类目</option>${DATA.meta.categories.map(x=>opt(x)).join('')}</select>`):'';
+document.getElementById('m1Filters').innerHTML=field('开始月份',`<select id="m1StartMonth">${monthOpts}</select>`)+field('结束月份',`<select id="m1EndMonth">${monthOpts}</select>`)+field('开始日期',`<input id="m1From" type="date" value="${latestMonth}-01">`)+field('结束日期',`<input id="m1To" type="date" value="${DATA.meta.date_max}">`)+field('货号搜索','<input id="m1Code" type="text" placeholder="输入完整或部分货号">')+m1DimensionField+`<div class="checks"><label><input id="showReturn" type="checkbox" checked>退货GMV</label><label><input id="showGsv" type="checkbox" checked>去退GSV</label></div>`;
+m1StartMonth.value=latestMonth;m1EndMonth.value=latestMonth;
+function m1Update(){
+  const from=m1From.value,to=m1To.value,q=m1Code.value,dimensionValue=document.getElementById('m1Dimension')?.value||'';
+  const dimensionMatch=x=>!dimensionValue||(m1DimensionType==='brand'?x.brand:x.cat)===dimensionValue;
+  const monthMode=Boolean(m1StartMonth.value&&m1EndMonth.value);
+  const scope=productScope(q);
+  const pd=rangeFilter(DATA.product_daily,from,to).filter(x=>productMatch(x,q,scope)&&dimensionMatch(x));
+  const os=rangeFilter(DATA.orders,from,to).filter(x=>productMatch(x,q,scope)&&dimensionMatch(x)&&x.kind!=='failed');
+  const mr=rangeFilter(DATA.market,from,to);
+  const key=x=>monthMode?x.date.slice(0,7):x.date;
+  const labels=uniq([...pd.map(key),...os.map(key),...mr.map(key)]);
+  const group=(rows)=>rows.reduce((o,x)=>{(o[key(x)]??=[]).push(x);return o},{});
+  const p=group(pd),o=group(os),m=group(mr);
+  const uv=labels.map(d=>sum(p[d]||[],'uv'));
+  const ret=labels.map(d=>sum((o[d]||[]).filter(x=>x.kind==='return'),'amount'));
+  const gsv=labels.map(d=>sum((o[d]||[]).filter(x=>x.kind==='gsv'),'amount'));
+  const returnQty=labels.map(d=>sum((o[d]||[]).filter(x=>x.kind==='return'),'qty'));
+  const gsvQty=labels.map(d=>sum((o[d]||[]).filter(x=>x.kind==='gsv'),'qty'));
+  const qty=labels.map((d,i)=>(showReturn.checked?returnQty[i]:0)+(showGsv.checked?gsvQty[i]:0));
+  const ds=[];
+  if(showReturn.checked)ds.push({label:'退货GMV',data:ret,orderQty:returnQty,backgroundColor:C.orange,type:'bar',stack:'gmv',yAxisID:'money',order:20});
+  if(showGsv.checked)ds.push({label:'去退GSV',data:gsv,orderQty:gsvQty,backgroundColor:C.blue,type:'bar',stack:'gmv',yAxisID:'money',order:20});
+  line(ds,'商详UV',uv,C.cyan,'y');
+  const scales={x:{...baseOptions.scales.x},y:{...baseOptions.scales.y},money:{...baseOptions.scales.money}};
+  uniq(mr.map(x=>x.name)).forEach((name,i)=>{
+    const values=labels.map(d=>{const rows=(m[d]||[]).filter(x=>x.name===name).map(x=>+x.value).filter(Number.isFinite);return rows.length?rows.reduce((a,v)=>a+v,0)/rows.length:null});
+    const axis='market'+i;
+    const curveColor=[C.violet,C.green,C.red][i%3];
+    ds.push({label:name+'大盘指数'+(monthMode?'（月均）':''),data:values,type:'line',borderColor:curveColor,backgroundColor:curveColor,borderWidth:3,pointRadius:monthMode?4:2,pointHoverRadius:6,pointBorderWidth:2,pointBackgroundColor:'#1a1d2e',tension:.2,spanGaps:true,yAxisID:axis,order:0,clip:false});
+    scales[axis]={display:false,beginAtZero:false,position:i%2?'right':'left',grid:{drawOnChartArea:false}};
+  });
+  destroy('m1');
+  const orderQty=sum(os.filter(x=>(showReturn.checked&&x.kind==='return')||(showGsv.checked&&x.kind==='gsv')),'qty');
+  const orderAmount=sum(os,'amount');
+  m1Chart.dataset.granularity=monthMode?'month':'day';m1Chart.dataset.labels=labels.join(',');m1Chart.dataset.matchingSpuids=String(scope?.size||0);m1Chart.dataset.orderQty=String(orderQty);m1Chart.dataset.orderAmount=String(orderAmount);
+  const m1Options={...baseOptions,plugins:{...baseOptions.plugins,legend:{...baseOptions.plugins.legend,display:false},tooltip:{callbacks:{label:c=>{const value=c.dataset.yAxisID==='money'?money(c.raw):Number(c.raw||0).toLocaleString('zh-CN',{maximumFractionDigits:2});const rowQty=c.dataset.orderQty?.[c.dataIndex];return `${c.dataset.label}: ${value}${rowQty===undefined?'':`；订单数量：${preciseCount(rowQty)}件`}`}}}},scales};
+  charts.m1=new Chart(m1Chart,{type:'bar',data:{labels,datasets:ds},options:m1Options});
+  ds.forEach((d,i)=>{if(m1HiddenSeries.has(d.label))charts.m1.setDatasetVisibility(i,false)});charts.m1.update('none');
+  const legendEl=document.getElementById('m1Legend');
+  legendEl.innerHTML=ds.map((d,i)=>`<button type="button" data-index="${i}" data-label="${esc(d.label)}" class="${m1HiddenSeries.has(d.label)?'off':''}" aria-pressed="${!m1HiddenSeries.has(d.label)}"><span class="swatch" style="background:${d.borderColor||d.backgroundColor}"></span>${esc(d.label)}</button>`).join('');
+  legendEl.querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.dataset.index,label=btn.dataset.label,visible=charts.m1.isDatasetVisible(i);charts.m1.setDatasetVisibility(i,!visible);if(visible)m1HiddenSeries.add(label);else m1HiddenSeries.delete(label);btn.classList.toggle('off',visible);btn.setAttribute('aria-pressed',String(!visible));charts.m1.update()}));
+  m1Kpis.innerHTML=[['图表粒度',monthMode?'按月汇总':'按日明细'],['商详UV',sum(pd,'uv')],['退货GMV',money(sum(os.filter(x=>x.kind==='return'),'amount'))],['去退GSV',money(sum(os.filter(x=>x.kind==='gsv'),'amount'))],['所选数量',orderQty]].map(([a,v])=>`<div class="kpi"><span>${a}</span><b>${typeof v==='number'?count(v):v}</b></div>`).join('');
+  if(q&&!scope?.size)m1Notice.textContent=`未找到与“${q}”匹配的货号，请检查输入。`;
+  else if(q&&!os.length)m1Notice.textContent=`已匹配 ${scope.size} 个 SPUID，但当前日期范围内没有剔除“交易失败”后的有效订单；可扩大月份或日期范围查看。`;
+  else if(q){const lastOrder=os.map(x=>x.date).sort().at(-1),lastUv=pd.filter(x=>(+x.uv||0)>0).map(x=>x.date).sort().at(-1);m1Notice.textContent=lastUv&&lastOrder&&lastUv>lastOrder?`已按 ${scope.size} 个 SPUID 联动：${os.length} 个有效订单，${preciseCount(orderQty)} 件；最后一笔有效订单为 ${lastOrder}，商详UV仍更新至 ${lastUv}，其间无有效订单的日期不会显示GMV柱。`:`已按 ${scope.size} 个 SPUID 联动商详与交易订单：${os.length} 个有效订单，${preciseCount(orderQty)} 件。`;}
+  else m1Notice.textContent='';
 }
+function monthBounds(v){const [y,m]=v.split('-').map(Number);return [v+'-01',`${v}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`]}
+function syncM1Months(){if(m1StartMonth.value>m1EndMonth.value)m1EndMonth.value=m1StartMonth.value;const a=monthBounds(m1StartMonth.value),b=monthBounds(m1EndMonth.value);m1From.value=a[0];m1To.value=b[1];m1Update()}
+[m1StartMonth,m1EndMonth].forEach(x=>x.addEventListener('change',syncM1Months));[m1From,m1To].forEach(x=>x.addEventListener('input',()=>{m1StartMonth.value='';m1EndMonth.value='';m1Update()}));bind(['m1Code','m1Dimension','showReturn','showGsv'],m1Update);
 
-function initM2(){document.getElementById('m2-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m2-end').value=ALL_DATES[ALL_DATES.length-1];updateM2()}
-function updateM2(){
-  var d1=document.getElementById('m2-start').value,d2=document.getElementById('m2-end').value;
-  var agg={};DAILY_GOODS.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['商品货号'];if(!agg[g])agg[g]={UV:0,GMV:0,orders:0};agg[g].UV+=r.UV;agg[g].GMV+=r.GMV;agg[g].orders+=r.orders});
-  var arr=Object.entries(agg).map(function(e){return{goods:e[0],UV:e[1].UV,GMV:e[1].GMV,orders:e[1].orders}});
-  var tu=arr.slice().sort(function(a,b){return b.UV-a.UV}).slice(0,20);
-  var tg=arr.slice().sort(function(a,b){return b.GMV-a.GMV}).slice(0,20);
-  var to=arr.slice().sort(function(a,b){return b.orders-a.orders}).slice(0,20);
-  function rt(rs,vk,ff){return rs.length?rs.map(function(r,i){return'<tr><td class="rank">'+(i+1)+'</td><td class="goods-name">'+r.goods+'</td><td>'+ff(r[vk])+'</td></tr>'}).join(''):'<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>'}
-  document.getElementById('m2-uv').innerHTML=rt(tu,'UV',fmt);
-  document.getElementById('m2-gmv').innerHTML=rt(tg,'GMV',fmtMoney);
-  document.getElementById('m2-orders').innerHTML=rt(to,'orders',fmt)
-}
+document.getElementById('m2Filters').innerHTML=commonDateControls('m2',false);
+function rank(title,rows,key,fmt){const g={};rows.forEach(x=>{const c=x.code||'未标注货号';g[c]=(g[c]||0)+(+x[key]||0)});const arr=Object.entries(g).sort((a,b)=>b[1]-a[1]).slice(0,20);return `<div class="rank"><h3>${title}</h3>${arr.map(([c,v],i)=>`<div class="rank-row" title="${esc(c)}"><span class="rank-num">${i+1}</span><span class="code">${esc(c)}</span><span class="value">${fmt(v)}</span></div>`).join('')||'<div class="empty">无数据</div>'}</div>`}
+function m2Update(){const r=rangeFilter(DATA.product_daily,m2From.value,m2To.value);topGrid.innerHTML=rank('UV TOP20',r,'uv',count)+rank('GMV TOP20',r,'pay_amount',money)+rank('数量 TOP20',r,'pay_qty',count)} bind(['m2From','m2To'],m2Update);
 
-function switchM3(m){m3Mode=m;['7d','30d','all'].forEach(function(x){var b=document.getElementById('m3-btn-'+x);if(b)b.className=x===m?'active':''});renderM3()}
-function renderM3(){
-  var d=m3Mode==='7d'?ANOMALY_7D:m3Mode==='30d'?ANOMALY_30D:GOODS_RATE;
-  var b=document.getElementById('m3-body'),nd=document.getElementById('m3-nodata');
-  if(!d||!d.length){b.innerHTML='';nd.style.display='block';return}
-  nd.style.display='none';
-  var rs=m3Mode==='all'?d.map(function(r){return'<tr><td>'+r['货号']+'</td><td>-</td><td>'+r.return_rate+'%</td><td>-</td><td>'+r.total+'</td><td>'+r.returned+'</td></tr>'}):d.map(function(r){var dt=r.delta||0,c=dt>3?'delta-up':(dt<-3?'delta-down':'');return'<tr class="'+(r.is_alert?'alert-row':'')+'"><td>'+r.goods+'</td><td>'+((r.hist_rate||0).toFixed(1))+'%</td><td>'+((r.recent_rate||0).toFixed(1))+'%</td><td class="'+c+'">'+(dt>0?'+':'')+dt.toFixed(1)+'%</td><td>'+r.total_orders+'</td><td>'+r.recent_orders+'</td></tr>'});
-  b.innerHTML=rs.join('')
+document.getElementById('m3Filters').innerHTML=commonDateControls('m3')+field('货号搜索','<input id="m3Code" type="text" placeholder="不输入则显示全店">')+`<button id="m3Toggle" class="toggle">显示得物推归因</button>`;let showPush=false;m3Toggle.onclick=()=>{showPush=!showPush;m3Toggle.classList.toggle('on',showPush);m3Update()};
+function m3Update(){let from=m3From.value,to=m3To.value;if(m3Month.value){from=m3Month.value+'-01';to=m3Month.value+'-31'}const q=m3Code.value;const pd=rangeFilter(DATA.product_daily,from,to).filter(x=>codeMatch(x,q));const pu=rangeFilter(DATA.push_product,from,to).filter(x=>codeMatch(x,q));const dates=uniq([...pd.map(x=>x.date),...pu.map(x=>x.date)]),p=byDate(pd),u=byDate(pu);const totalQty=dates.map(d=>sum(p[d]||[],'pay_qty')),totalAmt=dates.map(d=>sum(p[d]||[],'pay_amount')),uv=dates.map(d=>sum(p[d]||[],'uv')),dQty=dates.map(d=>sum(u[d]||[],'direct_qty')),dAmt=dates.map(d=>sum(u[d]||[],'direct_amount')),spend=dates.map(d=>sum(u[d]||[],'spend')),duv=dates.map(d=>sum(u[d]||[],'direct_uv'));const ds=[];if(showPush){ds.push({label:'非得物推支付量',data:totalQty.map((x,i)=>Math.max(0,x-dQty[i])),backgroundColor:'#93c5fd',stack:'qty',yAxisID:'y'},{label:'得物推直接支付量',data:dQty.map((x,i)=>Math.min(x,totalQty[i])),backgroundColor:C.blue,stack:'qty',yAxisID:'y'},{label:'非得物推支付金额',data:totalAmt.map((x,i)=>Math.max(0,x-dAmt[i])),backgroundColor:'#fed7aa',stack:'amt',yAxisID:'money'},{label:'得物推直接支付金额',data:dAmt.map((x,i)=>Math.min(x,totalAmt[i])),backgroundColor:C.orange,stack:'amt',yAxisID:'money'})}else{ds.push({label:'支付订单量',data:totalQty,backgroundColor:C.blue,stack:'qty',yAxisID:'y'},{label:'支付订单金额',data:totalAmt,backgroundColor:C.orange,stack:'amt',yAxisID:'money'})}line(ds,'商详UV',uv,C.cyan,'y');destroy('m3');charts.m3=new Chart(m3Chart,{type:'bar',data:{labels:dates,datasets:ds},options:baseOptions});destroy('m3Push');m3PushPanel.classList.toggle('show',showPush);if(showPush){const axes={x:{grid:{display:false},ticks:{maxTicksLimit:14}}};['spendAxis','visitAxis','qtyAxis','amtAxis'].forEach((id,i)=>axes[id]={display:false,beginAtZero:true,position:i%2?'right':'left',grid:{drawOnChartArea:false}});charts.m3Push=new Chart(m3PushChart,{type:'bar',data:{labels:dates,datasets:[{label:'消耗（元）',data:spend,type:'line',fill:true,borderColor:C.red,backgroundColor:'#ef444433',pointRadius:0,tension:.2,yAxisID:'spendAxis'},{label:'直接商详访问',data:duv,type:'line',borderColor:C.violet,backgroundColor:C.violet,pointRadius:2,tension:.2,yAxisID:'visitAxis'},{label:'直接支付单量',data:dQty,backgroundColor:C.blue,yAxisID:'qtyAxis'},{label:'直接支付金额',data:dAmt,backgroundColor:C.orange,yAxisID:'amtAxis'}]},options:{...baseOptions,scales:axes}})}m3Kpis.innerHTML=[['UV',sum(pd,'uv')],['支付订单量',sum(pd,'pay_qty')],['支付订单金额',money(sum(pd,'pay_amount'))],['得物推消耗',money(sum(pu,'spend'))],['得物推直接金额',money(sum(pu,'direct_amount'))]].map(([a,b])=>`<div class="kpi"><span>${a}</span><b>${typeof b==='number'?count(b):b}</b></div>`).join('');const bad=dates.filter((d,i)=>dQty[i]>totalQty[i]||dAmt[i]>totalAmt[i]);m3Quality.textContent=bad.length?`数据质量提示：${bad.length}个日期的得物推直接归因值高于商详支付总值；主图按总值封顶，归因明细图保留并显示原始数值。`:'质量检查：所选范围内得物推直接支付均未超过商详支付总值。'}
+function m3Update(){
+  let from=m3From.value,to=m3To.value;if(m3Month.value){from=m3Month.value+'-01';to=m3Month.value+'-31'}
+  const q=m3Code.value;
+  const pd=rangeFilter(DATA.product_daily,from,to).filter(x=>codeMatch(x,q));
+  const pu=rangeFilter(DATA.push_product,from,to).filter(x=>codeMatch(x,q));
+  const dates=uniq([...pd.map(x=>x.date),...pu.map(x=>x.date)]),p=byDate(pd),u=byDate(pu);
+  const totalQty=dates.map(d=>sum(p[d]||[],'pay_qty')),totalAmt=dates.map(d=>sum(p[d]||[],'pay_amount')),uv=dates.map(d=>sum(p[d]||[],'uv'));
+  const dQty=dates.map(d=>sum(u[d]||[],'direct_qty')),dAmt=dates.map(d=>sum(u[d]||[],'direct_amount')),spend=dates.map(d=>sum(u[d]||[],'spend')),duv=dates.map(d=>sum(u[d]||[],'direct_uv'));
+  const ds=[];
+  if(showPush){
+    ds.push({label:'非得物推支付量',data:totalQty.map((x,i)=>Math.max(0,x-dQty[i])),backgroundColor:'#aeb4b9',stack:'qty',yAxisID:'y'},{label:'得物推直接支付量',data:dQty.map((x,i)=>Math.min(x,totalQty[i])),backgroundColor:C.blue,stack:'qty',yAxisID:'y'},{label:'非得物推支付金额',data:totalAmt.map((x,i)=>Math.max(0,x-dAmt[i])),backgroundColor:'#c8c0b6',stack:'amt',yAxisID:'money'},{label:'得物推直接支付金额',data:dAmt.map((x,i)=>Math.min(x,totalAmt[i])),backgroundColor:C.orange,stack:'amt',yAxisID:'money'});
+  }else{
+    ds.push({label:'支付订单量',data:totalQty,backgroundColor:C.blue,stack:'qty',yAxisID:'y'},{label:'支付订单金额',data:totalAmt,backgroundColor:C.orange,stack:'amt',yAxisID:'money'});
+  }
+  line(ds,'商详UV',uv,C.cyan,'y');destroy('m3');charts.m3=new Chart(m3Chart,{type:'bar',data:{labels:dates,datasets:ds},options:baseOptions});
+  destroy('m3Push');m3PushPanel.classList.toggle('show',showPush);
+  if(showPush){
+    const axes={x:{grid:{display:false},ticks:{maxTicksLimit:14}}};['spendAxis','visitAxis','qtyAxis','amtAxis'].forEach((id,i)=>axes[id]={display:false,beginAtZero:true,position:i%2?'right':'left',grid:{drawOnChartArea:false}});
+    charts.m3Push=new Chart(m3PushChart,{type:'bar',data:{labels:dates,datasets:[{label:'消耗（元）',data:spend,type:'line',fill:true,borderColor:C.red,backgroundColor:'#765f5f33',pointRadius:0,tension:.2,yAxisID:'spendAxis'},{label:'直接商详访问',data:duv,type:'line',borderColor:C.violet,backgroundColor:C.violet,pointRadius:2,tension:.2,yAxisID:'visitAxis'},{label:'直接支付单量',data:dQty,backgroundColor:C.blue,yAxisID:'qtyAxis'},{label:'直接支付金额',data:dAmt,backgroundColor:C.orange,yAxisID:'amtAxis'}]},options:{...baseOptions,scales:axes}});
+    const byCode={};pu.forEach(x=>{const code=x.code||'未标注货号';const z=byCode[code]??={code,spend:0,direct_amount:0,direct_qty:0};z.spend+=+x.spend||0;z.direct_amount+=+x.direct_amount||0;z.direct_qty+=+x.direct_qty||0});
+    const decisions=Object.values(byCode).map(x=>({...x,roi:x.spend?x.direct_amount/x.spend:0})).sort((a,b)=>b.spend-a.spend);
+    m3PushBody.innerHTML=decisions.map(x=>`<tr><td title="${esc(x.code)}">${esc(x.code)}</td><td class="num">${money(x.spend)}</td><td class="num">${money(x.direct_amount)}</td><td class="num">${count(x.direct_qty)}</td><td class="num">${x.roi.toFixed(2)}x</td></tr>`).join('')||'<tr><td colspan="5" class="empty">所选时间范围内无得物推商品数据</td></tr>';
+  }
+  const totalSpend=sum(pu,'spend'),directAmount=sum(pu,'direct_amount'),roi=totalSpend?directAmount/totalSpend:0;
+  m3Kpis.innerHTML=[['UV',sum(pd,'uv')],['支付订单量',sum(pd,'pay_qty')],['支付订单金额',money(sum(pd,'pay_amount'))],['得物推消耗',money(totalSpend)],['得物推ROI',roi.toFixed(2)+'x']].map(([a,v])=>`<div class="kpi"><span>${a}</span><b>${typeof v==='number'?count(v):v}</b></div>`).join('');
+  const bad=dates.filter((d,i)=>dQty[i]>totalQty[i]||dAmt[i]>totalAmt[i]);m3Quality.textContent=bad.length?`数据质量提示：${bad.length}个日期的得物推直接归因值高于商详支付总值；主图按总值封顶，归因明细保留原始数值。`:'质量检查：所选范围内得物推直接支付均未超过商详支付总值。';
 }
+m3Month.addEventListener('change',()=>{if(m3Month.value){[m3From.value,m3To.value]=monthBounds(m3Month.value)}m3Update()});
+[m3From,m3To].forEach(x=>x.addEventListener('input',()=>{m3Month.value='';m3Update()}));bind(['m3Code'],m3Update);
 
-function initM4(){var s1=document.getElementById('m4-task-month'),s2=document.getElementById('m4-pub-month');TASK_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s1.appendChild(o)});PUB_MONTHS.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m.replace('-','年')+'月';s2.appendChild(o)});updateM4()}
-function updateM4(){
-  var tm=document.getElementById('m4-task-month').value,pm=document.getElementById('m4-pub-month').value;
-  var fd=TASK_RAW.filter(function(r){if(tm!=='all'&&r.task_month!==tm)return false;if(pm!=='all'&&r.pub_month!==pm)return false;return true});
-  var agg={};fd.forEach(function(r){var g=r['匹配货号'];if(!agg[g])agg[g]={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};agg[g].count+=r['动态发布数量'];agg[g].amount+=r['实际任务金额'];agg[g].exp+=r['曝光'];agg[g].reads+=r['阅读数'];agg[g].visits+=r['商详访问'];agg[g].inter+=r['互动数']});
-  var es=Object.entries(agg).sort(function(a,b){return b[1].amount-a[1].amount});
-  var rs=es.map(function(e){var v=e[1];return'<tr><td>'+e[0]+'</td><td>'+v.count+'</td><td>'+fmtMoney(v.amount)+'</td><td>'+fmt(v.exp)+'</td><td>'+fmt(v.reads)+'</td><td>'+fmt(v.visits)+'</td><td>'+fmt(v.inter)+'</td></tr>'});
-  document.getElementById('m4-body').innerHTML=rs.length?rs.join(''):'<tr><td colspan="7" style="text-align:center;color:#94a3b8;">暂无数据</td></tr>';
-  var tot={count:0,amount:0,exp:0,reads:0,visits:0,inter:0};fd.forEach(function(r){tot.count+=r['动态发布数量'];tot.amount+=r['实际任务金额'];tot.exp+=r['曝光'];tot.reads+=r['阅读数'];tot.visits+=r['商详访问'];tot.inter+=r['互动数']});
-  document.getElementById('m4-foot').innerHTML='<tr style="background:#1e2435;font-weight:bold"><td>📊 合计 ('+es.length+'货号)</td><td>'+tot.count+'</td><td>'+fmtMoney(tot.amount)+'</td><td>'+fmt(tot.exp)+'</td><td>'+fmt(tot.reads)+'</td><td>'+fmt(tot.visits)+'</td><td>'+fmt(tot.inter)+'</td></tr>'
-}
+document.getElementById('m4Filters').innerHTML=commonDateControls('m4',false)+field('内容ID','<input id="m4Id" type="text" placeholder="不输入显示全部内容">');
+function m4Update(){const q=m4Id.value.trim();const r=rangeFilter(DATA.push_content,m4From.value,m4To.value).filter(x=>!q||x.content_id.includes(q));const g={};r.forEach(x=>{const z=g[x.content_id]??={content_id:x.content_id,spend:0,visits:0,direct_qty:0,direct_amount:0};['spend','visits','direct_qty','direct_amount'].forEach(k=>z[k]+=+x[k]||0)});const arr=Object.values(g).sort((a,b)=>b.spend-a.spend);m4Body.innerHTML=arr.map(x=>`<tr><td>${esc(x.content_id)}</td><td class="num">${money(x.spend)}</td><td class="num">${count(x.visits)}</td><td class="num">${count(x.direct_qty)}</td><td class="num">${money(x.direct_amount)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">无数据</td></tr>';const top=arr.slice(0,12);destroy('m4');charts.m4=new Chart(m4Chart,{type:'bar',data:{labels:top.map(x=>x.content_id),datasets:[{label:'消耗',data:top.map(x=>x.spend),backgroundColor:C.red,yAxisID:'money'},{label:'直接支付金额',data:top.map(x=>x.direct_amount),backgroundColor:C.orange,yAxisID:'money'},{label:'商详访问',data:top.map(x=>x.visits),backgroundColor:C.cyan,yAxisID:'y'},{label:'直接支付单量',data:top.map(x=>x.direct_qty),backgroundColor:C.blue,yAxisID:'y'}]},options:{...baseOptions,indexAxis:'y',scales:{x:{beginAtZero:true},y:{ticks:{font:{size:10}}},money:{display:false}}}})}bind(['m4From','m4To','m4Id'],m4Update);
 
-function initM5(){document.getElementById('m5-start').value=ALL_DATES[Math.max(0,ALL_DATES.length-30)]||ALL_DATES[0];document.getElementById('m5-end').value=ALL_DATES[ALL_DATES.length-1];updateM5()}
-function updateM5(){
-  var d1=document.getElementById('m5-start').value,d2=document.getElementById('m5-end').value;
-  var agg={};PUSH_RAW.forEach(function(r){if(r.date_str<d1||r.date_str>d2)return;var g=r['货号'];if(!agg[g])agg[g]={cost:0,do:0,dg:0,io:0,ig:0};agg[g].cost+=r['消耗'];agg[g].do+=r['直接支付单量'];agg[g].dg+=r['直接支付金额'];agg[g].io+=r['引导支付单量'];agg[g].ig+=r['引导支付金额']});
-  var as=Object.entries(agg).map(function(e){var v=e[1],tg=v.dg+v.ig,to=v.do+v.io;return{goods:e[0],cost:v.cost,gmv:tg,orders:to,roi:v.cost>0?tg/v.cost:0,oc:to>0?v.cost/to:0}}).sort(function(a,b){return b.cost-a.cost});
-  var rs=as.map(function(r){var c=r.roi>=5?'roi-high':(r.roi>=2?'roi-mid':'roi-low'),a=r.roi>=5?'🔥 高效投放':r.roi>=3?'✅ 良好':r.roi>=1?'⚠️ 关注':r.orders>0?'🔻 低ROI':'⛔ 无转化';return'<tr><td>'+r.goods+'</td><td>'+fmtMoney(r.cost)+'</td><td>'+fmtMoney(r.gmv)+'</td><td>'+r.orders+'</td><td class="'+c+'">'+r.roi.toFixed(1)+'</td><td>'+fmtMoney(r.oc)+'</td><td>'+a+'</td></tr>'}).join('');
-  document.getElementById('m5-body').innerHTML=rs
-}
-window.addEventListener('load',function(){loadAll().then(function(){
-  try{initM1()}catch(e){console.error('M1:',e)}
-  try{initM2()}catch(e){console.error('M2:',e)}
-  try{renderM3()}catch(e){console.error('M3:',e)}
-  try{initM4()}catch(e){console.error('M4:',e)}
-  try{initM5()}catch(e){console.error('M5:',e)}
-}).catch(function(e){document.getElementById('loader').textContent='❌ 数据加载失败，请刷新重试';console.error(e)})});
-</script></body></html>
+const taskMonths=uniq(DATA.community.map(x=>x.month)),taskStatus=uniq(DATA.community.map(x=>x.status));document.getElementById('m5Filters').innerHTML=field('任务月份',`<select id="m5Month"><option value="">全部月份</option>${taskMonths.map(x=>opt(x)).join('')}</select>`)+field('动态开始','<input id="m5From" type="date">')+field('动态结束',`<input id="m5To" type="date" value="${DATA.meta.date_max}">`)+field('任务状态',`<select id="m5Status"><option value="">全部状态</option>${taskStatus.map(x=>opt(x)).join('')}</select>`)+field('货号搜索','<input id="m5Code" type="text" placeholder="输入完整或部分货号">');
+document.getElementById('m5Filters').innerHTML=field('任务月份',`<select id="m5Month"><option value="">全部月份</option>${taskMonths.map(x=>opt(x)).join('')}</select>`)+field('动态开始','<input id="m5From" type="date">')+field('动态结束',`<input id="m5To" type="date" value="${DATA.meta.date_max}">`)+field('任务状态（可多选）',`<div id="m5Status" class="multi-status">${taskStatus.map(x=>`<label><input class="m5StatusCheck" type="checkbox" value="${esc(x)}">${esc(x)}</label>`).join('')}</div>`)+field('货号搜索','<input id="m5Code" type="text" placeholder="输入完整或部分货号">');
+function m5Update(){const q=m5Code.value;const selected=new Set([...document.querySelectorAll('.m5StatusCheck:checked')].map(x=>x.value));const r=DATA.community.filter(x=>(!m5Month.value||x.month===m5Month.value)&&(!m5From.value||x.publish_date>=m5From.value)&&(!m5To.value||x.publish_date<=m5To.value)&&(!selected.size||selected.has(x.status))&&codeMatch(x,q));const g={};r.forEach(x=>{const z=g[x.code]??={code:x.code,n:0,amount:0,impressions:0,reads:0,visits:0,interactions:0};z.n+=+x.dynamic_count||0;['amount','impressions','reads','visits','interactions'].forEach(k=>z[k]+=+x[k]||0)});const arr=Object.values(g).sort((a,b)=>b.amount-a.amount);m5Body.innerHTML=arr.map(x=>`<tr><td title="${esc(x.code)}">${esc(x.code)}</td><td class="num">${preciseCount(x.n)}</td><td class="num">${money(x.amount)}</td><td class="num">${count(x.impressions)}</td><td class="num">${count(x.reads)}</td><td class="num">${count(x.visits)}</td><td class="num">${count(x.interactions)}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">无数据</td></tr>';m5Kpis.innerHTML=[['任务/动态',preciseCount(sum(r,'dynamic_count'))],['实际金额',money(sum(r,'amount'))],['曝光',sum(r,'impressions')],['阅读',sum(r,'reads')],['商详访问',sum(r,'visits')]].map(([a,v])=>`<div class="kpi"><span>${a}</span><b>${typeof v==='number'?count(v):v}</b></div>`).join('')}
+bind(['m5Month','m5From','m5To','m5Status','m5Code'],m5Update);
+
+document.getElementById('m6Filters').innerHTML=field('开始日期（留空=全量）','<input id="m6From" type="date">')+field('结束日期（留空=全量）','<input id="m6To" type="date">')+field('货号搜索','<input id="m6Code" type="text" placeholder="不输入显示全店TOP30">')+field('品牌',`<select id="m6Brand"><option value="">全部品牌</option>${DATA.meta.brands.map(x=>opt(x)).join('')}</select>`)+field('类目',`<select id="m6Cat"><option value="">全部类目</option>${DATA.meta.categories.map(x=>opt(x)).join('')}</select>`);
+function m6Update(){const q=m6Code.value,b=m6Brand.value,c=m6Cat.value;const r=rangeFilter(DATA.orders,m6From.value,m6To.value).filter(x=>x.kind!=='failed'&&codeMatch(x,q)&&(!b||x.brand===b)&&(!c||x.cat===c));const g={};r.forEach(x=>{const z=g[x.code]??={code:x.code,brand:x.brand,cat:x.cat,paid:0,closed:0,after:0,ret:0};z.paid++;if(x.return_source==='交易关闭成功')z.closed++;if(x.return_source==='售后识别补充')z.after++;z.ret+=+x.is_return||0});const arr=Object.values(g).map(x=>({...x,rate:x.paid?x.ret/x.paid:0})).sort((a,b)=>b.rate-a.rate||b.paid-a.paid).slice(0,30);m6Body.innerHTML=arr.map((x,i)=>`<tr><td>${i+1}</td><td title="${esc(x.code)}">${esc(x.code)}</td><td>${esc(x.brand)}</td><td>${esc(x.cat)}</td><td class="num">${count(x.paid)}</td><td class="num">${count(x.closed)}</td><td class="num">${count(x.after)}</td><td class="num">${count(x.ret)}</td><td class="num">${(x.rate*100).toFixed(1)}%</td></tr>`).join('')||'<tr><td colspan="9" class="empty">无数据</td></tr>';const closed=r.filter(x=>x.return_source==='交易关闭成功').length,after=r.filter(x=>x.return_source==='售后识别补充').length,ret=sum(r,'is_return');m6Kpis.innerHTML=[['有效订单',r.length],['交易关闭成功',closed],['售后识别补充',after],['综合退货率',r.length?(ret/r.length*100).toFixed(2)+'%':'0%'],['识别阈值','退款/价格≥80%']].map(([a,b])=>`<div class="kpi"><span>${a}</span><b>${typeof b==='number'?count(b):b}</b></div>`).join('')}bind(['m6From','m6To','m6Code','m6Brand','m6Cat'],m6Update);
+
+[m1Update,m2Update,m3Update,m4Update,m5Update,m6Update].forEach(fn=>fn());
+</script>
+</body></html>
