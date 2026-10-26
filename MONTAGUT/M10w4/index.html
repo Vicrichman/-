@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>梦特娇 周报 10.19-10.25</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px;line-height:1.5;max-width:1400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:4px}
+h2{font-size:16px;margin:28px 0 14px;color:#94a3b8;border-left:3px solid #6366f1;padding-left:10px}
+h3{font-size:14px;margin:20px 0 8px;color:#e2e8f0}
+.sub{font-size:13px;color:#64748b;margin-bottom:20px}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:14px}
+.kpi-card .l{font-size:11px;color:#64748b;margin-bottom:4px}
+.kpi-card .v{font-size:22px;font-weight:700}
+.kpi-card .d{font-size:11px;color:#94a3b8;margin-top:4px}
+.chart-wrap{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:24px}
+.chart-wrap canvas{max-height:380px}
+.table-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:20px;margin-bottom:20px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #2a2d3a;color:#64748b;font-weight:600;white-space:nowrap;background:#1a1d27;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid #1e2030;white-space:nowrap}
+tr:hover td{background:#1e2030}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{padding:1px 7px;border-radius:8px;font-size:10px;font-weight:600}
+.bg-r{background:#7f1d1d;color:#fca5a5}
+.bg-g{background:#14532d;color:#bbf7d0}
+.bg-y{background:#713f12;color:#fde68a}
+.bg-b{background:#1e3a5f;color:#93c5fd}
+.hl{background:#252836;font-weight:700}
+.note-box{background:#1a1d27;border:1px solid #2a2d3a;border-radius:12px;padding:24px;margin-bottom:20px}
+.note-box p{font-size:13px;color:#cbd5e1;line-height:1.8}
+.upd{text-align:center;color:#64748b;font-size:11px;margin-top:40px}
+.fn{font-size:11px;color:#64748b;margin-top:6px}
+</style>
+</head>
+<body>
+
+<h1>🧥 梦特娇 · 周度运营看板</h1>
+<p class="sub">本周：2026.10.19-10.25 ｜ 上周：2026.10.12-10.18 ｜ 目标GMV：¥95,000/月 ｜ 数据更新：2026-10-26</p>
+
+<div class="kpi-row">
+<div class="kpi-card">
+<div class="l">📅 本月进度</div>
+<div class="v">¥42,753</div>
+<div class="d">目标 ¥95,000 · 达成率 45.0% </div>
+</div>
+<div class="kpi-card">
+<div class="l">本周支付GMV</div>
+<div class="v">¥16,003</div>
+<div class="d">环比 <span class="badge bg-r">-36.3%</span></div>
+</div>
+<div class="kpi-card">
+<div class="l">本周去退GMV</div>
+<div class="v">¥12,411</div>
+<div class="d">环比 <span class="badge bg-r">-13.7%</span></div>
+</div>
+<div class="kpi-card">
+<div class="l">退货率（实际）</div>
+<div class="v" style="color:#22c55e">22.4%</div>
+<div class="d">上周 42.8% · ↓改善 20.4pp</div>
+</div>
+<div class="kpi-card">
+<div class="l">店铺访客 (UV)</div>
+<div class="v">6,809</div>
+<div class="d">环比 <span class="badge bg-g">+15.0%</span></div>
+</div>
+<div class="kpi-card">
+<div class="l">转化率</div>
+<div class="v">0.75%</div>
+<div class="d">件单价 ¥318 · ROI 4.9</div>
+</div>
+</div>
+
+<h2>一、逐日趋势图（10.19-10.25）</h2>
+<div class="chart-wrap"><canvas id="c1"></canvas></div>
+
+<h2>二、逐日运营明细</h2>
+<div class="table-box"><table>
+<thead><tr><th>日期</th><th class="num">总支付GMV</th><th class="num">去退GMV</th><th class="num">留存率</th><th class="num">支付单数</th><th class="num">UV</th><th class="num">动销商品数</th><th class="num">引力花费</th><th class="num">得物推花费</th><th class="num">大盘(万元)</th></tr></thead>
+<tbody>
+<tr><td>10-01</td><td class="num">¥1,363</td><td class="num">¥798</td><td class="num">58.5%</td><td class="num">5</td><td class="num">794</td><td class="num">2</td><td class="num">¥0</td><td class="num">¥45.39</td><td class="num">555</td></tr>
+<tr><td>10-02</td><td class="num">¥1,878</td><td class="num">¥858</td><td class="num">45.7%</td><td class="num">6</td><td class="num">813</td><td class="num">6</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">500</td></tr>
+<tr><td>10-03</td><td class="num">¥2,926</td><td class="num">¥2,028</td><td class="num">69.3%</td><td class="num">10</td><td class="num">866</td><td class="num">10</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">485</td></tr>
+<tr><td>10-04</td><td class="num">¥5,558</td><td class="num">¥3,377</td><td class="num">60.8%</td><td class="num">16</td><td class="num">864</td><td class="num">13</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">480</td></tr>
+<tr><td>10-05</td><td class="num">¥3,701</td><td class="num">¥1,933</td><td class="num">52.2%</td><td class="num">12</td><td class="num">894</td><td class="num">12</td><td class="num">¥118</td><td class="num">¥0</td><td class="num">440</td></tr>
+<tr><td>10-06</td><td class="num">¥5,270</td><td class="num">¥1,796</td><td class="num">34.1%</td><td class="num">10</td><td class="num">851</td><td class="num">10</td><td class="num">¥0</td><td class="num">¥10.63</td><td class="num">415</td></tr>
+<tr><td>10-07</td><td class="num">¥1,718</td><td class="num">¥421</td><td class="num">24.5%</td><td class="num">4</td><td class="num">932</td><td class="num">4</td><td class="num">¥0</td><td class="num">¥90.37</td><td class="num">446</td></tr>
+<tr><td>10-08</td><td class="num">¥3,938</td><td class="num">¥2,625</td><td class="num">66.7%</td><td class="num">12</td><td class="num">852</td><td class="num">12</td><td class="num">¥0</td><td class="num">¥199.80</td><td class="num">426</td></tr>
+<tr><td>10-09</td><td class="num">¥1,143</td><td class="num">¥468</td><td class="num">40.9%</td><td class="num">4</td><td class="num">745</td><td class="num">4</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">405</td></tr>
+<tr><td>10-10</td><td class="num">¥1,724</td><td class="num">¥1,425</td><td class="num">82.7%</td><td class="num">6</td><td class="num">841</td><td class="num">6</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">401</td></tr>
+<tr><td>10-11</td><td class="num">¥709</td><td class="num">¥239</td><td class="num">33.7%</td><td class="num">3</td><td class="num">849</td><td class="num">3</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">440</td></tr>
+<tr><td>10-12</td><td class="num">¥2,774</td><td class="num">¥1,417</td><td class="num">51.1%</td><td class="num">11</td><td class="num">739</td><td class="num">11</td><td class="num">¥268</td><td class="num">¥0</td><td class="num">386</td></tr>
+<tr><td>10-13</td><td class="num">¥1,877</td><td class="num">¥801</td><td class="num">42.7%</td><td class="num">7</td><td class="num">831</td><td class="num">7</td><td class="num">¥310</td><td class="num">¥0</td><td class="num">398</td></tr>
+<tr><td>10-14</td><td class="num">¥3,684</td><td class="num">¥1,297</td><td class="num">35.2%</td><td class="num">10</td><td class="num">888</td><td class="num">10</td><td class="num">¥278</td><td class="num">¥0</td><td class="num">380</td></tr>
+<tr><td>10-15</td><td class="num">¥4,556</td><td class="num">¥2,155</td><td class="num">47.3%</td><td class="num">14</td><td class="num">830</td><td class="num">12</td><td class="num">¥314</td><td class="num">¥0</td><td class="num">368</td></tr>
+<tr><td>10-16</td><td class="num">¥4,952</td><td class="num">¥3,689</td><td class="num">74.5%</td><td class="num">11</td><td class="num">778</td><td class="num">11</td><td class="num">¥289</td><td class="num">¥0</td><td class="num">363</td></tr>
+<tr><td>10-17</td><td class="num">¥2,589</td><td class="num">¥1,567</td><td class="num">60.5%</td><td class="num">8</td><td class="num">968</td><td class="num">7</td><td class="num">¥114</td><td class="num">¥0</td><td class="num">390</td></tr>
+<tr><td>10-18</td><td class="num">¥4,695</td><td class="num">¥3,448</td><td class="num">73.4%</td><td class="num">16</td><td class="num">889</td><td class="num">15</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">405</td></tr>
+<tr><td>10-19</td><td class="num">¥2,455</td><td class="num">¥1,624</td><td class="num">66.2%</td><td class="num">9</td><td class="num">958</td><td class="num">9</td><td class="num">¥218</td><td class="num">¥20.19</td><td class="num">369</td></tr>
+<tr><td>10-20</td><td class="num">¥2,655</td><td class="num">¥1,962</td><td class="num">73.9%</td><td class="num">8</td><td class="num">1,025</td><td class="num">8</td><td class="num">¥799</td><td class="num">¥0</td><td class="num">386</td></tr>
+<tr><td>10-21</td><td class="num">¥3,057</td><td class="num">¥3,057</td><td class="num">100.0%</td><td class="num">10</td><td class="num">959</td><td class="num">10</td><td class="num">¥289</td><td class="num">¥0</td><td class="num">394</td></tr>
+<tr><td>10-22</td><td class="num">¥1,722</td><td class="num">¥1,302</td><td class="num">75.6%</td><td class="num">7</td><td class="num">944</td><td class="num">5</td><td class="num">¥568</td><td class="num">¥0</td><td class="num">352</td></tr>
+<tr><td>10-23</td><td class="num">¥1,528</td><td class="num">¥1,528</td><td class="num">100.0%</td><td class="num">5</td><td class="num">975</td><td class="num">5</td><td class="num">¥482</td><td class="num">¥0</td><td class="num">322</td></tr>
+<tr><td>10-24</td><td class="num">¥1,284</td><td class="num">¥930</td><td class="num">72.4%</td><td class="num">4</td><td class="num">902</td><td class="num">4</td><td class="num">¥175</td><td class="num">¥0</td><td class="num">329</td></tr>
+<tr><td>10-25</td><td class="num">¥3,302</td><td class="num">¥2,008</td><td class="num">60.8%</td><td class="num">8</td><td class="num">1,046</td><td class="num">8</td><td class="num">¥0</td><td class="num">¥0</td><td class="num">371</td></tr>
+<tr class="hl"><td>10.19-10.25 合计</td><td class="num">¥16,003</td><td class="num">¥12,411</td><td class="num">22.4%</td><td class="num">51</td><td class="num">6,809</td><td class="num">45</td><td class="num">¥2,530</td><td class="num">¥20.19</td><td class="num">—</td></tr>
+</tbody></table>
+<div class="fn">📌 数据口径：支付GMV = 待卖家发货+待买家收货+交易成功+交易关闭成功+待物流揽收；去退GMV排除交易关闭成功；留存率 = 去退GMV/支付GMV</div></div>
+
+<h2>三、周环比对比</h2>
+<div class="table-box"><table>
+<thead><tr><th>指标</th><th class="num">上周 10.12-10.18</th><th class="num">本周 10.19-10.25</th><th class="num">环比</th></tr></thead>
+<tbody>
+<tr><td>支付GMV</td><td class="num">¥25,127</td><td class="num">¥16,003</td><td class="num"><span class="badge bg-r">-36.3%</span></td></tr>
+<tr><td>去退GMV</td><td class="num">¥14,374</td><td class="num">¥12,411</td><td class="num"><span class="badge bg-r">-13.7%</span></td></tr>
+<tr><td>支付单量</td><td class="num">77</td><td class="num">51</td><td class="num"><span class="badge bg-r">-33.8%</span></td></tr>
+<tr><td>去退单量</td><td class="num">44</td><td class="num">39</td><td class="num"><span class="badge bg-r">-11.4%</span></td></tr>
+<tr><td>退款率</td><td class="num">42.8%</td><td class="num">22.4%</td><td class="num"><span class="badge bg-g">↓20.4pp</span></td></tr>
+<tr><td>件单价</td><td class="num">¥327</td><td class="num">¥318</td><td class="num"><span class="badge bg-r">-2.8%</span></td></tr>
+<tr><td>店铺访客数</td><td class="num">5,923</td><td class="num">6,809</td><td class="num"><span class="badge bg-g">+15.0%</span></td></tr>
+<tr><td>转化率</td><td class="num">1.3%</td><td class="num">0.75%</td><td class="num"><span class="badge bg-r">-42.3%</span></td></tr>
+<tr><td>动销商品数</td><td class="num">62</td><td class="num">45</td><td class="num"><span class="badge bg-r">-27.4%</span></td></tr>
+</tbody></table>
+<div class="fn">📌 退款率 = (支付GMV - 去退GMV) / 支付GMV</div></div>
+
+<h2>四、品类对比</h2>
+<div class="table-box"><table>
+<thead><tr>
+<th>类目</th>
+<th class="num" colspan="6" style="text-align:center;background:#1a1d27;border-bottom:2px solid #3b82f6">上周 10.12-10.18</th>
+<th class="num" colspan="6" style="text-align:center;background:#1a1d27;border-bottom:2px solid #f59e0b">本周 10.19-10.25</th>
+<th class="num" colspan="3" style="text-align:center;background:#1a1d27;border-bottom:2px solid #22c55e">环比</th>
+</tr><tr><th></th>
+<th class="num">销量</th><th class="num">销量占比</th><th class="num">GMV</th><th class="num">GMV占比</th><th class="num">UV</th><th class="num">件单价</th>
+<th class="num">销量</th><th class="num">销量占比</th><th class="num">GMV</th><th class="num">GMV占比</th><th class="num">UV</th><th class="num">件单价</th>
+<th class="num">销量</th><th class="num">GMV</th><th class="num">UV</th>
+</tr></thead>
+<tbody>
+<tr><td>Polo衫</td><td class="num">43</td><td class="num">55.8%</td><td class="num">¥12,719</td><td class="num">50.6%</td><td class="num">2,907</td><td class="num">¥296</td><td class="num">26</td><td class="num">51.0%</td><td class="num">¥6,947</td><td class="num">43.4%</td><td class="num">2,762</td><td class="num">¥267</td><td class="num"><span class="badge bg-r">-39.5%</span></td><td class="num"><span class="badge bg-r">-45.4%</span></td><td class="num"><span class="badge bg-r">-5.0%</span></td></tr>
+<tr><td>夹克</td><td class="num">11</td><td class="num">14.3%</td><td class="num">¥5,544</td><td class="num">22.1%</td><td class="num">734</td><td class="num">¥504</td><td class="num">2</td><td class="num">3.9%</td><td class="num">¥1,697</td><td class="num">10.6%</td><td class="num">1,115</td><td class="num">¥848</td><td class="num"><span class="badge bg-r">-81.8%</span></td><td class="num"><span class="badge bg-r">-69.4%</span></td><td class="num"><span class="badge bg-g">+51.9%</span></td></tr>
+<tr><td>毛衣</td><td class="num">10</td><td class="num">13.0%</td><td class="num">¥3,396</td><td class="num">13.5%</td><td class="num">267</td><td class="num">¥340</td><td class="num">6</td><td class="num">11.8%</td><td class="num">¥2,042</td><td class="num">12.8%</td><td class="num">483</td><td class="num">¥340</td><td class="num"><span class="badge bg-r">-40.0%</span></td><td class="num"><span class="badge bg-r">-39.9%</span></td><td class="num"><span class="badge bg-g">+80.9%</span></td></tr>
+<tr><td>T恤</td><td class="num">7</td><td class="num">9.1%</td><td class="num">¥1,668</td><td class="num">6.6%</td><td class="num">452</td><td class="num">¥238</td><td class="num">9</td><td class="num">17.6%</td><td class="num">¥2,251</td><td class="num">14.1%</td><td class="num">481</td><td class="num">¥250</td><td class="num"><span class="badge bg-g">+28.6%</span></td><td class="num"><span class="badge bg-g">+35.0%</span></td><td class="num"><span class="badge bg-g">+6.4%</span></td></tr>
+<tr><td>牛仔裤</td><td class="num">1</td><td class="num">1.3%</td><td class="num">¥444</td><td class="num">1.8%</td><td class="num">126</td><td class="num">¥444</td><td class="num">3</td><td class="num">5.9%</td><td class="num">¥1,133</td><td class="num">7.1%</td><td class="num">114</td><td class="num">¥378</td><td class="num"><span class="badge bg-g">+200.0%</span></td><td class="num"><span class="badge bg-g">+155.2%</span></td><td class="num"><span class="badge bg-r">-9.5%</span></td></tr>
+<tr><td>针织衫</td><td class="num">2</td><td class="num">2.6%</td><td class="num">¥598</td><td class="num">2.4%</td><td class="num">99</td><td class="num">¥299</td><td class="num">2</td><td class="num">3.9%</td><td class="num">¥765</td><td class="num">4.8%</td><td class="num">121</td><td class="num">¥382</td><td class="num"><span class="badge">0.0%</span></td><td class="num"><span class="badge bg-g">+27.9%</span></td><td class="num"><span class="badge bg-g">+22.2%</span></td></tr>
+<tr><td>卫衣</td><td class="num">1</td><td class="num">1.3%</td><td class="num">¥316</td><td class="num">1.3%</td><td class="num">266</td><td class="num">¥316</td><td class="num">2</td><td class="num">3.9%</td><td class="num">¥858</td><td class="num">5.4%</td><td class="num">579</td><td class="num">¥429</td><td class="num"><span class="badge bg-g">+100.0%</span></td><td class="num"><span class="badge bg-g">+171.5%</span></td><td class="num"><span class="badge bg-g">+117.7%</span></td></tr>
+<tr><td>其他</td><td class="num">0</td><td class="num">0.0%</td><td class="num">¥0</td><td class="num">0.0%</td><td class="num">281</td><td class="num">¥0</td><td class="num">1</td><td class="num">2.0%</td><td class="num">¥310</td><td class="num">1.9%</td><td class="num">330</td><td class="num">¥310</td><td class="num"><span class="badge bg-b">新增</span></td><td class="num"><span class="badge bg-b">新增</span></td><td class="num"><span class="badge bg-g">+17.4%</span></td></tr>
+<tr><td>休闲裤</td><td class="num">1</td><td class="num">1.3%</td><td class="num">¥221</td><td class="num">0.9%</td><td class="num">245</td><td class="num">¥221</td><td class="num">0</td><td class="num">0.0%</td><td class="num">¥0</td><td class="num">0.0%</td><td class="num">167</td><td class="num">¥0</td><td class="num"><span class="badge bg-r">-100.0%</span></td><td class="num"><span class="badge bg-r">-100.0%</span></td><td class="num"><span class="badge bg-r">-31.8%</span></td></tr>
+<tr><td>衬衫</td><td class="num">1</td><td class="num">1.3%</td><td class="num">¥221</td><td class="num">0.9%</td><td class="num">224</td><td class="num">¥221</td><td class="num">0</td><td class="num">0.0%</td><td class="num">¥0</td><td class="num">0.0%</td><td class="num">171</td><td class="num">¥0</td><td class="num"><span class="badge bg-r">-100.0%</span></td><td class="num"><span class="badge bg-r">-100.0%</span></td><td class="num"><span class="badge bg-r">-23.7%</span></td></tr>
+</tbody></table>
+<div class="fn">📌 按 SPUID→类目聚合（含上周完整数据）｜仅显示有销量的品类</div></div>
+<h2>五、本周单品TOP15 — 按去退GMV排序</h2>
+<div class="table-box"><table>
+<thead><tr>
+<th>序号</th><th>SPUID</th><th>货号</th><th>商品名称</th><th>类目</th><th class="num">UV</th><th class="num">支付单量</th><th class="num">去退GMV</th><th class="num">去退占比</th><th class="num">单价</th><th class="num">收藏</th><th class="num">转化率</th><th class="num">引力发布</th>
+</tr></thead><tbody>
+<tr><td>1</td><td>89095673</td><td>26036200E367DW4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 可脱卸连帽可拆卸鸭绒内胆二合一外套保暖时尚商务舒适简约纯色男士夹克 男款</td><td>服装-外套-夹克</td><td class="num">6</td><td class="num">1</td><td class="num">¥1,254</td><td class="num">10.1%</td><td class="num">¥1,254</td><td class="num">0</td><td class="num">0.0476</td><td class="num">0</td></tr>
+<tr><td>2</td><td>80367394</td><td>26049500E300KT4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 亲肤垂坠不易变形经典商务时尚设计弹力轻便长袖Polo衫 男款</td><td>服装-上衣-Polo衫</td><td class="num">133</td><td class="num">2</td><td class="num">¥576</td><td class="num">4.6%</td><td class="num">¥288</td><td class="num">6</td><td class="num">0.0343</td><td class="num">9</td></tr>
+<tr><td>3</td><td>28504095</td><td>24067400E307KT5</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 法国MONTAGUT加厚潮流简约撞色时尚舒适卫衣 男款</td><td>服装-上衣-卫衣</td><td class="num">1</td><td class="num">1</td><td class="num">¥489</td><td class="num">3.9%</td><td class="num">¥489</td><td class="num">0</td><td class="num">0.1429</td><td class="num">0</td></tr>
+<tr><td>4</td><td>34632933</td><td>26000600E458PT1</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 26ss春夏 法国MONTAGUT经典百搭男士显瘦弹力舒适复古水洗时尚牛仔裤 男款 钴蓝</td><td>服装-长裤-牛仔裤</td><td class="num">7</td><td class="num">1</td><td class="num">¥444</td><td class="num">3.6%</td><td class="num">¥444</td><td class="num">0</td><td class="num">0.0000</td><td class="num">0</td></tr>
+<tr><td>5</td><td>91790117</td><td>24075101E367JK3</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 抗皱挺括商务通勤优质时尚简约舒适经典男士夹克 男款</td><td>服装-外套-夹克</td><td class="num">10</td><td class="num">1</td><td class="num">¥443</td><td class="num">3.6%</td><td class="num">¥443</td><td class="num">0</td><td class="num">0.1429</td><td class="num">0</td></tr>
+<tr><td>6</td><td>82959247</td><td>260531B1E505KT4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 山羊绒蚕丝混纺亲肤软糯弹力经典翻领保暖时尚纯色耐穿潮流舒适易打理长袖Polo衫 男款</td><td>服装-上衣-Polo衫</td><td class="num">11</td><td class="num">1</td><td class="num">¥432</td><td class="num">3.5%</td><td class="num">¥432</td><td class="num">0</td><td class="num">0.0476</td><td class="num">0</td></tr>
+<tr><td>7</td><td>28357029</td><td>25035801E324SW6</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 法国MONTAGUT  罗纹圆领套头保暖提花潮流简约撞色时尚舒适经典复古绵羊毛毛衣 男款</td><td>服装-上衣-毛衣</td><td class="num">75</td><td class="num">1</td><td class="num">¥427</td><td class="num">3.4%</td><td class="num">¥427</td><td class="num">4</td><td class="num">0.0245</td><td class="num">0</td></tr>
+<tr><td>8</td><td>34658912</td><td>26000700E458PT1</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 26ss春夏 法国MONTAGUT经典百搭男士修身显瘦弹力舒适复古水洗时尚有型日常休闲宽松直筒牛仔裤 男款 深蓝</td><td>服装-长裤-牛仔裤</td><td class="num">10</td><td class="num">1</td><td class="num">¥410</td><td class="num">3.3%</td><td class="num">¥410</td><td class="num">0</td><td class="num">0.1429</td><td class="num">0</td></tr>
+<tr><td>9</td><td>27594921</td><td>24071800E324SW2</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 法国MONTAGUT运动潮流简约撞色套头时尚舒适经典针织衫 男款</td><td>服装-上衣-毛衣</td><td class="num">5</td><td class="num">1</td><td class="num">¥399</td><td class="num">3.2%</td><td class="num">¥399</td><td class="num">0</td><td class="num">0.0714</td><td class="num">0</td></tr>
+<tr><td>10</td><td>19899460</td><td>25014801E300KT4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 时尚潮流优雅舒适经典刺绣Logo肌理休闲长袖卫衣Polo衫 男款 衣服</td><td>服装-上衣-Polo衫</td><td class="num">37</td><td class="num">2</td><td class="num">¥398</td><td class="num">3.2%</td><td class="num">¥199</td><td class="num">4</td><td class="num">0.0714</td><td class="num">0</td></tr>
+<tr><td>11</td><td>70009453</td><td>24054600E403KT2</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇  商务休闲吸湿透气舒适简约百搭纯色Polo衫 男款</td><td>服装-上衣-Polo衫</td><td class="num">115</td><td class="num">2</td><td class="num">¥398</td><td class="num">3.2%</td><td class="num">¥199</td><td class="num">3</td><td class="num">0.0183</td><td class="num">0</td></tr>
+<tr><td>12</td><td>95841587</td><td>260646B1E505KT4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 蚕丝莫代尔丝滑弹力柔软亲肤舒适简约商务时尚百搭高端男士Polo衫 男款</td><td>服装-上衣-Polo衫</td><td class="num">32</td><td class="num">1</td><td class="num">¥377</td><td class="num">3.0%</td><td class="num">¥377</td><td class="num">1</td><td class="num">0.0143</td><td class="num">0</td></tr>
+<tr><td>13</td><td>90970997</td><td>250557B1E300KT5</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 经典立领底面抓绒含桑蚕丝挺括弹力长袖休闲简约百搭纯色亲肤柔软卫衣 男款</td><td>服装-上衣-卫衣</td><td class="num">19</td><td class="num">1</td><td class="num">¥369</td><td class="num">3.0%</td><td class="num">¥369</td><td class="num">1</td><td class="num">0.0714</td><td class="num">0</td></tr>
+<tr><td>14</td><td>87350625</td><td>260598B1E271SW6</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 绵羊毛混纺保暖可机洗羊毛衫弹力简约舒适百搭圆领时尚休闲舒适亲肤质感高雅针织衫 男款</td><td>服装-上衣-针织衫</td><td class="num">11</td><td class="num">1</td><td class="num">¥366</td><td class="num">2.9%</td><td class="num">¥366</td><td class="num">0</td><td class="num">0.1429</td><td class="num">0</td></tr>
+<tr><td>15</td><td>28464241</td><td>24067800E307KT4</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">梦特娇 法国MONTAGUT加厚商务翻领潮流简约撞色时尚舒适Polo衫 男款</td><td>服装-上衣-Polo衫</td><td class="num">10</td><td class="num">1</td><td class="num">¥349</td><td class="num">2.8%</td><td class="num">¥349</td><td class="num">0</td><td class="num">0.0476</td><td class="num">0</td></tr>
+</tbody></table>
+<div class="fn">📌 TOP15 合计去退GMV：<b>¥7,131</b>，占本周总去退GMV <b>57.5%</b></div></div>
+
+<h2>六、运营总结</h2>
+<div class="note-box">
+<h3>📊 本月进度</h3>
+<p>截至10.25日，10月累计去退GMV <b>¥42,753</b>，月目标 <b>¥95,000</b>，达成率 <b style="color:#22c55e">45.0%</b>（10月已过25天，时间进度80.6%）。本周（10.19-10.25）为10月内整周，去退GMV <b>¥12,411</b>，日均约 <b>¥1,773</b>。</p>
+<h3>🏪 店铺整体表现</h3>
+<p>① 本周支付GMV <b>¥16,003</b>（环比<b style="color:#ef4444">-36.3%</b>），去退GMV <b>¥12,411</b>（环比<b style="color:#ef4444">-13.7%</b>）；本周 51 笔支付订单中 12 笔已交易关闭成功（¥3,592），其余 39 笔仍处待买家收货、待卖家发货、待物流揽收等状态<br>
+② 本周当前退款率 <b>22.4%</b>（上周同期重算 42.8%）<br>
+③ UV <b>6,809</b>（环比<b style="color:#22c55e">+15.0%</b>），转化率 <b>0.75%</b>（环比<b style="color:#ef4444">-42.3%</b>），支付单量 <b>51</b> 单（上周 77 单）<br>
+④ 去退口径件单价 <b>¥318</b>（上周¥327，-2.6%）；去退单量 <b>39</b> 单（上周 44 单，-11.4%）；动销货号 <b>45</b> 个（上周 62 个，-27.4%）；引力花费 <b>¥2,530</b>（上周 ¥1,573）</p>
+<h3>📦 品类分析</h3>
+<p>Polo衫本周 <b>26单/¥6,947</b>，占全店GMV <b>43.4%</b>（上周 43单/¥12,719，50.6%），主力地位不变、占比回落；T恤 <b>9单/¥2,251</b>（占比 14.1%，上周 7单/¥1,668，6.6%）占比提升；毛衣 <b>6单/¥2,042</b>（12.8%，上周 10单/¥3,396，13.5%）；夹克 <b>2单/¥1,697</b>（10.6%，上周 11单/¥5,544，22.1%）明显回落；牛仔裤 3单/¥1,133（7.1%）、卫衣 2单/¥858（5.4%）、针织衫 2单/¥765（4.8%）、其他 1单/¥310（1.9%）；休闲裤、衬衫、棉服、羽绒服、短裤本周无成交。动销品类 8 个（上周 9 个）。大盘POLO衫指数 10.19-10.25 逐日 369/386/394/352/322/329/371，周内高点 10-21 的 394、低点 10-23 的 322，周均 360.4 低于上周 384.3（约-6.2%）；店铺去退GMV环比下降。</p>
+<h3>⭐ 单品表现</h3>
+<p>TOP15合计去退GMV <b>¥7,131</b>，占本周去退GMV <b>57.5%</b>。第一名 26036200E367DW4（SPUID 89095673，夹克）1单/¥1,254；第二名 26049500E300KT4（SPUID 80367394，Polo衫）2单/¥576；第三名 24067400E307KT5（SPUID 28504095，卫衣）1单/¥489。TOP15 中 UV 最高为 26049500E300KT4（UV 133）；TOP15 中唯一有引力投放记录的为 26049500E300KT4（9 条任务）。本周支付集单笔最高 <b>¥1,254</b>（唯一，10.25，待买家收货），全周仅 1 笔千元以上订单；单笔均值 ¥314 / 中位数 ¥288。</p>
+<h3>📋 本周工作重点</h3>
+<p>1. 持续新品上架<br>
+2. 引力花费 ¥2,530</p>
+</div>
+
+<script>
+window.addEventListener('load',function(){
+setTimeout(function(){
+try{
+var ctx=document.getElementById('c1').getContext('2d');
+new Chart(ctx,{
+type:'bar',
+data:{
+labels:["10-01", "10-02", "10-03", "10-04", "10-05", "10-06", "10-07", "10-08", "10-09", "10-10", "10-11", "10-12", "10-13", "10-14", "10-15", "10-16", "10-17", "10-18", "10-19", "10-20", "10-21", "10-22", "10-23", "10-24", "10-25"],
+datasets:[
+{label:'支付GMV',data:[1363, 1878, 2926, 5558, 3701, 5270, 1718, 3938, 1143, 1724, 709, 2774, 1877, 3684, 4556, 4952, 2589, 4695, 2455, 2655, 3057, 1722, 1528, 1284, 3302],backgroundColor:'rgba(99,102,241,0.5)',borderColor:'#6366f1',borderWidth:1,yAxisID:'y',order:2},
+{label:'支付单数',data:[5, 6, 10, 16, 12, 10, 4, 12, 4, 6, 3, 11, 7, 10, 14, 11, 8, 16, 9, 8, 10, 7, 5, 4, 8],type:'line',borderColor:'#f59e0b',backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:0.3,yAxisID:'y1',order:1},
+{label:'UV',data:[794, 813, 866, 864, 894, 851, 932, 852, 745, 841, 849, 739, 831, 888, 830, 778, 968, 889, 958, 1025, 959, 944, 975, 902, 1046],type:'line',borderColor:'#22c55e',backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:0.3,yAxisID:'y1',order:1},
+{label:'大盘指数(万元)',data:[555, 500, 485, 480, 440, 415, 446, 426, 405, 401, 440, 386, 398, 380, 368, 363, 390, 405, 369, 386, 394, 352, 322, 329, 371],type:'line',borderColor:'#ef4444',backgroundColor:'transparent',borderWidth:2,pointRadius:2,tension:0.3,borderDash:[5,3],yAxisID:'y2',order:1}
+]
+},
+options:{
+responsive:true,maintainAspectRatio:false,
+plugins:{legend:{labels:{color:'#94a3b8',font:{size:11},usePointStyle:true,boxWidth:12}}},
+scales:{
+x:{ticks:{color:'#64748b',font:{size:10},maxTicksLimit:7},grid:{color:'#1e2030'}},
+y:{type:'linear',position:'left',title:{display:true,text:'GMV (¥)',color:'#64748b'},ticks:{color:'#64748b',callback:function(v){return'¥'+v.toLocaleString()}},grid:{color:'#1e2030'}},
+y1:{type:'linear',position:'right',title:{display:true,text:'数量',color:'#64748b'},ticks:{color:'#64748b'},grid:{display:false}},
+y2:{type:'linear',position:'right',title:{display:true,text:'指数',color:'#64748b'},ticks:{color:'#64748b'},grid:{display:false}}
+}
+}
+});
+}catch(e){console.error(e)}
+},200);
+});
+</script>
+</body>
+</html>
